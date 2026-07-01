@@ -1,0 +1,283 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ========================================================================== */
+/* SMART NUB CAMPUS DESIGN SYSTEM                                             */
+/* ========================================================================== */
+/*
+  Design Language
+  ---------------
+  - Clean & Minimal
+  - Academic + Modern SaaS
+  - Soft purple branding
+  - High readability
+  - Comfortable for long study sessions
+  - Designed for both Desktop and Mobile
+
+  Color Palette
+
+  Primary
+  #5B4CF4
+  #6D5EF8
+  #7C6CFF
+
+  Background
+  #FFFFFF
+  #FAFAFC
+  #F5F6FB
+
+  Text
+  #111827
+  #4B5563
+  #6B7280
+
+  Border
+  #E8EAF3
+
+  Success
+  #22C55E
+
+  Warning
+  #F59E0B
+
+  Error
+  #EF4444
+
+  Info
+  #3B82F6
+*/
+
+:root {
+  /* ==========================================================================
+   Smart NUB Campus Semantic Colors
+   ========================================================================== */
+  /* Brand */
+  --brand: #5b4cf4;
+  --brand-light: #ede9fe;
+  --brand-hover: #6d5ef8;
+
+  /* Status */
+  --success: #22c55e;
+  --success-bg: #dcfce7;
+
+  --warning: #f59e0b;
+  --warning-bg: #fef3c7;
+
+  --danger: #ef4444;
+  --danger-bg: #fee2e2;
+
+  --info: #3b82f6;
+  --info-bg: #dbeafe;
+
+  /* Academic */
+  --verified: #22c55e;
+  --pending: #f59e0b;
+  --rejected: #ef4444;
+  --online: #22c55e;
+  --offline: #9ca3af;
+  /* ==========================================================================
+     Core
+     ========================================================================== 
+  */
+
+  --radius: 1rem;
+
+  /* ==========================================================================
+     Backgrounds
+     ========================================================================== */
+
+  --background: oklch(99% 0.003 280);
+  --foreground: oklch(22% 0.02 280);
+
+  --card: oklch(100% 0 0);
+  --card-foreground: oklch(22% 0.02 280);
+
+  --popover: oklch(100% 0 0);
+  --popover-foreground: oklch(22% 0.02 280);
+
+  /* ==========================================================================
+     Brand
+     ========================================================================== */
+
+  --primary: oklch(58% 0.24 285);
+  --primary-foreground: oklch(99% 0 0);
+
+  /* Soft Lavender */
+
+  --secondary: oklch(97% 0.015 285);
+  --secondary-foreground: oklch(25% 0.02 285);
+
+  /* Hover */
+
+  --accent: oklch(95% 0.03 285);
+  --accent-foreground: oklch(30% 0.04 285);
+
+  /* ==========================================================================
+     Neutral
+     ========================================================================== */
+
+  --muted: oklch(97% 0.005 280);
+  --muted-foreground: oklch(55% 0.02 280);
+
+  /* ==========================================================================
+     Semantic
+     ========================================================================== */
+
+  --destructive: oklch(64% 0.22 25);
+  --border: oklch(93% 0.01 280);
+  --input: oklch(93% 0.01 280);
+  --ring: oklch(60% 0.2 285);
+
+  /* ==========================================================================
+     Charts
+     ========================================================================== */
+
+  --chart-1: oklch(58% 0.24 285);
+  --chart-2: oklch(72% 0.16 145);
+  --chart-3: oklch(78% 0.17 70);
+  --chart-4: oklch(67% 0.2 20);
+  --chart-5: oklch(65% 0.18 245);
+
+  /* ==========================================================================
+     Sidebar
+     ========================================================================== */
+
+  --sidebar: oklch(98.5% 0.004 280);
+
+  --sidebar-foreground: oklch(25% 0.02 280);
+
+  --sidebar-primary: var(--primary);
+
+  --sidebar-primary-foreground: white;
+
+  --sidebar-accent: oklch(95% 0.03 285);
+
+  --sidebar-accent-foreground: var(--foreground);
+
+  --sidebar-border: oklch(92% 0.01 280);
+
+  --sidebar-ring: var(--ring);
+}
+
+.dark {
+  /* ==========================================================================
+     Smart NUB Campus Dark Theme
+     ========================================================================== */
+
+  --background: oklch(18% 0.015 280);
+
+  --foreground: oklch(97% 0.005 280);
+
+  --card: oklch(22% 0.015 280);
+
+  --card-foreground: oklch(97% 0.005 280);
+
+  --popover: oklch(22% 0.015 280);
+
+  --popover-foreground: oklch(97% 0.005 280);
+
+  --primary: oklch(70% 0.2 285);
+
+  --primary-foreground: oklch(18% 0.01 280);
+
+  --secondary: oklch(26% 0.015 280);
+
+  --secondary-foreground: oklch(96% 0.005 280);
+
+  --accent: oklch(30% 0.02 285);
+
+  --accent-foreground: white;
+
+  --muted: oklch(24% 0.015 280);
+
+  --muted-foreground: oklch(74% 0.01 280);
+
+  --destructive: oklch(68% 0.2 24);
+
+  --border: oklch(31% 0.01 280);
+
+  --input: oklch(31% 0.01 280);
+
+  --ring: oklch(72% 0.2 285);
+
+  --chart-1: oklch(70% 0.2 285);
+  --chart-2: oklch(70% 0.18 145);
+  --chart-3: oklch(72% 0.18 70);
+  --chart-4: oklch(70% 0.18 20);
+  --chart-5: oklch(70% 0.18 245);
+
+  --sidebar: oklch(21% 0.015 280);
+
+  --sidebar-foreground: oklch(97% 0.005 280);
+
+  --sidebar-primary: var(--primary);
+
+  --sidebar-primary-foreground: black;
+
+  --sidebar-accent: oklch(28% 0.02 285);
+
+  --sidebar-accent-foreground: white;
+
+  --sidebar-border: oklch(30% 0.01 280);
+
+  --sidebar-ring: var(--ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
