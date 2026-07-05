@@ -12,8 +12,8 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col items-center">
-      <header className="w-full max-w-7xl flex justify-between items-center mb-8">
+    <div className="flex flex-col space-y-8">
+      <header className="w-full flex justify-between items-center">
         <div className="flex items-center gap-2">
           <AcademicCapIcon className="text-brand" size={36} />
           <div className="-space-y-1">
@@ -37,8 +37,8 @@ export default function AuthLayout({
         </div>
       </header>
 
-      <main className="flex-1">{children}</main>
-      <footer className="w-full max-w-3xl mt-8 flex justify-between items-center text-xs text-muted-foreground flex-col sm:flex-row gap-4">
+      <main className="flex-1 min-h-[calc(100vh-180px)]">{children}</main>
+      <footer className="w-full max-w-3xl mx-auto flex justify-between items-center text-xs text-muted-foreground flex-col sm:flex-row gap-4">
         <p>
           © {new Date().getFullYear()} Northern University Bangladesh. All
           rights reserved.
