@@ -46,6 +46,27 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ── Smart NUB Campus custom tokens ──────────────────────────── */
+  /* Brand (purple) */
+  --color-brand: var(--brand);
+  --color-brand-light: var(--brand-light);
+  --color-brand-hover: var(--brand-hover);
+
+  /* Status */
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-success-foreground: oklch(99% 0 0);
+
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-warning-foreground: oklch(22% 0.02 280);
+
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
 }
 
 /* ========================================================================== */
@@ -99,7 +120,7 @@
    Smart NUB Campus Semantic Colors
    ========================================================================== */
   /* Brand */
-  --brand: #5b4cf4;
+  --brand: #4f39f6;
   --brand-light: #ede9fe;
   --brand-hover: #6d5ef8;
 
@@ -127,7 +148,7 @@
      ========================================================================== 
   */
 
-  --radius: 1rem;
+  --radius: 0.5rem;
 
   /* ==========================================================================
      Backgrounds

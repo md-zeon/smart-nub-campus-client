@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { InformationCircleIcon } from "@/components/ui/icons/information-circle";
 import { AcademicCapIcon } from "@/components/ui/icons/academic-cap";
 import { CircleQuestionMark } from "lucide-react";
+import { ModeToggle } from "@/components/theme/mode-toggle";
 
 export default function AuthLayout({
   children,
@@ -20,6 +21,7 @@ export default function AuthLayout({
           </div>
         </div>
         <div className="flex items-center gap-4">
+          <ModeToggle />
           <Link
             href="/about"
             className="text-sm font-medium text-muted-foreground hover:text-foreground items-center gap-2 hidden sm:flex"
