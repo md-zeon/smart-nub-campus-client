@@ -44,7 +44,7 @@ export default function AuthPage() {
                       variant="default"
                       className="mt-5 group"
                       render={
-                        <Link href="/auth/verify">
+                        <Link href="/auth/onboarding">
                           Verify My Identity{" "}
                           <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-300 h-4 w-4" />
                         </Link>
