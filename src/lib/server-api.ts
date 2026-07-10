@@ -71,6 +71,8 @@ async function apiFetch<T = unknown>(
     ...config.headers,
   };
 
+  config.credentials = "include"; // Ensure cookies are sent with requests
+
   const isGet = config.method === "GET" || config.method === undefined;
 
   // Handle caching and revalidation for GET requests
@@ -91,11 +93,20 @@ async function apiFetch<T = unknown>(
   }
 
   const response = await fetch(url, config);
-  const data = await response.json();
+
+  let data: unknown;
+  const text = await response.text(); // Read the response as text first to handle cases where the response is not valid JSON
+  try {
+    data = text ? JSON.parse(text) : null; // Parse the response as JSON if it's not empty
+  } catch {
+    throw new Error(
+      `Invalid JSON response from server: ${response.status} ${response.statusText}`,
+    );
+  }
 
   if (!response.ok) {
     const error = data as ApiError;
-    throw new Error(error.message || error.error || "An error occurred");
+    throw new Error(error?.message || error?.error || "Unknown API error");
   }
 
   // Trigger automatic invalidation if mutation succeeded and tags exist
