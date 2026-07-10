@@ -1,6 +1,23 @@
 /**
- * Shared API Client
+ * Shared Server API module for Next.js with automatic cache invalidation
+ *
+ * This module provides a centralized fetch wrapper for making API requests to the backend. It automatically handles caching, revalidation, and cache invalidation based on the request type (GET for fetching data, POST/PUT/PATCH/DELETE for mutations). The module is designed to work seamlessly with Next.js's caching and revalidation mechanisms, ensuring that the client always receives fresh data after mutations.
+ *
+ * Features:
  * Centralized fetch wrapper with automatic Next.js cache invalidation
+ * Supports GET requests with caching, revalidation, and tags
+ * Supports POST, PUT, PATCH, DELETE requests with automatic cache invalidation for specified tags
+ * Type-safe API responses and error handling
+ * Error handling with automatic cache invalidation
+ * Usage:
+ * import { serverApi } from "./server-api";
+ * const data = await serverApi.get("/endpoint", { cache: "force-cache", revalidate: 60, tags: ["tag1"] });
+ * const result = await serverApi.post("/endpoint", data, { invalidatesTags: ["tag1", "tag2"] });
+ * Documentation:
+ * https://github.com/smart-nub-campus/smart-nub-campus-client
+ * @module serverApi
+ * @exports serverApi
+ * @see {@link https://github.com/smart-nub-campus-client/docs/server-api|Server API Documentation}
  */
 
 import { env } from "@/env";
@@ -91,7 +108,7 @@ async function apiFetch<T = unknown>(
 }
 
 /**
- * API Client with typed methods and automatic invalidation options
+ * Server API with typed methods and automatic invalidation options
  */
 export const serverApi = {
   get: <T>(endpoint: string, options?: CacheOptions) =>
