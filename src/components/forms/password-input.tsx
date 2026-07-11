@@ -227,7 +227,7 @@ function PasswordInputStrength({
             aria-live="polite"
             className="flex items-center justify-between gap-2"
           >
-            <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
               {s.label}
             </span>
             {s.hint && (
