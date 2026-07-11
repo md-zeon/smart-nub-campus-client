@@ -65,9 +65,13 @@ async function apiFetch<T = unknown>(
   const cookieStore = await cookies();
   const url = new URL(`${API_URL}${endpoint}`).toString();
 
+  // Gather existing cookies to send TO Express
+  const allCookies = cookieStore.getAll();
+  const cookieString = allCookies.map((c) => `${c.name}=${c.value}`).join("; ");
+
   config.headers = {
     "Content-Type": "application/json",
-    Cookie: cookieStore.toString(),
+    "Cookie": cookieString, // Handshake cookie with Express
     ...config.headers,
   };
 
@@ -93,6 +97,27 @@ async function apiFetch<T = unknown>(
   }
 
   const response = await fetch(url, config);
+
+  // Extract cookies returned FROM Express and set them in Next.js browser
+  const setCookieHeaders = response.headers.getSetCookie(); // Native fetch array method
+  if (setCookieHeaders && setCookieHeaders.length > 0) {
+    for (const cookieStr of setCookieHeaders) {
+      // Basic parser to split name=value from attributes
+      const parts = cookieStr.split(";");
+      const [nameValue] = parts;
+      const [name, value] = nameValue.split("=");
+
+      if (name && value) {
+        // Apply cookie instantly to the user's browser session via Next.js
+        cookieStore.set(name.trim(), value.trim(), {
+          path: "/",
+          httpOnly: true,
+          secure: false,
+          sameSite: "lax",
+        });
+      }
+    }
+  }
 
   let data: unknown;
   const text = await response.text(); // Read the response as text first to handle cases where the response is not valid JSON
