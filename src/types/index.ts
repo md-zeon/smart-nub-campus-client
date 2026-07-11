@@ -11,4 +11,5 @@ export type {
   ListVerificationParams,
   ListVerificationResponse,
   VerificationRequest,
+  VerificationDetail,
 } from "./verification.types";

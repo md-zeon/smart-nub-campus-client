@@ -47,6 +47,29 @@ export interface CreateVerificationRequestPayload {
   idCardImage: string;
 }
 
+export interface VerificationDetail {
+  onboardingStep: {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    verificationRequestId: string;
+    step: OnboardingStepValue;
+    completedAt: Date | null;
+  } | null;
+  id: string;
+  email: string;
+  studentId: string;
+  name: string;
+  dateOfBirth: Date;
+  idCardImage: string;
+  status: VerificationStatus;
+  note: string | null;
+  reviewedById: string | null;
+  reviewedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface ListVerificationParams {
   page: number;
   limit: number;
@@ -57,7 +80,7 @@ export interface ListVerificationParams {
 }
 
 export interface ListVerificationResponse {
-  data: VerificationRequest[];
+  data: VerificationDetail[];
   meta: {
     page: number;
     limit: number;
@@ -66,20 +89,4 @@ export interface ListVerificationResponse {
   };
 }
 
-export interface VerificationDetailResponse {
-  id: string;
-  name: string;
-  email: string;
-  dateOfBirth: string;
-  studentId: string;
-  idCardImage: string;
-  status: VerificationStatus;
-  note: string | null;
-  createdAt: string;
-  reviewedAt: string | null;
-  reviewedBy: {
-    id: string;
-    email: string;
-    name: string;
-  } | null;
-}
+export type VerificationDetailResponse = VerificationDetail;
