@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import AuthInfo from "../_components/AuthInfo";
 import isStudentId from "@/lib/isStudentId";
 import { authClient } from "@/lib/auth-client";
-import { authAction } from "@/actions/auth.action";
+import { getEmailByStudentId } from "@/actions/auth.action";
 
 // 1. Define your validation schema with Zod
 const loginSchema = z.object({
@@ -60,7 +60,7 @@ export default function LoginPage() {
       let email = data.identifier;
 
       if (isStudentIdGiven) {
-        email = await authAction.getEmailByStudentId(data.identifier);
+        email = await getEmailByStudentId(data.identifier);
       }
 
       const response = await authClient.signIn.email({

@@ -10,19 +10,8 @@ import { CheckCircleIcon } from "@/components/ui/icons/check-circle";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepValue, VerificationStatus } from "@/constants/enums";
 import type { VerificationRequestData } from "@/types";
-import type { ParsedStudentId } from "@/lib/student-id-parser";
-import { verificationAction } from "@/actions/verification.action";
-import { onboardingAction } from "@/actions/onboarding.action";
-
-const PLACEHOLDER_PARSED_ID: ParsedStudentId = {
-  departmentCode: "",
-  departmentName: "",
-  admissionYear: 0,
-  intakeCode: "",
-  intakeName: "",
-  studentNumber: 0,
-  isValid: true,
-};
+import { createVerificationRequest } from "@/actions/verification.action";
+import { getCurrentStep } from "@/actions/onboarding.action";
 
 interface OnboardingFlowProps {
   initialStep: OnboardingStepValue;
@@ -59,8 +48,9 @@ export function OnboardingFlow({
 
       try {
         // Backend sets the onboarding_step cookie and returns full state
-        const response =
-          await verificationAction.createVerificationRequest(formData);
+        console.log("Submitting verification form data:", formData);
+        const response = await createVerificationRequest(formData);
+        console.log("Response from createVerificationRequest:", response);
         setCurrentStep(response.currentStep);
         setVerificationRequest(response.verificationRequest);
         setVerificationStatus(response.verificationStatus);
@@ -84,7 +74,7 @@ export function OnboardingFlow({
 
     const pollStatus = async () => {
       try {
-        const data = await onboardingAction.getCurrentStep();
+        const data = await getCurrentStep();
 
         // Update verification request data if available (backend now always includes it)
         if (data.verificationRequest) {
@@ -194,9 +184,9 @@ export function OnboardingFlow({
                 </p>
               </div>
               <CreateAccountForm
-                parsedStudentId={PLACEHOLDER_PARSED_ID}
                 defaultName={verificationRequest?.name ?? ""}
                 defaultStudentId={verificationRequest?.studentId ?? ""}
+                defaultEmail={verificationRequest?.email ?? ""}
               />
             </div>
           )}

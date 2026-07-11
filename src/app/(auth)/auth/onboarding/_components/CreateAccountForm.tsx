@@ -4,41 +4,33 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { ParsedStudentId } from "@/lib/student-id-parser";
-import { accountAction } from "@/actions/account.action";
+import { createAccount } from "@/actions/account.action";
+import { parseStudentId } from "@/lib/student-id-parser";
 
 interface CreateAccountFormProps {
-  parsedStudentId: ParsedStudentId;
   defaultName: string;
   defaultStudentId: string;
+  defaultEmail: string;
 }
 
 export function CreateAccountForm({
-  parsedStudentId,
   defaultName,
   defaultStudentId,
+  defaultEmail,
 }: CreateAccountFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const studentIdInfo = parseStudentId(defaultStudentId);
 
   const handleSubmit = useCallback(async (formData: FormData) => {
     setIsSubmitting(true);
     setError(null);
 
     try {
-      await accountAction.createAccount(formData.get("password") as string);
+      await createAccount(formData.get("password") as string);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Account creation failed.";
-      // Let Next.js redirect() bubble up instead of showing to user
-      const maybeError = err as { digest?: string } | null;
-      if (
-        maybeError &&
-        typeof maybeError === "object" &&
-        maybeError.digest?.startsWith("NEXT_REDIRECT")
-      ) {
-        throw err;
-      }
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -63,10 +55,26 @@ export function CreateAccountForm({
       <div className="space-y-2">
         <Label>Department</Label>
         <Input
-          value={parsedStudentId.departmentName}
+          value={studentIdInfo.data?.department.fullName}
           disabled
           className="bg-muted/50"
         />
+      </div>
+
+      {/* Admission Year - Read only */}
+      <div className="space-y-2">
+        <Label>Admission Year</Label>
+        <Input
+          value={studentIdInfo.data?.admissionYear}
+          disabled
+          className="bg-muted/50"
+        />
+      </div>
+
+      {/* Email - Read only */}
+      <div className="space-y-2">
+        <Label>Email</Label>
+        <Input value={defaultEmail} disabled className="bg-muted/50" />
       </div>
 
       {/* Password */}

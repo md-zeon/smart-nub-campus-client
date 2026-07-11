@@ -7,8 +7,8 @@ import { CalendarDaysIcon } from "@/components/ui/icons/calendar-days";
 import { IdCardIcon } from "lucide-react";
 import { ImageUpload } from "./ImageUpload";
 import { cn } from "@/lib/utils";
-import { parseStudentId } from "@/lib/student-id-parser";
 import { useState } from "react";
+import isStudentId from "@/lib/isStudentId";
 
 interface FormData {
   name: string;
@@ -71,10 +71,9 @@ export function VerifyIdentityForm({
     if (!formData.studentId.trim()) {
       newErrors.studentId = "Student ID is required";
     } else {
-      const parsed = parseStudentId(formData.studentId);
-      if (!parsed.success) {
-        newErrors.studentId =
-          parsed.error?.message || "Invalid student ID format";
+      const isValid = isStudentId(formData.studentId);
+      if (!isValid) {
+        newErrors.studentId = "Invalid student ID format";
       }
     }
 
@@ -106,10 +105,6 @@ export function VerifyIdentityForm({
       setErrors((prev) => ({ ...prev, idCardImage: undefined }));
     }
   };
-
-  const parsedStudentId = formData.studentId
-    ? parseStudentId(formData.studentId)
-    : null;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -194,28 +189,6 @@ export function VerifyIdentityForm({
           </div>
           {errors.studentId && (
             <p className="text-xs text-destructive">{errors.studentId}</p>
-          )}
-          {parsedStudentId && parsedStudentId.success && (
-            <div className="rounded-lg border bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
-              <p>
-                <span className="font-medium text-foreground">Department:</span>{" "}
-                {parsedStudentId.data?.department.fullName}
-              </p>
-              <p>
-                <span className="font-medium text-foreground">
-                  Admission Year:
-                </span>{" "}
-                {parsedStudentId.data?.admissionYear}
-              </p>
-              <p>
-                <span className="font-medium text-foreground">Intake:</span>{" "}
-                {parsedStudentId.data?.admissionSemester}
-              </p>
-              <p>
-                <span className="font-medium text-foreground">Student #:</span>{" "}
-                {parsedStudentId.data?.serialNumber.toString().padStart(4, "0")}
-              </p>
-            </div>
           )}
         </div>
 
