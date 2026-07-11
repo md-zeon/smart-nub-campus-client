@@ -72,8 +72,9 @@ export function VerifyIdentityForm({
       newErrors.studentId = "Student ID is required";
     } else {
       const parsed = parseStudentId(formData.studentId);
-      if (!parsed.isValid) {
-        newErrors.studentId = parsed.error || "Invalid student ID format";
+      if (!parsed.success) {
+        newErrors.studentId =
+          parsed.error?.message || "Invalid student ID format";
       }
     }
 
@@ -194,25 +195,25 @@ export function VerifyIdentityForm({
           {errors.studentId && (
             <p className="text-xs text-destructive">{errors.studentId}</p>
           )}
-          {parsedStudentId && parsedStudentId.isValid && (
+          {parsedStudentId && parsedStudentId.success && (
             <div className="rounded-lg border bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
               <p>
                 <span className="font-medium text-foreground">Department:</span>{" "}
-                {parsedStudentId.departmentName}
+                {parsedStudentId.data?.department.fullName}
               </p>
               <p>
                 <span className="font-medium text-foreground">
                   Admission Year:
                 </span>{" "}
-                {parsedStudentId.admissionYear}
+                {parsedStudentId.data?.admissionYear}
               </p>
               <p>
                 <span className="font-medium text-foreground">Intake:</span>{" "}
-                {parsedStudentId.intakeName}
+                {parsedStudentId.data?.admissionSemester}
               </p>
               <p>
                 <span className="font-medium text-foreground">Student #:</span>{" "}
-                {parsedStudentId.studentNumber.toString().padStart(4, "0")}
+                {parsedStudentId.data?.serialNumber.toString().padStart(4, "0")}
               </p>
             </div>
           )}

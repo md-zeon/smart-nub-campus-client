@@ -69,7 +69,7 @@ export default function AuthPage() {
                       variant="outline"
                       className="mt-5 border border-success px-8 py-5"
                       render={
-                        <Link href="/create-account">
+                        <Link href="/auth/login">
                           Login to My Account{" "}
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
