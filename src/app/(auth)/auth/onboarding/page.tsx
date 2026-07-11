@@ -1,7 +1,18 @@
-import { VerificationStepper } from "./_components/VerificationStepper";
+import { OnboardingFlow } from "./_components/OnboardingFlow";
+import { onboardingService } from "@/services/onboarding.service";
 
-type StepType = "verify-identity" | "admin-review" | "create-account"; // add more steps as needed
+export default async function OnboardingPage() {
+  // Get current onboarding step
+  const onboarding = await onboardingService.getCurrentStep();
+  const step = onboarding.currentStep;
+  const verificationRequest = onboarding.verificationRequest;
+  const verificationStatus = onboarding.verificationStatus;
 
-export default function OnboardingPage() {
-  return <></>;
+  return (
+    <OnboardingFlow
+      initialStep={step}
+      initialVerificationRequest={verificationRequest}
+      initialVerificationStatus={verificationStatus}
+    />
+  );
 }
