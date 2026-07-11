@@ -5,7 +5,6 @@ import { InformationCircleIcon } from "@/components/ui/icons/information-circle"
 import { ShieldCheckIcon } from "@/components/ui/icons/shield-check";
 import { SparklesIcon } from "@/components/ui/icons/sparkles";
 import { CheckCircleIcon } from "@/components/ui/icons/check-circle";
-import type { StepValue, VerificationStatus } from "@/lib/onboarding-store";
 import { cn } from "@/lib/utils";
 import {
   CheckCircle,
@@ -16,8 +15,15 @@ import {
   XCircle,
 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
+import { OnboardingStepValue, VerificationStatus } from "@/constants/enums";
 
 type Accent = "brand" | "warning" | "success" | "danger";
+
+type AccentStyles = {
+  bg: string;
+  text: string;
+  badgeBg: string;
+};
 
 interface StepInfoItem {
   icon: React.ElementType;
@@ -31,7 +37,6 @@ interface StepInfo {
   title: string;
   description: string;
   accent: Accent;
-  /** Whether items represent an ordered process (gets a connecting timeline) */
   sequential?: boolean;
   items: StepInfoItem[];
   badge: {
@@ -42,8 +47,8 @@ interface StepInfo {
 
 const ICON_SIZE = 32;
 
-const STEP_INFO: Record<StepValue, StepInfo> = {
-  "verify-identity": {
+const STEP_INFO: Record<OnboardingStepValue, StepInfo> = {
+  [OnboardingStepValue.VERIFICATION_FORM]: {
     icon: <ShieldCheckIcon className="text-brand" size={ICON_SIZE} />,
     title: "Verify Your Student Identity",
     description:
@@ -67,7 +72,7 @@ const STEP_INFO: Record<StepValue, StepInfo> = {
         icon: Clock,
         title: "Quick approval",
         description:
-          "Our admin team reviews submissions within 1–2 working days",
+          "Our admin team reviews submissions within 1-2 working days",
       },
     ],
     badge: {
@@ -76,7 +81,7 @@ const STEP_INFO: Record<StepValue, StepInfo> = {
         "Double-check your details before submitting. Mistakes or mismatches can delay or block approval.",
     },
   },
-  "admin-review": {
+  [OnboardingStepValue.ADMIN_REVIEW]: {
     icon: <Clock className="text-warning" size={ICON_SIZE} />,
     title: "Verification in Progress",
     description:
@@ -106,7 +111,7 @@ const STEP_INFO: Record<StepValue, StepInfo> = {
         "Sit tight — no action needed. We'll email you the moment your review is complete.",
     },
   },
-  "create-account": {
+  [OnboardingStepValue.ACCOUNT_CREATION]: {
     icon: <AcademicCapIcon className="text-brand" size={ICON_SIZE} />,
     title: "Create Your Account",
     description: "Set up your Smart NUB Campus account credentials.",
@@ -118,7 +123,7 @@ const STEP_INFO: Record<StepValue, StepInfo> = {
         "Choose a strong, unique password. Your NUB email is used for recovery and verification.",
     },
   },
-  success: {
+  [OnboardingStepValue.COMPLETED]: {
     icon: <SparklesIcon className="text-brand" size={ICON_SIZE} />,
     title: "Onboarding Complete!",
     description:
@@ -134,8 +139,8 @@ const STEP_INFO: Record<StepValue, StepInfo> = {
 };
 
 const ADMIN_REVIEW_STATUS_INFO: Record<VerificationStatus, StepInfo> = {
-  pending: STEP_INFO["admin-review"],
-  approved: {
+  PENDING: STEP_INFO[OnboardingStepValue.ADMIN_REVIEW],
+  APPROVED: {
     icon: <CheckCircleIcon className="text-success" size={ICON_SIZE} />,
     title: "Verification Approved!",
     description:
@@ -168,7 +173,7 @@ const ADMIN_REVIEW_STATUS_INFO: Record<VerificationStatus, StepInfo> = {
         "You're verified! Click 'Continue to Next Step' to create your account.",
     },
   },
-  rejected: {
+  REJECTED: {
     icon: <XCircle className="text-danger" size={ICON_SIZE} />,
     title: "Verification Rejected",
     description:
@@ -200,10 +205,7 @@ const ADMIN_REVIEW_STATUS_INFO: Record<VerificationStatus, StepInfo> = {
   },
 };
 
-const ACCENT_STYLES: Record<
-  Accent,
-  { bg: string; text: string; badgeBg: string }
-> = {
+const ACCENT_STYLES: Record<Accent, AccentStyles> = {
   brand: {
     bg: "bg-brand-light dark:bg-primary/20",
     text: "text-brand dark:text-primary",
@@ -227,7 +229,7 @@ const ACCENT_STYLES: Record<
 };
 
 interface OnboardingInfoProps {
-  step: StepValue;
+  step: OnboardingStepValue;
   verificationStatus?: VerificationStatus;
 }
 
@@ -236,7 +238,7 @@ export function OnboardingInfo({
   verificationStatus,
 }: OnboardingInfoProps) {
   const info =
-    step === "admin-review" && verificationStatus
+    step === OnboardingStepValue.ADMIN_REVIEW && verificationStatus
       ? ADMIN_REVIEW_STATUS_INFO[verificationStatus]
       : STEP_INFO[step];
 

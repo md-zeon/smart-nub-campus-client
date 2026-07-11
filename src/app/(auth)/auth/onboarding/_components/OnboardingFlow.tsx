@@ -1,0 +1,229 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { VerificationStepper } from "./VerificationStepper";
+import { OnboardingInfo } from "./OnboardingInfo";
+import { VerifyIdentityForm } from "./VerifyIdentityForm";
+import { AdminReviewStatus } from "./AdminReviewStatus";
+import { CreateAccountForm } from "./CreateAccountForm";
+import { CheckCircleIcon } from "@/components/ui/icons/check-circle";
+import { Button } from "@/components/ui/button";
+import { OnboardingStepValue, VerificationStatus } from "@/constants/enums";
+import type { VerificationRequestData } from "@/types";
+import type { ParsedStudentId } from "@/lib/student-id-parser";
+import { verificationAction } from "@/actions/verification.action";
+import { onboardingAction } from "@/actions/onboarding.action";
+
+const PLACEHOLDER_PARSED_ID: ParsedStudentId = {
+  departmentCode: "",
+  departmentName: "",
+  admissionYear: 0,
+  intakeCode: "",
+  intakeName: "",
+  studentNumber: 0,
+  isValid: true,
+};
+
+interface OnboardingFlowProps {
+  initialStep: OnboardingStepValue;
+  initialVerificationRequest: VerificationRequestData | null;
+  initialVerificationStatus: VerificationStatus | null;
+}
+
+export function OnboardingFlow({
+  initialStep,
+  initialVerificationRequest,
+  initialVerificationStatus,
+}: OnboardingFlowProps) {
+  const [currentStep, setCurrentStep] =
+    useState<OnboardingStepValue>(initialStep);
+  const [verificationRequest, setVerificationRequest] =
+    useState<VerificationRequestData | null>(initialVerificationRequest);
+  const [verificationStatus, setVerificationStatus] =
+    useState<VerificationStatus | null>(initialVerificationStatus);
+
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Handle verification form submission
+  const handleSubmitIdentity = useCallback(
+    async (formData: {
+      name: string;
+      email: string;
+      dateOfBirth: string;
+      studentId: string;
+      idCardImage: string;
+    }) => {
+      setIsSubmitting(true);
+      setError(null);
+
+      try {
+        // Backend sets the onboarding_step cookie and returns full state
+        const response =
+          await verificationAction.createVerificationRequest(formData);
+        setCurrentStep(response.currentStep);
+        setVerificationRequest(response.verificationRequest);
+        setVerificationStatus(response.verificationStatus);
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to submit verification. Please try again.",
+        );
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [],
+  );
+
+  // Poll for status updates when in admin-review
+  // Polling is necessary because admin reviews happen asynchronously on a different device
+  useEffect(() => {
+    if (currentStep !== OnboardingStepValue.ADMIN_REVIEW) return;
+
+    const pollStatus = async () => {
+      try {
+        const data = await onboardingAction.getCurrentStep();
+
+        // Update verification request data if available (backend now always includes it)
+        if (data.verificationRequest) {
+          setVerificationRequest(data.verificationRequest);
+        }
+
+        // Check if admin has approved — backend transitions to ACCOUNT_CREATION
+        if (data.currentStep === OnboardingStepValue.ACCOUNT_CREATION) {
+          setCurrentStep(OnboardingStepValue.ACCOUNT_CREATION);
+        }
+      } catch {
+        // Continue polling on network errors
+      }
+    };
+
+    const interval = setInterval(pollStatus, 5000);
+    return () => clearInterval(interval);
+  }, [currentStep]);
+
+  const handleRetry = () => {
+    setCurrentStep(OnboardingStepValue.VERIFICATION_FORM);
+    setVerificationRequest(null);
+    setError(null);
+  };
+
+  if (error && currentStep === OnboardingStepValue.VERIFICATION_FORM) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-sm text-destructive">{error}</p>
+          <button
+            onClick={handleRetry}
+            className="text-sm text-brand underline hover:no-underline"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* Stepper */}
+      <VerificationStepper currentStep={currentStep} />
+
+      {/* Main content - 2 column layout */}
+      <div className="grid gap-8 lg:grid-cols-[1fr_1.5fr]">
+        {/* Left column - Info */}
+        <div className="rounded-xl border bg-card p-6 shadow-sm">
+          <OnboardingInfo
+            step={currentStep}
+            verificationStatus={verificationRequest?.status}
+          />
+        </div>
+
+        {/* Right column - Form / Status */}
+        <div className="rounded-xl border bg-card p-6 shadow-sm">
+          {currentStep === OnboardingStepValue.VERIFICATION_FORM && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">
+                  Personal Information
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Fill in your details to begin the verification process.
+                </p>
+              </div>
+              {error && (
+                <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
+              <VerifyIdentityForm
+                onSubmit={handleSubmitIdentity}
+                isSubmitting={isSubmitting}
+              />
+            </div>
+          )}
+
+          {currentStep === OnboardingStepValue.ADMIN_REVIEW && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">
+                  Review Status
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Track the status of your verification request.
+                </p>
+              </div>
+              <AdminReviewStatus
+                status={verificationRequest?.status ?? "PENDING"}
+                note={verificationRequest?.note}
+                onRetry={handleRetry}
+              />
+            </div>
+          )}
+
+          {currentStep === OnboardingStepValue.ACCOUNT_CREATION && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">
+                  Create Your Account
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Set up your account credentials to get started.
+                </p>
+              </div>
+              <CreateAccountForm
+                parsedStudentId={PLACEHOLDER_PARSED_ID}
+                defaultName={verificationRequest?.name ?? ""}
+                defaultStudentId={verificationRequest?.studentId ?? ""}
+              />
+            </div>
+          )}
+
+          {currentStep === OnboardingStepValue.COMPLETED && (
+            <div className="flex flex-col items-center gap-6 py-12 text-center">
+              <CheckCircleIcon className="text-success" size={64} />
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-foreground">
+                  Onboarding Complete!
+                </h3>
+                <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+                  Your account has been created successfully. Welcome to Smart
+                  NUB Campus!
+                </p>
+              </div>
+              <Button
+                onClick={() => {
+                  window.location.href = "/dashboard";
+                }}
+              >
+                Go to Dashboard
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

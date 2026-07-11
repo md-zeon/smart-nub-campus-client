@@ -1,37 +1,84 @@
 "use client";
 
-import { Stepper, StepperList, StepperItem } from "@/components/ui/stepper"; //
+import type { ReactNode } from "react";
+import {
+  Stepper,
+  StepperIndicator,
+  StepperItem,
+  StepperLabel,
+  StepperList,
+  useStepperItem,
+} from "@/components/ui/stepper";
+import {
+  OnboardingStepValue,
+  type VerificationStatus,
+} from "@/constants/enums";
 
 const STEPS = [
-  { value: "verify-identity", label: "Verify Identity" },
-  { value: "admin-review", label: "Admin Review" },
-  { value: "create-account", label: "Create Account" },
-  { value: "success", label: "Done" },
+  { value: OnboardingStepValue.VERIFICATION_FORM, label: "Verify Identity" },
+  { value: OnboardingStepValue.ADMIN_REVIEW, label: "Admin Review" },
+  { value: OnboardingStepValue.ACCOUNT_CREATION, label: "Create Account" },
+  { value: OnboardingStepValue.COMPLETED, label: "Done" },
 ] as const;
 
+type StepValue = (typeof STEPS)[number]["value"];
+
 interface VerificationStepperProps {
-  currentStep: "verify-identity" | "admin-review" | "create-account"; // add more steps as needed
+  currentStep: StepValue;
+  verificationStatus?: VerificationStatus;
 }
 
-export function VerificationStepper({ currentStep }: VerificationStepperProps) {
+function StaticStepperTrigger({ children }: { children: ReactNode }) {
+  const { stepState, orientation, isActive } = useStepperItem();
+
+  return (
+    <div
+      data-state={stepState}
+      data-orientation={orientation}
+      aria-current={isActive ? "step" : undefined}
+      className={
+        "group flex w-full flex-col items-center gap-2 text-center text-sm font-medium " +
+        "text-muted-foreground data-[state=active]:text-foreground " +
+        "data-[state=completed]:text-foreground data-[state=error]:text-destructive"
+      }
+    >
+      <StepperIndicator />
+      <StepperLabel>{children}</StepperLabel>
+    </div>
+  );
+}
+
+export function VerificationStepper({
+  currentStep,
+  verificationStatus,
+}: VerificationStepperProps) {
   const currentStepIndex = STEPS.findIndex((s) => s.value === currentStep);
+
+  // Convert VerificationStatus to lowercase for comparison
+  const statusLower = verificationStatus?.toLowerCase() as
+    | "pending"
+    | "approved"
+    | "rejected"
+    | undefined;
 
   return (
     <div className="w-full rounded-3xl border bg-card p-6 shadow-sm">
-      <Stepper
-        value={currentStep}
-        steps={STEPS} // Controlled purely by form state indicators
-        className="w-full"
-      >
-        <StepperList className="w-full justify-between">
+      <Stepper value={currentStep} steps={STEPS} className="w-full">
+        <StepperList
+          aria-label={`Onboarding progress: step ${currentStepIndex + 1} of ${STEPS.length}`}
+        >
           {STEPS.map((step, idx) => (
             <StepperItem
               key={step.value}
               value={step.value}
-              completed={currentStepIndex > idx} // Controlled purely by form state indicators
-              className="pointer-events-none" // Controlled purely by form state indicators
+              completed={currentStepIndex > idx}
+              error={
+                step.value === OnboardingStepValue.ADMIN_REVIEW &&
+                statusLower === "rejected"
+              }
+              defaultTrigger={false}
             >
-              {step.label}
+              <StaticStepperTrigger>{step.label}</StaticStepperTrigger>
             </StepperItem>
           ))}
         </StepperList>
