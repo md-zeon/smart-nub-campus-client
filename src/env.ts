@@ -7,6 +7,7 @@ export const env = createEnv({
     FRONTEND_URL: z.url(),
     API_URL: z.url(),
     AUTH_URL: z.url(),
+    NODE_ENV: z.enum(["development", "production"]),
   },
   client: {
     NEXT_PUBLIC_BACKEND_URL: z.url(),
@@ -20,7 +21,7 @@ export const env = createEnv({
     FRONTEND_URL: process.env.FRONTEND_URL,
     API_URL: process.env.API_URL,
     AUTH_URL: process.env.AUTH_URL,
-
+    NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
     NEXT_PUBLIC_FRONTEND_URL: process.env.NEXT_PUBLIC_FRONTEND_URL,
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,

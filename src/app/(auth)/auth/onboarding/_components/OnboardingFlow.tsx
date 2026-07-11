@@ -48,9 +48,7 @@ export function OnboardingFlow({
 
       try {
         // Backend sets the onboarding_step cookie and returns full state
-        console.log("Submitting verification form data:", formData);
         const response = await createVerificationRequest(formData);
-        console.log("Response from createVerificationRequest:", response);
         setCurrentStep(response.currentStep);
         setVerificationRequest(response.verificationRequest);
         setVerificationStatus(response.verificationStatus);

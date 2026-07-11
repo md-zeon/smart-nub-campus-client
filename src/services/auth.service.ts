@@ -5,7 +5,7 @@ export const authService = {
     const response = await serverApi.get<{ email: string }>(
       `/account/email-by-student-id/${studentId}`,
     );
-    console.log("Response from getEmailByStudentId:", response);
+
     if (!response.data || !response.data.email) {
       throw new Error("Invalid student ID or Password. Please try again.");
     }

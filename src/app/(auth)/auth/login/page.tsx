@@ -55,7 +55,6 @@ export default function LoginPage() {
     setState({ success: false, error: null });
 
     try {
-      // console.log("Submitting:", data);
       const isStudentIdGiven = isStudentId(data.identifier);
       let email = data.identifier;
 
@@ -84,7 +83,6 @@ export default function LoginPage() {
         return;
       }
 
-      console.log("Login success:", response.data.user);
       setState({ success: true, error: null });
     } catch (error) {
       setState({

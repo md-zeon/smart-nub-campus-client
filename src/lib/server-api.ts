@@ -112,7 +112,7 @@ async function apiFetch<T = unknown>(
         cookieStore.set(name.trim(), value.trim(), {
           path: "/",
           httpOnly: true,
-          secure: false,
+          secure: env.NODE_ENV === "production", // Use secure cookies in production
           sameSite: "lax",
         });
       }
