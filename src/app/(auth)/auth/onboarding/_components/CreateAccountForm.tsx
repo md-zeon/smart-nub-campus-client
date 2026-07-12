@@ -1,11 +1,18 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordField } from "@/components/forms/fields/password-field";
 import { createAccount } from "@/actions/account.action";
 import { parseStudentId } from "@/lib/student-id-parser";
+import {
+  createAccountSchema,
+  type CreateAccountFormValues,
+} from "@/schemas/onboarding/account.schema";
 
 interface CreateAccountFormProps {
   defaultName: string;
@@ -22,23 +29,33 @@ export function CreateAccountForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const studentIdInfo = parseStudentId(defaultStudentId);
 
-  const handleSubmit = useCallback(async (formData: FormData) => {
-    setIsSubmitting(true);
-    setError(null);
+  const { control, handleSubmit } = useForm<CreateAccountFormValues>({
+    resolver: zodResolver(createAccountSchema),
+    defaultValues: {
+      password: "",
+    },
+  });
 
-    try {
-      await createAccount(formData.get("password") as string);
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Account creation failed.";
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, []);
+  const onSubmit = useCallback(
+    async (values: CreateAccountFormValues) => {
+      setIsSubmitting(true);
+      setError(null);
+
+      try {
+        await createAccount(values.password);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Account creation failed.";
+        setError(message);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [],
+  );
 
   return (
-    <form action={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Student ID - Read only */}
       <div className="space-y-2">
         <Label>Student ID</Label>
@@ -78,23 +95,13 @@ export function CreateAccountForm({
       </div>
 
       {/* Password */}
-      <div className="space-y-2">
-        <Label htmlFor="password">
-          Password <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="password"
-          type="password"
-          placeholder="Create a strong password"
-          name="password"
-          required
-          disabled={isSubmitting}
-        />
-        <p className="text-xs text-muted-foreground">
-          Password must be at least 8 characters with uppercase, lowercase, and
-          numbers.
-        </p>
-      </div>
+      <PasswordField
+        control={control}
+        name="password"
+        label="Password *"
+        description="Password must be at least 8 characters with uppercase, lowercase, and numbers."
+        disabled={isSubmitting}
+      />
 
       {error && (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">

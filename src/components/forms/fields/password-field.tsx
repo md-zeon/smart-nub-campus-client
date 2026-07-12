@@ -21,6 +21,7 @@ interface PasswordFieldOwnProps {
   containerClassName?: string;
   showToggle?: boolean;
   toggleLabel?: { show: string; hide: string };
+  disabled?: boolean;
 }
 
 type PasswordFieldProps<TFieldValues extends FieldValues> =
@@ -36,6 +37,7 @@ export function PasswordField<TFieldValues extends FieldValues>({
   containerClassName,
   showToggle,
   toggleLabel,
+  disabled,
 }: PasswordFieldProps<TFieldValues>) {
   const {
     field,
@@ -50,6 +52,7 @@ export function PasswordField<TFieldValues extends FieldValues>({
     <PasswordInput
       value={String(field.value ?? "")}
       onChange={(val) => field.onChange(val)}
+      disabled={disabled}
     >
       <Field className={containerClassName}>
         {label && <FieldLabel htmlFor={name}>{label}</FieldLabel>}

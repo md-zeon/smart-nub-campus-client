@@ -5,26 +5,15 @@ import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { TextField } from "@/components/forms/fields/text-field";
+import { PasswordField } from "@/components/forms/fields/password-field";
 import AuthInfo from "../_components/AuthInfo";
 import isStudentId from "@/lib/isStudentId";
 import { authClient } from "@/lib/auth-client";
 import { getEmailByStudentId } from "@/actions/auth.action";
-
-// 1. Define your validation schema with Zod
-const loginSchema = z.object({
-  identifier: z.string().min(1, { message: "Student ID or Email is required" }),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters" }),
-});
-
-// Infer the TypeScript type from the schema
-type LoginFormValues = z.infer<typeof loginSchema>;
+import { loginSchema, type LoginFormValues } from "@/schemas/auth/login.schema";
 
 export default function LoginPage() {
   const [isPending, setIsPending] = useState(false);
@@ -36,12 +25,7 @@ export default function LoginPage() {
     error: null,
   });
 
-  // 2. Initialize react-hook-form
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormValues>({
+  const { control, handleSubmit } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       identifier: "",
@@ -49,7 +33,6 @@ export default function LoginPage() {
     },
   });
 
-  // 3. Create your submit handler
   const onSubmit = async (data: LoginFormValues) => {
     setIsPending(true);
     setState({ success: false, error: null });
@@ -114,7 +97,6 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* 4. Pass handleSubmit to the form */}
             <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
               {state.error && (
                 <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
@@ -123,45 +105,25 @@ export default function LoginPage() {
               )}
 
               <div className="space-y-4">
-                {/* Student ID or Email */}
-                <div className="space-y-2">
-                  <Label htmlFor="identifier">
-                    Student ID or Email{" "}
-                    <span className="text-destructive">*</span>
-                  </Label>
-                  {/* 5. Register the input */}
-                  <Input
-                    id="identifier"
-                    placeholder="Enter your student ID or email"
-                    disabled={isPending}
-                    {...register("identifier")}
-                  />
-                  {/* 6. Display validation errors */}
-                  {errors.identifier && (
-                    <p className="text-sm text-destructive font-medium">
-                      {errors.identifier.message}
-                    </p>
-                  )}
-                </div>
+                <TextField
+                  control={control}
+                  name="identifier"
+                  label={
+                    <>
+                      Student ID or Email{" "}
+                      <span className="text-destructive">*</span>
+                    </>
+                  }
+                  placeholder="Enter your student ID or email"
+                  disabled={isPending}
+                />
 
-                {/* Password */}
-                <div className="space-y-2">
-                  <Label htmlFor="password">
-                    Password <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    disabled={isPending}
-                    {...register("password")}
-                  />
-                  {errors.password && (
-                    <p className="text-sm text-destructive font-medium">
-                      {errors.password.message}
-                    </p>
-                  )}
-                </div>
+                <PasswordField
+                  control={control}
+                  name="password"
+                  label="Password *"
+                  disabled={isPending}
+                />
               </div>
 
               <Button type="submit" className="w-full" disabled={isPending}>
