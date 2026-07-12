@@ -31,6 +31,18 @@ const uploadService = {
 
     return result;
   },
+
+  async delete(publicId: string): Promise<void> {
+    const response = await apiClient.post<ApiResponse<null>>("/upload/delete", {
+      publicId,
+    });
+
+    if (!response.data?.success) {
+      throw new Error(
+        response.data?.message || "Failed to delete file from server",
+      );
+    }
+  },
 };
 
 export { uploadService };

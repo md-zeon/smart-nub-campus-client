@@ -17,8 +17,19 @@ import {
 } from "@/components/forms/file-upload";
 import { type UploadContext } from "@/lib/upload/types";
 import { useUpload } from "@/hooks/use-upload";
+import { uploadService } from "@/services/upload.service";
 import * as React from "react";
 import { UploadCloud, XIcon } from "lucide-react";
+import { toast } from "sonner";
+
+/**
+ * Build a stable composite key from a File object.
+ * This avoids relying on the File object reference as a Map key,
+ * which can be unreliable across renders.
+ */
+function getFileKey(file: File): string {
+  return `${file.name}|${file.size}|${file.lastModified}`;
+}
 
 interface FileUploadFieldOwnProps {
   label?: React.ReactNode;
@@ -62,6 +73,14 @@ export function FileUploadField<TFieldValues extends FieldValues>({
 
   const { upload } = useUpload({ context, type });
 
+  // Track uploaded publicIds keyed by stable file identifier.
+  // Using a Record instead of a Map<File, string> avoids issues with
+  // File object identity changing across renders.
+  const publicIdsRef = React.useRef<Record<string, string>>({});
+
+  // Keep a ref to the previous files array so we can detect which file was removed.
+  const prevFilesRef = React.useRef<File[]>([]);
+
   const handleUpload = async (
     uploadedFiles: File[],
     options: {
@@ -70,16 +89,14 @@ export function FileUploadField<TFieldValues extends FieldValues>({
       onError: (file: File, error: Error) => void;
     },
   ) => {
-    // console.log(
-    //   `[FileUploadField] handleUpload called with`,
-    //   uploadedFiles.length,
-    //   "files",
-    // );
     if (uploadedFiles.length === 0) return;
 
     try {
       const result = await upload(uploadedFiles[0]);
-      // console.log(`[FileUploadField] Upload result:`, result);
+      // Store the publicId keyed by a stable file identifier
+      for (const file of uploadedFiles) {
+        publicIdsRef.current[getFileKey(file)] = result.publicId;
+      }
       // Set the uploaded URL as the form field value
       field.onChange(result.url);
       for (const file of uploadedFiles) {
@@ -96,6 +113,56 @@ export function FileUploadField<TFieldValues extends FieldValues>({
     }
   };
 
+  // Handle file removal and trigger Cloudinary deletion
+  const handleValueChange = React.useCallback(
+    (updatedFiles: File[]) => {
+      // Detect which file was removed (present in prevFiles but not in updatedFiles)
+      const prevFiles = prevFilesRef.current;
+      for (const prevFile of prevFiles) {
+        const stillPresent = updatedFiles.some(
+          (f) =>
+            f.name === prevFile.name &&
+            f.size === prevFile.size &&
+            f.lastModified === prevFile.lastModified,
+        );
+
+        if (!stillPresent) {
+          // This file was removed — attempt to delete from Cloudinary
+          const fileKey = getFileKey(prevFile);
+          const publicId = publicIdsRef.current[fileKey];
+
+          if (publicId) {
+            uploadService
+              .delete(publicId)
+              .then(() => {
+                // Clean up the stored publicId
+                delete publicIdsRef.current[fileKey];
+              })
+              .catch((err) => {
+                console.error(
+                  `[FileUploadField] Failed to delete ${publicId} from Cloudinary:`,
+                  err,
+                );
+                toast.error(
+                  "Failed to delete uploaded image. It may remain on the server.",
+                );
+              });
+          }
+        }
+      }
+
+      // Update refs and state
+      prevFilesRef.current = updatedFiles;
+      setFiles(updatedFiles);
+
+      // When the user removes all files, clear the form field value
+      if (updatedFiles.length === 0) {
+        field.onChange("");
+      }
+    },
+    [field],
+  );
+
   const hasFile = files.length > 0;
 
   return (
@@ -106,13 +173,7 @@ export function FileUploadField<TFieldValues extends FieldValues>({
         maxFiles={maxFiles}
         maxSize={maxSize}
         onUpload={handleUpload}
-        onValueChange={(updatedFiles) => {
-          setFiles(updatedFiles);
-          // When the user removes all files, clear the form field value
-          if (updatedFiles.length === 0) {
-            field.onChange("");
-          }
-        }}
+        onValueChange={handleValueChange}
       >
         {/* Hide dropzone once a file has been selected / uploaded */}
         {!hasFile && (
