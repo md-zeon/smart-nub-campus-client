@@ -12,7 +12,11 @@ import {
 } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { CalendarDaysIcon } from "@/components/ui/icons/calendar-days";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
@@ -81,7 +85,11 @@ export function DateField<TFieldValues extends FieldValues>({
           render={
             <Button
               variant="outline"
-              className={cn("w-full justify-start text-left font-normal", !field.value && "text-muted-foreground", className)}
+              className={cn(
+                "w-full justify-start text-left font-normal border-input outline-input dark:border-input dark:outline-input",
+                !field.value && "text-muted-foreground",
+                className,
+              )}
             >
               <CalendarDaysIcon className="mr-2 h-4 w-4" />
               {formatDateForDisplay(selectedDate)}

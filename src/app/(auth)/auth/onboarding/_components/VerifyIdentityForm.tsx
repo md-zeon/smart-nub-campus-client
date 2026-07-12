@@ -74,20 +74,25 @@ export function VerifyIdentityForm({
               Student ID <span className="text-destructive">*</span>
             </>
           }
-          placeholder="Enter your 11-digit student ID"
+          placeholder="Enter your student ID"
           disabled={isSubmitting}
           maxLength={11}
         />
-        <FileUploadField
-          control={control}
-          name="idCardImage"
-          context="verification"
-          label={
-            <>
-              Student ID Card <span className="text-destructive">*</span>
-            </>
-          }
-        />
+        <div className="space-y-2">
+          <FileUploadField
+            control={control}
+            name="idCardImage"
+            context="verification"
+            label={
+              <>
+                Student ID Card <span className="text-destructive">*</span>
+              </>
+            }
+          />
+          <p className="text-xs text-muted-foreground">
+            Upload a clear image of your student ID card.
+          </p>
+        </div>
       </div>
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>

@@ -18,7 +18,7 @@ import {
 import { type UploadContext } from "@/lib/upload/types";
 import { useUpload } from "@/hooks/use-upload";
 import * as React from "react";
-import { XIcon } from "lucide-react";
+import { UploadCloud, XIcon } from "lucide-react";
 
 interface FileUploadFieldOwnProps {
   label?: React.ReactNode;
@@ -70,16 +70,16 @@ export function FileUploadField<TFieldValues extends FieldValues>({
       onError: (file: File, error: Error) => void;
     },
   ) => {
-    console.log(
-      `[FileUploadField] handleUpload called with`,
-      uploadedFiles.length,
-      "files",
-    );
+    // console.log(
+    //   `[FileUploadField] handleUpload called with`,
+    //   uploadedFiles.length,
+    //   "files",
+    // );
     if (uploadedFiles.length === 0) return;
 
     try {
       const result = await upload(uploadedFiles[0]);
-      console.log(`[FileUploadField] Upload result:`, result);
+      // console.log(`[FileUploadField] Upload result:`, result);
       // Set the uploaded URL as the form field value
       field.onChange(result.url);
       for (const file of uploadedFiles) {
@@ -116,10 +116,23 @@ export function FileUploadField<TFieldValues extends FieldValues>({
       >
         {/* Hide dropzone once a file has been selected / uploaded */}
         {!hasFile && (
-          <FileUploadDropzone>
-            <span className="text-sm text-muted-foreground">
-              Click or drag to upload image (max 1 file, 5MB)
-            </span>
+          <FileUploadDropzone className="cursor-pointer">
+            <div className="space-y-2 text-center">
+              <UploadCloud className="mx-auto h-8 w-8 text-muted-foreground" />
+              <p className="text-sm text-foreground">
+                Drop your file here, or click to browse
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {accept} • Up to {maxFiles} file
+                {maxFiles > 1 ? "s" : ""}
+                {maxSize
+                  ? ` • Max ${(maxSize / 1024 / 1024).toFixed(0)}MB each`
+                  : ""}
+              </p>
+              <p className="text-xs text-muted-foreground/80">
+                Tip: Use clear, high-quality files for better results.
+              </p>
+            </div>
           </FileUploadDropzone>
         )}
 
@@ -143,4 +156,3 @@ export function FileUploadField<TFieldValues extends FieldValues>({
     </Field>
   );
 }
-
