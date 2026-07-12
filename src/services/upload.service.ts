@@ -1,0 +1,36 @@
+import { type UploadResult } from "@/lib/upload/types";
+import { ApiResponse } from "@/types";
+import { apiClient } from "@/lib/api-client";
+
+const uploadService = {
+  async upload(
+    file: File,
+    context: string,
+    type?: "image" | "video" | "raw",
+  ): Promise<UploadResult> {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("context", context);
+    if (type) {
+      formData.append("type", type);
+    }
+
+    // The server responds with { success, data: UploadResult }.
+    // apiClient wraps the entire JSON body as response.data, so the actual
+    // UploadResult lives at response.data.data — unwrap it here.
+    const response = await apiClient.postForm<ApiResponse<UploadResult>>(
+      "/upload",
+      formData,
+    );
+
+    const result = response.data?.data;
+
+    if (!result?.url) {
+      throw new Error("Upload failed - no URL returned from server");
+    }
+
+    return result;
+  },
+};
+
+export { uploadService };

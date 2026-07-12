@@ -69,9 +69,12 @@ async function apiFetch<T = unknown>(
   const allCookies = cookieStore.getAll();
   const cookieString = allCookies.map((c) => `${c.name}=${c.value}`).join("; ");
 
+  // Don't set Content-Type for FormData - browser will set it with boundary
+  const isFormData = config.body instanceof FormData;
+
   config.headers = {
-    "Content-Type": "application/json",
-    "Cookie": cookieString, // Handshake cookie with Express
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
+    Cookie: cookieString,
     ...config.headers,
   };
 
@@ -156,6 +159,9 @@ export const serverApi = {
       { method: "POST", body: JSON.stringify(body) },
       options,
     ),
+
+  postForm: <T>(endpoint: string, body: FormData, options?: MutationOptions) =>
+    apiFetch<T>(endpoint, { method: "POST", body }, options),
 
   patch: <T>(endpoint: string, body: unknown, options?: MutationOptions) =>
     apiFetch<T>(

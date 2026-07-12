@@ -13,8 +13,8 @@ import {
 import { Input } from "@/components/ui/input";
 
 interface TextFieldOwnProps {
-  label?: string;
-  description?: string;
+  label?: React.ReactNode;
+  description?: React.ReactNode;
   containerClassName?: string;
 }
 
