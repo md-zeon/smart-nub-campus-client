@@ -123,6 +123,36 @@ const STEP_INFO: Record<OnboardingStepValue, StepInfo> = {
         "Choose a strong, unique password. Your NUB email is used for recovery and verification.",
     },
   },
+  [OnboardingStepValue.VERIFY_EMAIL]: {
+    icon: <Mail className="text-brand" size={ICON_SIZE} />,
+    title: "Verify Your Email",
+    description:
+      "We've sent a verification code to your email. Enter it below to confirm your identity and activate your account.",
+    accent: "brand",
+    items: [
+      {
+        icon: Mail,
+        title: "Check your inbox",
+        description: "A 6-digit code was sent to your registered email",
+      },
+      {
+        icon: Clock,
+        title: "Code expires in 5 minutes",
+        description: "Enter the code before it expires, or request a new one",
+      },
+      {
+        icon: ShieldCheck,
+        title: "One-time verification",
+        description: "Once verified, you'll have full access to your account",
+        variant: "success",
+      },
+    ],
+    badge: {
+      title: "Can't find the email?",
+      description:
+        "Check your spam/junk folder, or click 'Resend Code' to get a new verification code.",
+    },
+  },
   [OnboardingStepValue.COMPLETED]: {
     icon: <SparklesIcon className="text-brand" size={ICON_SIZE} />,
     title: "Onboarding Complete!",

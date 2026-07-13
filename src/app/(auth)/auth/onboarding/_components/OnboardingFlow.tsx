@@ -6,12 +6,16 @@ import { OnboardingInfo } from "./OnboardingInfo";
 import { VerifyIdentityForm } from "./VerifyIdentityForm";
 import { AdminReviewStatus } from "./AdminReviewStatus";
 import { CreateAccountForm } from "./CreateAccountForm";
+import { VerifyEmailForm } from "./VerifyEmailForm";
 import { CheckCircleIcon } from "@/components/ui/icons/check-circle";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepValue, VerificationStatus } from "@/constants/enums";
 import type { VerificationRequestData } from "@/types";
 import { createVerificationRequest } from "@/actions/verification.action";
-import { getCurrentStep } from "@/actions/onboarding.action";
+import {
+  getCurrentStep,
+  completeOnboarding,
+} from "@/actions/onboarding.action";
 
 interface OnboardingFlowProps {
   initialStep: OnboardingStepValue;
@@ -96,6 +100,19 @@ export function OnboardingFlow({
     setVerificationRequest(null);
     setError(null);
   };
+
+  const handleEmailVerified = useCallback(async () => {
+    try {
+      await completeOnboarding(verificationRequest?.email || "");
+      setCurrentStep(OnboardingStepValue.COMPLETED);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to complete onboarding. Please try again.",
+      );
+    }
+  }, [verificationRequest?.email]);
 
   if (error && currentStep === OnboardingStepValue.VERIFICATION_FORM) {
     return (
@@ -184,6 +201,28 @@ export function OnboardingFlow({
                 defaultName={verificationRequest?.name ?? ""}
                 defaultStudentId={verificationRequest?.studentId ?? ""}
                 defaultEmail={verificationRequest?.email ?? ""}
+                setCurrentStep={setCurrentStep}
+                setVerificationRequest={setVerificationRequest}
+              />
+            </div>
+          )}
+
+          {currentStep === OnboardingStepValue.VERIFY_EMAIL && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">
+                  Verify Your Email
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Enter the verification code sent to your email to complete
+                  account setup.
+                </p>
+              </div>
+              <VerifyEmailForm
+                email={verificationRequest?.email}
+                skipInitialSend
+                isEmbedded
+                onSuccess={handleEmailVerified}
               />
             </div>
           )}

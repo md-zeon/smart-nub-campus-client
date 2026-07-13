@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -14,17 +13,25 @@ import {
   createAccountSchema,
   type CreateAccountFormValues,
 } from "@/schemas/onboarding/account.schema";
+import { OnboardingStepValue } from "@/constants/enums";
+import { VerificationRequestData } from "@/types";
 
 interface CreateAccountFormProps {
   defaultName: string;
   defaultStudentId: string;
   defaultEmail: string;
+  setCurrentStep: (step: OnboardingStepValue) => void;
+  setVerificationRequest: (
+    verificationRequest: VerificationRequestData,
+  ) => void;
 }
 
 export function CreateAccountForm({
   defaultName,
   defaultStudentId,
   defaultEmail,
+  setCurrentStep,
+  setVerificationRequest,
 }: CreateAccountFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,27 +44,23 @@ export function CreateAccountForm({
     },
   });
 
-  const router = useRouter();
+  const onSubmit = useCallback(async (values: CreateAccountFormValues) => {
+    setIsSubmitting(true);
+    setError(null);
 
-  const onSubmit = useCallback(
-    async (values: CreateAccountFormValues) => {
-      setIsSubmitting(true);
-      setError(null);
-
-      try {
-        const result = await createAccount(values.password);
-        sessionStorage.setItem("pending_verification_email", result.user.email);
-        sessionStorage.setItem("pending_verification_source", "signup");
-        router.push("/auth/verify-email");
-      } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Account creation failed.";
-        setError(message);
-        setIsSubmitting(false);
-      }
-    },
-    [router],
-  );
+    try {
+      const result = await createAccount(values.password);
+      sessionStorage.setItem("pending_verification_email", result.user.email);
+      sessionStorage.setItem("pending_verification_source", "signup");
+      setCurrentStep(result.currentStep);
+      setVerificationRequest(result.verificationRequest);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Account creation failed.";
+      setError(message);
+      setIsSubmitting(false);
+    }
+  }, []);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -96,7 +99,12 @@ export function CreateAccountForm({
       {/* Email - Read only */}
       <div className="space-y-2">
         <Label>Email</Label>
-        <Input value={defaultEmail} disabled className="bg-muted/50" />
+        <Input
+          value={defaultEmail}
+          type="email"
+          disabled
+          className="bg-muted/50"
+        />
       </div>
 
       {/* Password */}
