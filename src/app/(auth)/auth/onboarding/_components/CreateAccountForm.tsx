@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -36,22 +37,26 @@ export function CreateAccountForm({
     },
   });
 
+  const router = useRouter();
+
   const onSubmit = useCallback(
     async (values: CreateAccountFormValues) => {
       setIsSubmitting(true);
       setError(null);
 
       try {
-        await createAccount(values.password);
+        const result = await createAccount(values.password);
+        sessionStorage.setItem("pending_verification_email", result.user.email);
+        sessionStorage.setItem("pending_verification_source", "signup");
+        router.push("/auth/verify-email");
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Account creation failed.";
         setError(message);
-      } finally {
         setIsSubmitting(false);
       }
     },
-    [],
+    [router],
   );
 
   return (

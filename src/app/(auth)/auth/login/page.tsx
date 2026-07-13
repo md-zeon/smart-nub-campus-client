@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -14,6 +14,7 @@ import isStudentId from "@/lib/isStudentId";
 import { authClient } from "@/lib/auth-client";
 import { getEmailByStudentId } from "@/actions/auth.action";
 import { loginSchema, type LoginFormValues } from "@/schemas/auth/login.schema";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const [isPending, setIsPending] = useState(false);
@@ -24,6 +25,18 @@ export default function LoginPage() {
     success: true,
     error: null,
   });
+  const [isVerified, setIsVerified] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const router = useRouter();
+  const params = useSearchParams();
+
+  useEffect(() => {
+    if (params.get("verified") === "true") {
+      setIsVerified(true);
+      // window.history.replaceState(null, "", "/auth/login");
+      router.replace("/auth/login");
+    }
+  }, []);
 
   const { control, handleSubmit } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -51,10 +64,17 @@ export default function LoginPage() {
       });
 
       if (response.error) {
-        setState({
-          success: false,
-          error: response.error.message!,
-        });
+        if (
+          response.error.code === "EMAIL_NOT_VERIFIED" ||
+          response.error.status === 403
+        ) {
+          setUnverifiedEmail(email);
+        } else {
+          setState({
+            success: false,
+            error: response.error.message!,
+          });
+        }
         return;
       }
 
@@ -67,6 +87,8 @@ export default function LoginPage() {
       }
 
       setState({ success: true, error: null });
+      // push to landing page
+      router.push("/");
     } catch (error) {
       setState({
         success: false,
@@ -98,9 +120,44 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
+              {isVerified && (
+                <div className="rounded-lg border border-green-500/50 bg-green-500/10 p-3 text-sm text-green-600 dark:text-green-400 font-medium">
+                  Email verified! You can now sign in.
+                </div>
+              )}
+
               {state.error && (
                 <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
                   {state.error}
+                </div>
+              )}
+
+              {unverifiedEmail && (
+                <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-400">
+                  <p className="mb-2 font-medium">
+                    Your email is not verified.
+                  </p>
+                  <p className="mb-3">
+                    You must verify your email before logging in.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full border-amber-500 text-amber-700 hover:bg-amber-500/20 dark:text-amber-400"
+                    onClick={() => {
+                      sessionStorage.setItem(
+                        "pending_verification_email",
+                        unverifiedEmail,
+                      );
+                      sessionStorage.setItem(
+                        "pending_verification_source",
+                        "login",
+                      );
+                      router.push("/auth/verify-email");
+                    }}
+                  >
+                    Verify Email Now
+                  </Button>
                 </div>
               )}
 
