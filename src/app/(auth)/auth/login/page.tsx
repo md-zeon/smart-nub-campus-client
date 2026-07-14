@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/forms/fields/text-field";
@@ -14,9 +16,8 @@ import isStudentId from "@/lib/isStudentId";
 import { authClient } from "@/lib/auth-client";
 import { getEmailByStudentId } from "@/actions/auth.action";
 import { loginSchema, type LoginFormValues } from "@/schemas/auth/login.schema";
-import { useRouter, useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+function LoginFormContent() {
   const [isPending, setIsPending] = useState(false);
   const [state, setState] = useState<{
     success: boolean;
@@ -25,18 +26,16 @@ export default function LoginPage() {
     success: true,
     error: null,
   });
-  const [isVerified, setIsVerified] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const router = useRouter();
   const params = useSearchParams();
+  const isVerified = params.get("verified") === "true";
 
   useEffect(() => {
-    if (params.get("verified") === "true") {
-      setIsVerified(true);
-      // window.history.replaceState(null, "", "/auth/login");
+    if (isVerified) {
       router.replace("/auth/login");
     }
-  }, []);
+  }, [isVerified, router]);
 
   const { control, handleSubmit } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -87,7 +86,6 @@ export default function LoginPage() {
       }
 
       setState({ success: true, error: null });
-      // push to landing page
       router.push("/");
     } catch (error) {
       setState({
@@ -200,5 +198,13 @@ export default function LoginPage() {
         </section>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginFormContent />
+    </Suspense>
   );
 }

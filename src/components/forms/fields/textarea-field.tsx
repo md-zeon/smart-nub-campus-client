@@ -34,7 +34,7 @@ export function TextareaField<TFieldValues extends FieldValues>({
   ...props
 }: TextareaFieldProps<TFieldValues>) {
   const {
-    field,
+    field: { ref: fieldRef, ...fieldProps },
     fieldState: { error },
   } = useController({
     control,
@@ -47,12 +47,10 @@ export function TextareaField<TFieldValues extends FieldValues>({
       {label && <FieldLabel htmlFor={name}>{label}</FieldLabel>}
       <Textarea
         id={name}
-        value={String(field.value ?? "")}
-        onChange={(e) => field.onChange(e.target.value)}
-        onBlur={field.onBlur}
-        ref={field.ref}
+        ref={fieldRef}
         className={className}
         aria-invalid={!!error}
+        {...fieldProps}
         {...props}
       />
       {description && <FieldDescription>{description}</FieldDescription>}

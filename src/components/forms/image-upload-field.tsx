@@ -28,7 +28,6 @@ export function ImageUploadField<TFieldValues extends FieldValues>({
   label,
   description,
   containerClassName,
-  ...props
 }: ImageUploadFieldProps<TFieldValues>) {
   const {
     field,

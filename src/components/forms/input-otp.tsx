@@ -292,7 +292,6 @@ function InputOTPGroup({
 function InputOTPSlot({
   index,
   className,
-  ...props
 }: Omit<React.ComponentProps<"div">, "children"> & {
   index: number;
 }) {
@@ -310,7 +309,6 @@ function InputOTPSlot({
     handleBlur,
     handlePaste,
     inputsRef,
-    mask,
     maskSymbol,
     inputClassName,
   } = context;

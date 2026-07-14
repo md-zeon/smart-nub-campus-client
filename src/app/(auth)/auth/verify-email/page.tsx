@@ -20,6 +20,7 @@ export default function VerifyEmailPage() {
     const source = sessionStorage.getItem("pending_verification_source");
 
     if (pendingEmail) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reading client-side sessionStorage after hydration requires setState in effect
       setInitialEmail(pendingEmail);
       if (source === "login") {
         sessionStorage.removeItem("pending_verification_source");

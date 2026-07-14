@@ -60,7 +60,7 @@ export function CreateAccountForm({
       setError(message);
       setIsSubmitting(false);
     }
-  }, []);
+  }, [setCurrentStep, setVerificationRequest]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

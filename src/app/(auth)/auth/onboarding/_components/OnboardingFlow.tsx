@@ -9,7 +9,7 @@ import { CreateAccountForm } from "./CreateAccountForm";
 import { VerifyEmailForm } from "./VerifyEmailForm";
 import { CheckCircleIcon } from "@/components/ui/icons/check-circle";
 import { Button } from "@/components/ui/button";
-import { OnboardingStepValue, VerificationStatus } from "@/constants/enums";
+import { OnboardingStepValue } from "@/constants/enums";
 import type { VerificationRequestData } from "@/types";
 import { createVerificationRequest } from "@/actions/verification.action";
 import {
@@ -20,20 +20,16 @@ import {
 interface OnboardingFlowProps {
   initialStep: OnboardingStepValue;
   initialVerificationRequest: VerificationRequestData | null;
-  initialVerificationStatus: VerificationStatus | null;
 }
 
 export function OnboardingFlow({
   initialStep,
   initialVerificationRequest,
-  initialVerificationStatus,
 }: OnboardingFlowProps) {
   const [currentStep, setCurrentStep] =
     useState<OnboardingStepValue>(initialStep);
   const [verificationRequest, setVerificationRequest] =
     useState<VerificationRequestData | null>(initialVerificationRequest);
-  const [verificationStatus, setVerificationStatus] =
-    useState<VerificationStatus | null>(initialVerificationStatus);
 
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -112,7 +108,7 @@ export function OnboardingFlow({
           : "Failed to complete onboarding. Please try again.",
       );
     }
-  }, [verificationRequest?.email]);
+  }, [verificationRequest]);
 
   if (error && currentStep === OnboardingStepValue.VERIFICATION_FORM) {
     return (

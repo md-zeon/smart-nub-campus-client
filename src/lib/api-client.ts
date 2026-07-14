@@ -4,7 +4,6 @@
  */
 
 import { env } from "@/env";
-import { ApiResponse } from "@/types";
 
 const API_URL = env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 

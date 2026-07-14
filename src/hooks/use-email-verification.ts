@@ -78,6 +78,7 @@ export function useEmailVerification(options: UseEmailVerificationOptions = {}) 
     defaultValues: { email: initialEmail || "", otp: "" },
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- React Hook Form watch() is needed for real-time OTP validation
   const otpValue = otpForm.watch("otp");
 
   const startCountdown = useCallback(() => {
