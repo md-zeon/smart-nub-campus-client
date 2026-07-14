@@ -116,7 +116,27 @@ const STEP_INFO: Record<OnboardingStepValue, StepInfo> = {
     title: "Create Your Account",
     description: "Set up your Smart NUB Campus account credentials.",
     accent: "brand",
-    items: [],
+    items: [
+      {
+        icon: CheckCircle,
+        title: "Your info is ready",
+        description:
+          "Student ID, name, department, and email are pre-filled from verification",
+        variant: "success",
+      },
+      {
+        icon: ShieldCheck,
+        title: "Set your password",
+        description:
+          "Choose a strong password with at least 8 characters, including uppercase, lowercase, and numbers",
+      },
+      {
+        icon: Mail,
+        title: "Email verification next",
+        description:
+          "After creating your account, verify your email to complete setup",
+      },
+    ],
     badge: {
       title: "Account security",
       description:
