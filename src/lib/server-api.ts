@@ -110,14 +110,22 @@ async function apiFetch<T = unknown>(
       const [nameValue] = parts;
       const [name, value] = nameValue.split("=");
 
-      if (name && value) {
-        // Apply cookie instantly to the user's browser session via Next.js
-        cookieStore.set(name.trim(), value.trim(), {
-          path: "/",
-          httpOnly: true,
-          secure: env.NODE_ENV === "production", // Use secure cookies in production
-          sameSite: "lax",
-        });
+      if (name) {
+        const cookieName = name.trim();
+        const cookieValue = value?.trim() ?? "";
+
+        if (cookieValue) {
+          // Set the cookie with the new value
+          cookieStore.set(cookieName, cookieValue, {
+            path: "/",
+            httpOnly: true,
+            secure: env.NODE_ENV === "production",
+            sameSite: "lax",
+          });
+        } else {
+          // Empty value means the cookie should be cleared
+          cookieStore.delete(cookieName);
+        }
       }
     }
   }
