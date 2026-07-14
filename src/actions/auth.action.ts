@@ -15,3 +15,11 @@ export async function requestPasswordResetByIdentifier(
 ): Promise<string> {
   return await authService.forgotPasswordWithIdentifier(identifier);
 }
+
+export async function resetPasswordByIdentifier(
+  identifier: string,
+  otp: string,
+  password: string,
+): Promise<string> {
+  return await authService.resetPasswordByIdentifier(identifier, otp, password);
+}

@@ -30,6 +30,7 @@ function LoginFormContent() {
   const router = useRouter();
   const params = useSearchParams();
   const isVerified = params.get("verified") === "true";
+  const passwordReset = params.get("passwordReset") === "true";
 
   useEffect(() => {
     if (isVerified) {
@@ -121,6 +122,12 @@ function LoginFormContent() {
               {isVerified && (
                 <div className="rounded-lg border border-green-500/50 bg-green-500/10 p-3 text-sm text-green-600 dark:text-green-400 font-medium">
                   Email verified! You can now sign in.
+                </div>
+              )}
+
+              {passwordReset && (
+                <div className="rounded-lg border border-green-500/50 bg-green-500/10 p-3 text-sm text-green-600 dark:text-green-400 font-medium">
+                  Password reset successful! You can now log in with your new password.
                 </div>
               )}
 

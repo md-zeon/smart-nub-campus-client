@@ -46,15 +46,15 @@ export const authService = {
   /**
    * Reset password with OTP
    */
-  // async resetPassword(
-  //   email: string,
-  //   otp: string,
-  //   password: string,
-  // ): Promise<void> {
-  //   await serverApi.post("/auth/email-otp/reset-password", {
-  //     email,
-  //     otp,
-  //     password,
-  //   });
-  // },
+  async resetPasswordByIdentifier(
+    identifier: string,
+    otp: string,
+    password: string,
+  ): Promise<string> {
+    const response = await serverApi.post<{ message: string }>(
+      "/auth/reset-password",
+      { identifier, otp, password },
+    );
+    return response.message ?? "Password has been reset successfully.";
+  },
 };
