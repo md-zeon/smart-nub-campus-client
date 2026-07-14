@@ -2,15 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { ShieldCheck, Mail, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ShieldCheck, Loader2 } from "lucide-react";
 import AuthInfo from "../_components/AuthInfo";
 import { VerifyEmailForm } from "../onboarding/_components/VerifyEmailForm";
-import {
-  useEmailVerification,
-  maskEmail,
-} from "@/hooks/use-email-verification";
 
 export default function VerifyEmailPage() {
   const router = useRouter();
