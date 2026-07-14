@@ -125,6 +125,7 @@ function ResetPasswordFormContent() {
                   control={control}
                   name="password"
                   label="New Password *"
+                  showStrength
                   disabled={isSubmitting}
                 />
 

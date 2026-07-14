@@ -13,6 +13,7 @@ import {
 import {
   PasswordInput,
   PasswordInputField,
+  PasswordInputStrength,
 } from "@/components/forms/password-input";
 
 interface PasswordFieldOwnProps {
@@ -20,6 +21,7 @@ interface PasswordFieldOwnProps {
   description?: string;
   containerClassName?: string;
   showToggle?: boolean;
+  showStrength?: boolean;
   toggleLabel?: { show: string; hide: string };
   disabled?: boolean;
 }
@@ -36,6 +38,7 @@ export function PasswordField<TFieldValues extends FieldValues>({
   description,
   containerClassName,
   showToggle,
+  showStrength = false,
   toggleLabel,
   disabled,
 }: PasswordFieldProps<TFieldValues>) {
@@ -57,6 +60,7 @@ export function PasswordField<TFieldValues extends FieldValues>({
       <Field className={containerClassName}>
         {label && <FieldLabel htmlFor={name}>{label}</FieldLabel>}
         <PasswordInputField showToggle={showToggle} toggleLabel={toggleLabel} />
+        {showStrength && <PasswordInputStrength className="mt-2" />}
         {description && <FieldDescription>{description}</FieldDescription>}
         <FieldError errors={[error].filter(Boolean)} />
       </Field>

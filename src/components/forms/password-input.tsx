@@ -153,6 +153,7 @@ function PasswordInputField({
         type={ctx.visible ? "text" : "password"}
         value={ctx.value}
         onChange={(e) => ctx.setValue(e.target.value)}
+        placeholder="Enter your password"
         disabled={ctx.disabled}
         autoComplete="current-password"
         {...props}

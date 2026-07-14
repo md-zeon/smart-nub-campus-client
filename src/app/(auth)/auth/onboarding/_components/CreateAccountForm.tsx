@@ -113,6 +113,7 @@ export function CreateAccountForm({
         name="password"
         label="Password *"
         description="Password must be at least 8 characters with uppercase, lowercase, and numbers."
+        showStrength
         disabled={isSubmitting}
       />
 
