@@ -28,6 +28,7 @@ export default function ForgotPasswordPage() {
     message: null,
   });
   const router = useRouter();
+  const isSubmitting = isPending || state.success;
 
   const { control, handleSubmit } = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -49,7 +50,6 @@ export default function ForgotPasswordPage() {
         message,
       });
 
-      // Redirect to reset password page with identifier as query param
       setTimeout(() => {
         router.push(
           `/auth/reset-password?identifier=${encodeURIComponent(data.identifier)}`,
@@ -111,11 +111,11 @@ export default function ForgotPasswordPage() {
                     </>
                   }
                   placeholder="Enter your email or student ID"
-                  disabled={isPending}
+                  disabled={isSubmitting}
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={isPending}>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isPending ? "Sending..." : "Send Reset Code"}
               </Button>
 

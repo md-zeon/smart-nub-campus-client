@@ -30,6 +30,7 @@ function ResetPasswordFormContent() {
   const router = useRouter();
   const params = useSearchParams();
   const prefilledIdentifier = params.get("identifier") ?? "";
+  const isSubmitting = isPending || state.success;
 
   const { control, handleSubmit } = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
@@ -108,7 +109,7 @@ function ResetPasswordFormContent() {
                     </>
                   }
                   placeholder="Enter your email or student ID"
-                  disabled={isPending}
+                  disabled={isSubmitting}
                 />
 
                 <OTPField
@@ -121,25 +122,25 @@ function ResetPasswordFormContent() {
                     </>
                   }
                   description="Enter the 6-digit code sent to your email"
-                  disabled={isPending}
+                  disabled={isSubmitting}
                 />
 
                 <PasswordField
                   control={control}
                   name="password"
                   label="New Password *"
-                  disabled={isPending}
+                  disabled={isSubmitting}
                 />
 
                 <PasswordField
                   control={control}
                   name="confirmPassword"
                   label="Confirm Password *"
-                  disabled={isPending}
+                  disabled={isSubmitting}
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={isPending}>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isPending ? "Resetting..." : "Reset Password"}
               </Button>
 
