@@ -91,6 +91,10 @@ export default function AuthPage() {
                 <p className="font-medium">Need help getting started?</p>
                 <a
                   href="mailto:support@nub.ac.bd"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Send us an email"
+                  title="Send us an email"
                   className="text-brand dark:text-primary hover:underline"
                 >
                   support@nub.ac.bd

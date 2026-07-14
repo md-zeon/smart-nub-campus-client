@@ -8,6 +8,7 @@ import {
   useEmailVerification,
   maskEmail,
 } from "@/hooks/use-email-verification";
+import { useRouter } from "next/navigation";
 
 interface VerifyEmailFormProps {
   /** Pre-filled email (e.g., from signup flow) */
@@ -47,6 +48,8 @@ export function VerifyEmailForm({
     skipInitialSend,
   });
 
+  const router = useRouter();
+
   if (mode === "loading") {
     return (
       <div className="flex items-center justify-center py-12">
@@ -64,7 +67,7 @@ export function VerifyEmailForm({
         {!isEmbedded && (
           <Button
             className="w-full"
-            onClick={() => (window.location.href = "/auth/login?verified=true")}
+            onClick={() => router.push("/auth/login?verified=true")}
           >
             Go to Login
           </Button>
@@ -122,11 +125,7 @@ export function VerifyEmailForm({
       )}
 
       <div className="flex justify-center">
-        <OTPField
-          control={otpForm.control}
-          name="otp"
-          disabled={isPending}
-        />
+        <OTPField control={otpForm.control} name="otp" disabled={isPending} />
       </div>
 
       <Button

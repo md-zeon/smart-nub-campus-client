@@ -127,7 +127,8 @@ function LoginFormContent() {
 
               {passwordReset && (
                 <div className="rounded-lg border border-green-500/50 bg-green-500/10 p-3 text-sm text-green-600 dark:text-green-400 font-medium">
-                  Password reset successful! You can now log in with your new password.
+                  Password reset successful! You can now log in with your new
+                  password.
                 </div>
               )}
 

@@ -47,11 +47,7 @@ function ResetPasswordFormContent() {
     setState({ success: false, error: null });
 
     try {
-      await resetPasswordByIdentifier(
-        data.identifier,
-        data.otp,
-        data.password,
-      );
+      await resetPasswordByIdentifier(data.identifier, data.otp, data.password);
 
       setState({ success: true, error: null });
       router.push("/auth/login?passwordReset=true");
@@ -109,7 +105,7 @@ function ResetPasswordFormContent() {
                     </>
                   }
                   placeholder="Enter your email or student ID"
-                  disabled={isSubmitting}
+                  disabled={true}
                 />
 
                 <OTPField
