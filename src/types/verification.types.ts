@@ -19,6 +19,8 @@ export interface VerificationRequestData {
   studentId: string;
   status: VerificationStatus;
   note: string | null;
+  idCardImage?: string;
+  idCardImagePublicId?: string | null;
 }
 
 export interface CreateVerificationRequestResponse {
@@ -33,6 +35,8 @@ export interface CreateVerificationRequestResponse {
     studentId: string;
     status: VerificationStatus;
     note: string | null;
+    idCardImage?: string;
+    idCardImagePublicId?: string | null;
   } | null;
 }
 
@@ -45,6 +49,7 @@ export interface CreateVerificationRequestPayload {
   dateOfBirth: string;
   studentId: string;
   idCardImage: string;
+  idCardImagePublicId?: string | null;
 }
 
 export interface VerificationDetail {

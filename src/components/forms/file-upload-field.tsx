@@ -31,6 +31,8 @@ function getFileKey(file: File): string {
   return `${file.name}|${file.size}|${file.lastModified}`;
 }
 
+const EXISTING_IMAGE_KEY = "__existing_image__";
+
 interface FileUploadFieldOwnProps {
   label?: React.ReactNode;
   description?: React.ReactNode;
@@ -38,6 +40,9 @@ interface FileUploadFieldOwnProps {
   accept?: string;
   maxFiles?: number;
   maxSize?: number;
+  existingImageUrl?: string;
+  existingPublicId?: string | null;
+  onPublicIdChange?: (publicId: string | null) => void;
 }
 
 type FileUploadFieldProps<TFieldValues extends FieldValues> =
@@ -59,6 +64,9 @@ export function FileUploadField<TFieldValues extends FieldValues>({
   maxSize,
   context,
   type = "image",
+  existingImageUrl,
+  existingPublicId,
+  onPublicIdChange,
 }: FileUploadFieldProps<TFieldValues>) {
   const {
     field,
@@ -81,6 +89,21 @@ export function FileUploadField<TFieldValues extends FieldValues>({
   // Keep a ref to the previous files array so we can detect which file was removed.
   const prevFilesRef = React.useRef<File[]>([]);
 
+  // Track whether the existing image has been removed
+  const [existingImageRemoved, setExistingImageRemoved] = React.useState(false);
+
+  // Determine if we're showing the existing image (not replaced by a new upload)
+  const hasNewFile = files.length > 0;
+  const showExistingImage =
+    existingImageUrl && !existingImageRemoved && !hasNewFile;
+
+  // Seed publicIdsRef with the existing image's publicId so removal triggers deletion
+  React.useEffect(() => {
+    if (existingPublicId && existingImageUrl && !existingImageRemoved) {
+      publicIdsRef.current[EXISTING_IMAGE_KEY] = existingPublicId;
+    }
+  }, [existingPublicId, existingImageUrl, existingImageRemoved]);
+
   const handleUpload = async (
     uploadedFiles: File[],
     options: {
@@ -97,8 +120,12 @@ export function FileUploadField<TFieldValues extends FieldValues>({
       for (const file of uploadedFiles) {
         publicIdsRef.current[getFileKey(file)] = result.publicId;
       }
+      // Remove the existing image key since we're replacing it
+      delete publicIdsRef.current[EXISTING_IMAGE_KEY];
       // Set the uploaded URL as the form field value
       field.onChange(result.url);
+      // Notify parent of the new publicId
+      onPublicIdChange?.(result.publicId);
       for (const file of uploadedFiles) {
         options.onSuccess(file);
       }
@@ -158,16 +185,60 @@ export function FileUploadField<TFieldValues extends FieldValues>({
       // When the user removes all files, clear the form field value
       if (updatedFiles.length === 0) {
         field.onChange("");
+        onPublicIdChange?.(null);
       }
     },
-    [field],
+    [field, onPublicIdChange],
   );
+
+  // Handle removal of the existing image preview
+  const handleRemoveExistingImage = () => {
+    const publicId = publicIdsRef.current[EXISTING_IMAGE_KEY];
+    if (publicId) {
+      uploadService
+        .delete(publicId)
+        .then(() => {
+          delete publicIdsRef.current[EXISTING_IMAGE_KEY];
+        })
+        .catch((err) => {
+          console.error(
+            `[FileUploadField] Failed to delete existing image ${publicId} from Cloudinary:`,
+            err,
+          );
+          toast.error(
+            "Failed to delete uploaded image. It may remain on the server.",
+          );
+        });
+    }
+    setExistingImageRemoved(true);
+    field.onChange("");
+    onPublicIdChange?.(null);
+  };
 
   const hasFile = files.length > 0;
 
   return (
     <Field className={containerClassName}>
       {label && <FieldLabel htmlFor={name}>{label}</FieldLabel>}
+
+      {/* Existing image preview — shown when no new file has been uploaded */}
+      {showExistingImage && (
+        <div className="relative overflow-hidden rounded-lg border">
+          <img
+            src={existingImageUrl}
+            alt="Uploaded ID card"
+            className="h-48 w-full object-contain"
+          />
+          <button
+            type="button"
+            onClick={handleRemoveExistingImage}
+            className="absolute right-2 top-2 rounded-full bg-background/80 p-1 opacity-70 hover:opacity-100"
+          >
+            <XIcon className="size-4" />
+          </button>
+        </div>
+      )}
+
       <FileUpload
         accept={accept}
         maxFiles={maxFiles}
@@ -175,8 +246,8 @@ export function FileUploadField<TFieldValues extends FieldValues>({
         onUpload={handleUpload}
         onValueChange={handleValueChange}
       >
-        {/* Hide dropzone once a file has been selected / uploaded */}
-        {!hasFile && (
+        {/* Hide dropzone once a file has been selected / uploaded or when showing existing image */}
+        {!hasFile && !showExistingImage && (
           <FileUploadDropzone className="cursor-pointer">
             <div className="space-y-2 text-center">
               <UploadCloud className="mx-auto h-8 w-8 text-muted-foreground" />

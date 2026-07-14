@@ -10,6 +10,7 @@ export const verificationSchema = z.object({
     .max(11, "Student ID must be 11 digits")
     .regex(/^\d{11}$/, "Student ID must contain only digits"),
   idCardImage: z.string().min(1, "Please upload your student ID card"),
+  idCardImagePublicId: z.string().optional(),
 });
 
 export type VerificationFormValues = z.infer<typeof verificationSchema>;

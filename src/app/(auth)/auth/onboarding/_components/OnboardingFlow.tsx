@@ -43,6 +43,7 @@ export function OnboardingFlow({
       dateOfBirth: string;
       studentId: string;
       idCardImage: string;
+      idCardImagePublicId?: string | null;
     }) => {
       setIsSubmitting(true);
       setError(null);
@@ -94,7 +95,6 @@ export function OnboardingFlow({
 
   const handleRetry = () => {
     setCurrentStep(OnboardingStepValue.VERIFICATION_FORM);
-    setVerificationRequest(null);
     setError(null);
   };
 
@@ -162,6 +162,7 @@ export function OnboardingFlow({
               <VerifyIdentityForm
                 onSubmit={handleSubmitIdentity}
                 isSubmitting={isSubmitting}
+                defaultValue={verificationRequest}
               />
             </div>
           )}

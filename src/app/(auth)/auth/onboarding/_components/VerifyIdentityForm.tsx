@@ -10,24 +10,30 @@ import {
   verificationSchema,
   type VerificationFormValues,
 } from "@/schemas/onboarding/verification.schema";
+import type { VerificationRequestData } from "@/types";
 
 interface VerifyIdentityFormProps {
   onSubmit: (data: VerificationFormValues) => Promise<void>;
   isSubmitting: boolean;
+  defaultValue?: VerificationRequestData | null;
 }
 
 export function VerifyIdentityForm({
   onSubmit,
   isSubmitting,
+  defaultValue,
 }: VerifyIdentityFormProps) {
-  const { control, handleSubmit } = useForm<VerificationFormValues>({
+  const { control, handleSubmit, setValue } = useForm<VerificationFormValues>({
     resolver: zodResolver(verificationSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      dateOfBirth: "",
-      studentId: "",
-      idCardImage: "",
+      name: defaultValue?.name ?? "",
+      email: defaultValue?.email ?? "",
+      dateOfBirth: defaultValue?.dateOfBirth
+        ? new Date(defaultValue.dateOfBirth).toISOString().split("T")[0]
+        : "",
+      studentId: defaultValue?.studentId ?? "",
+      idCardImage: defaultValue?.idCardImage ?? "",
+      idCardImagePublicId: defaultValue?.idCardImagePublicId ?? undefined,
     },
   });
 
@@ -83,6 +89,13 @@ export function VerifyIdentityForm({
             control={control}
             name="idCardImage"
             context="verification"
+            existingImageUrl={defaultValue?.idCardImage}
+            existingPublicId={defaultValue?.idCardImagePublicId}
+            onPublicIdChange={(publicId) =>
+              setValue("idCardImagePublicId", publicId ?? "", {
+                shouldValidate: true,
+              })
+            }
             label={
               <>
                 Student ID Card <span className="text-destructive">*</span>
