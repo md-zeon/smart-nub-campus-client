@@ -17,7 +17,6 @@ async function apiFetch<T = unknown>(
   config: RequestInit = {},
 ): Promise<ApiResponsePromise<T>> {
   const url = new URL(`${API_URL}${endpoint}`).toString();
-  console.log(`[apiClient] Fetching: ${url}`, config.body instanceof FormData ? "(FormData)" : "");
 
   // For FormData, let browser set Content-Type with boundary
   const isFormData = config.body instanceof FormData;
@@ -30,12 +29,10 @@ async function apiFetch<T = unknown>(
   config.credentials = "include"; // Send cookies for auth
 
   const response = await fetch(url, config);
-  console.log(`[apiClient] Response status: ${response.status}`);
 
   let data: unknown;
   const text = await response.text();
-  console.log(`[apiClient] Response text:`, text.substring(0, 200));
-  
+
   try {
     data = text ? JSON.parse(text) : null;
   } catch {
@@ -47,11 +44,9 @@ async function apiFetch<T = unknown>(
   if (!response.ok) {
     const error = data as { message?: string; error?: string };
     const errorMsg = error?.message || error?.error || "Upload failed";
-    console.error(`[apiClient] Error response:`, errorMsg);
     throw new Error(errorMsg);
   }
 
-  console.log(`[apiClient] Success, data:`, data);
   return { data: data as T };
 }
 

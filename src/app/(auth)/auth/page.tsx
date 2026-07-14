@@ -42,6 +42,7 @@ export default function AuthPage() {
                     </CardDescription>
                     <Button
                       variant="default"
+                      nativeButton={false}
                       className="mt-5 group"
                       render={
                         <Link href="/auth/onboarding">
@@ -67,6 +68,7 @@ export default function AuthPage() {
                     </CardDescription>
                     <Button
                       variant="outline"
+                      nativeButton={false}
                       className="mt-5 border border-success px-8 py-5"
                       render={
                         <Link href="/auth/login">

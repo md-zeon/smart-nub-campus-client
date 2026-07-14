@@ -16,6 +16,7 @@ import {
   getCurrentStep,
   completeOnboarding,
 } from "@/actions/onboarding.action";
+import Link from "next/link";
 
 interface OnboardingFlowProps {
   initialStep: OnboardingStepValue;
@@ -235,12 +236,8 @@ export function OnboardingFlow({
                   NUB Campus!
                 </p>
               </div>
-              <Button
-                onClick={() => {
-                  window.location.href = "/dashboard";
-                }}
-              >
-                Go to Dashboard
+              <Button>
+                <Link href="/">Go to Home</Link>
               </Button>
             </div>
           )}
