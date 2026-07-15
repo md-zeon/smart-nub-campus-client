@@ -1,0 +1,136 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { Mail } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
+import { TextField } from "@/components/forms/fields/text-field";
+import AuthInfo from "../_components/AuthInfo";
+import { requestPasswordResetByIdentifier } from "@/actions/auth.action";
+import {
+  forgotPasswordSchema,
+  type ForgotPasswordFormValues,
+} from "@/schemas/auth/forgot-password.schema";
+
+export default function ForgotPasswordPage() {
+  const [isPending, setIsPending] = useState(false);
+  const [state, setState] = useState<{
+    success: boolean;
+    error: string | null;
+    message: string | null;
+  }>({
+    success: false,
+    error: null,
+    message: null,
+  });
+  const router = useRouter();
+  const isSubmitting = isPending || state.success;
+
+  const { control, handleSubmit } = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      identifier: "",
+    },
+  });
+
+  const onSubmit = async (data: ForgotPasswordFormValues) => {
+    setIsPending(true);
+    setState({ success: false, error: null, message: null });
+
+    try {
+      const message = await requestPasswordResetByIdentifier(data.identifier);
+
+      setState({
+        success: true,
+        error: null,
+        message,
+      });
+
+      setTimeout(() => {
+        router.push(
+          `/auth/reset-password?identifier=${encodeURIComponent(data.identifier)}`,
+        );
+      }, 1500);
+    } catch (error) {
+      setState({
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Something went wrong. Please try again.",
+        message: null,
+      });
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  return (
+    <main>
+      <div className="grid overflow-hidden rounded-[32px] border bg-[url('/images/nub-campus.png')] dark:bg-[url('/images/nub-campus-night.png')] bg-cover bg-center bg-no-repeat text-card-foreground shadow-xl lg:grid-cols-2">
+        <AuthInfo variant="forgot-password" />
+
+        <section className="flex items-center justify-center py-8 px-6">
+          <div className="w-full rounded-3xl border bg-card p-10 shadow-lg text-card-foreground">
+            <div className="text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand-light dark:bg-primary/20">
+                <Mail className="h-8 w-8 text-brand dark:text-primary" />
+              </div>
+              <h2 className="mt-5 text-3xl font-bold">Forgot Password</h2>
+              <p className="mt-2 text-muted-foreground">
+                Enter your email or student ID and we&apos;ll send you a
+                verification code
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
+              {state.success && state.message && (
+                <div className="rounded-lg border border-green-500/50 bg-green-500/10 p-3 text-sm text-green-600 dark:text-green-400 font-medium">
+                  {state.message}
+                </div>
+              )}
+
+              {state.error && (
+                <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                  {state.error}
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <TextField
+                  control={control}
+                  name="identifier"
+                  label={
+                    <>
+                      Email or Student ID{" "}
+                      <span className="text-destructive">*</span>
+                    </>
+                  }
+                  placeholder="Enter your email or student ID"
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isPending ? "Sending..." : "Send Reset Code"}
+              </Button>
+
+              <div className="text-center text-sm">
+                <Link
+                  href="/auth/login"
+                  className="text-brand hover:underline"
+                >
+                  Back to Login
+                </Link>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}

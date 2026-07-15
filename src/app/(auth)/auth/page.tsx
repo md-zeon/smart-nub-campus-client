@@ -14,7 +14,7 @@ export default function AuthPage() {
     <main>
       <div className="grid overflow-hidden rounded-[32px] border bg-[url('/images/nub-campus.png')] dark:bg-[url('/images/nub-campus-night.png')] bg-cover bg-center bg-no-repeat text-card-foreground shadow-xl lg:grid-cols-2">
         {/* Left Section: Branding & Features */}
-        <AuthInfo />
+        <AuthInfo variant="default" />
         {/* Right Section: Interactive Onboarding Actions */}
         <section className="flex items-center justify-center py-8 px-6">
           <div className="w-full rounded-3xl border bg-card p-10 shadow-lg text-card-foreground">
@@ -42,6 +42,7 @@ export default function AuthPage() {
                     </CardDescription>
                     <Button
                       variant="default"
+                      nativeButton={false}
                       className="mt-5 group"
                       render={
                         <Link href="/auth/onboarding">
@@ -67,6 +68,7 @@ export default function AuthPage() {
                     </CardDescription>
                     <Button
                       variant="outline"
+                      nativeButton={false}
                       className="mt-5 border border-success px-8 py-5"
                       render={
                         <Link href="/auth/login">
@@ -89,6 +91,10 @@ export default function AuthPage() {
                 <p className="font-medium">Need help getting started?</p>
                 <a
                   href="mailto:support@nub.ac.bd"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Send us an email"
+                  title="Send us an email"
                   className="text-brand dark:text-primary hover:underline"
                 >
                   support@nub.ac.bd

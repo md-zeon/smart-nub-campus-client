@@ -1,32 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { TextField } from "@/components/forms/fields/text-field";
+import { PasswordField } from "@/components/forms/fields/password-field";
 import AuthInfo from "../_components/AuthInfo";
 import isStudentId from "@/lib/isStudentId";
 import { authClient } from "@/lib/auth-client";
 import { getEmailByStudentId } from "@/actions/auth.action";
+import { loginSchema, type LoginFormValues } from "@/schemas/auth/login.schema";
 
-// 1. Define your validation schema with Zod
-const loginSchema = z.object({
-  identifier: z.string().min(1, { message: "Student ID or Email is required" }),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters" }),
-});
-
-// Infer the TypeScript type from the schema
-type LoginFormValues = z.infer<typeof loginSchema>;
-
-export default function LoginPage() {
+function LoginFormContent() {
   const [isPending, setIsPending] = useState(false);
   const [state, setState] = useState<{
     success: boolean;
@@ -35,13 +26,19 @@ export default function LoginPage() {
     success: true,
     error: null,
   });
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const router = useRouter();
+  const params = useSearchParams();
+  const isVerified = params.get("verified") === "true";
+  const passwordReset = params.get("passwordReset") === "true";
 
-  // 2. Initialize react-hook-form
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormValues>({
+  useEffect(() => {
+    if (isVerified) {
+      router.replace("/auth/login");
+    }
+  }, [isVerified, router]);
+
+  const { control, handleSubmit } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       identifier: "",
@@ -49,13 +46,11 @@ export default function LoginPage() {
     },
   });
 
-  // 3. Create your submit handler
   const onSubmit = async (data: LoginFormValues) => {
     setIsPending(true);
     setState({ success: false, error: null });
 
     try {
-      // console.log("Submitting:", data);
       const isStudentIdGiven = isStudentId(data.identifier);
       let email = data.identifier;
 
@@ -69,10 +64,17 @@ export default function LoginPage() {
       });
 
       if (response.error) {
-        setState({
-          success: false,
-          error: response.error.message!,
-        });
+        if (
+          response.error.code === "EMAIL_NOT_VERIFIED" ||
+          response.error.status === 403
+        ) {
+          setUnverifiedEmail(email);
+        } else {
+          setState({
+            success: false,
+            error: response.error.message!,
+          });
+        }
         return;
       }
 
@@ -84,8 +86,8 @@ export default function LoginPage() {
         return;
       }
 
-      console.log("Login success:", response.data.user);
       setState({ success: true, error: null });
+      router.push("/");
     } catch (error) {
       setState({
         success: false,
@@ -101,7 +103,7 @@ export default function LoginPage() {
     <main>
       <div className="grid overflow-hidden rounded-[32px] border bg-[url('/images/nub-campus.png')] dark:bg-[url('/images/nub-campus-night.png')] bg-cover bg-center bg-no-repeat text-card-foreground shadow-xl lg:grid-cols-2">
         {/* Left Section: Branding & Features */}
-        <AuthInfo />
+        <AuthInfo variant="login" />
 
         {/* Right Section: Login Form */}
         <section className="flex items-center justify-center py-8 px-6">
@@ -116,54 +118,75 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* 4. Pass handleSubmit to the form */}
             <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
+              {isVerified && (
+                <div className="rounded-lg border border-green-500/50 bg-green-500/10 p-3 text-sm text-green-600 dark:text-green-400 font-medium">
+                  Email verified! You can now sign in.
+                </div>
+              )}
+
+              {passwordReset && (
+                <div className="rounded-lg border border-green-500/50 bg-green-500/10 p-3 text-sm text-green-600 dark:text-green-400 font-medium">
+                  Password reset successful! You can now log in with your new
+                  password.
+                </div>
+              )}
+
               {state.error && (
                 <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
                   {state.error}
                 </div>
               )}
 
-              <div className="space-y-4">
-                {/* Student ID or Email */}
-                <div className="space-y-2">
-                  <Label htmlFor="identifier">
-                    Student ID or Email{" "}
-                    <span className="text-destructive">*</span>
-                  </Label>
-                  {/* 5. Register the input */}
-                  <Input
-                    id="identifier"
-                    placeholder="Enter your student ID or email"
-                    disabled={isPending}
-                    {...register("identifier")}
-                  />
-                  {/* 6. Display validation errors */}
-                  {errors.identifier && (
-                    <p className="text-sm text-destructive font-medium">
-                      {errors.identifier.message}
-                    </p>
-                  )}
+              {unverifiedEmail && (
+                <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-400">
+                  <p className="mb-2 font-medium">
+                    Your email is not verified.
+                  </p>
+                  <p className="mb-3">
+                    You must verify your email before logging in.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full border-amber-500 text-amber-700 hover:bg-amber-500/20 dark:text-amber-400"
+                    onClick={() => {
+                      sessionStorage.setItem(
+                        "pending_verification_email",
+                        unverifiedEmail,
+                      );
+                      sessionStorage.setItem(
+                        "pending_verification_source",
+                        "login",
+                      );
+                      router.push("/auth/verify-email");
+                    }}
+                  >
+                    Verify Email Now
+                  </Button>
                 </div>
+              )}
 
-                {/* Password */}
-                <div className="space-y-2">
-                  <Label htmlFor="password">
-                    Password <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    disabled={isPending}
-                    {...register("password")}
-                  />
-                  {errors.password && (
-                    <p className="text-sm text-destructive font-medium">
-                      {errors.password.message}
-                    </p>
-                  )}
-                </div>
+              <div className="space-y-4">
+                <TextField
+                  control={control}
+                  name="identifier"
+                  label={
+                    <>
+                      Student ID or Email{" "}
+                      <span className="text-destructive">*</span>
+                    </>
+                  }
+                  placeholder="Enter your student ID or email"
+                  disabled={isPending}
+                />
+
+                <PasswordField
+                  control={control}
+                  name="password"
+                  label="Password *"
+                  disabled={isPending}
+                />
               </div>
 
               <Button type="submit" className="w-full" disabled={isPending}>
@@ -183,5 +206,13 @@ export default function LoginPage() {
         </section>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginFormContent />
+    </Suspense>
   );
 }

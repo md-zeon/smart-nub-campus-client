@@ -65,9 +65,16 @@ async function apiFetch<T = unknown>(
   const cookieStore = await cookies();
   const url = new URL(`${API_URL}${endpoint}`).toString();
 
+  // Gather existing cookies to send TO Express
+  const allCookies = cookieStore.getAll();
+  const cookieString = allCookies.map((c) => `${c.name}=${c.value}`).join("; ");
+
+  // Don't set Content-Type for FormData - browser will set it with boundary
+  const isFormData = config.body instanceof FormData;
+
   config.headers = {
-    "Content-Type": "application/json",
-    Cookie: cookieStore.toString(),
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
+    Cookie: cookieString,
     ...config.headers,
   };
 
@@ -93,6 +100,35 @@ async function apiFetch<T = unknown>(
   }
 
   const response = await fetch(url, config);
+
+  // Extract cookies returned FROM Express and set them in Next.js browser
+  const setCookieHeaders = response.headers.getSetCookie(); // Native fetch array method
+  if (setCookieHeaders && setCookieHeaders.length > 0) {
+    for (const cookieStr of setCookieHeaders) {
+      // Basic parser to split name=value from attributes
+      const parts = cookieStr.split(";");
+      const [nameValue] = parts;
+      const [name, value] = nameValue.split("=");
+
+      if (name) {
+        const cookieName = name.trim();
+        const cookieValue = value?.trim() ?? "";
+
+        if (cookieValue) {
+          // Set the cookie with the new value
+          cookieStore.set(cookieName, cookieValue, {
+            path: "/",
+            httpOnly: true,
+            secure: env.NODE_ENV === "production",
+            sameSite: "lax",
+          });
+        } else {
+          // Empty value means the cookie should be cleared
+          cookieStore.delete(cookieName);
+        }
+      }
+    }
+  }
 
   let data: unknown;
   const text = await response.text(); // Read the response as text first to handle cases where the response is not valid JSON
@@ -131,6 +167,9 @@ export const serverApi = {
       { method: "POST", body: JSON.stringify(body) },
       options,
     ),
+
+  postForm: <T>(endpoint: string, body: FormData, options?: MutationOptions) =>
+    apiFetch<T>(endpoint, { method: "POST", body }, options),
 
   patch: <T>(endpoint: string, body: unknown, options?: MutationOptions) =>
     apiFetch<T>(

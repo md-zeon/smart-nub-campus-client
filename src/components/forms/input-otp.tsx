@@ -1,14 +1,15 @@
-'use client';
+"use client";
+
 import React, {
   useRef,
   useState,
   useEffect,
   createContext,
   useContext,
-} from 'react';
-import { motion } from 'motion/react';
-import { MinusIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
+} from "react";
+import { motion } from "motion/react";
+import { MinusIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface InputOtpContextType {
   values: string[];
@@ -28,6 +29,9 @@ const InputOtpContext = createContext<InputOtpContextType | null>(null);
 
 interface InputOTPProps {
   maxLength?: number;
+  value?: string;
+  defaultValue?: string;
+  onChange?: (value: string) => void;
   onComplete?: (value: string) => void;
   className?: string;
   containerClassName?: string;
@@ -40,17 +44,40 @@ interface InputOTPProps {
 
 function InputOTP({
   maxLength = 6,
+  value: valueProp,
+  defaultValue,
+  onChange,
   onComplete,
   className,
   containerClassName,
   inputClassName,
   mask = false,
-  maskSymbol = '*',
+  maskSymbol = "*",
   maskDelay = 800,
   children,
 }: InputOTPProps) {
-  const [values, setValues] = useState(Array(maxLength).fill(''));
-  const [visibleValues, setVisibleValues] = useState(Array(maxLength).fill(''));
+  // Convert string value to array
+  const valueToArray = (val: string) => {
+    const arr = Array(maxLength).fill("");
+    for (let i = 0; i < val.length && i < maxLength; i++) {
+      arr[i] = val[i];
+    }
+    return arr;
+  };
+
+  // Initialize state - use defaultValue or value for initial value
+  const getInitialValues = () => {
+    if (defaultValue !== undefined) {
+      return valueToArray(defaultValue);
+    }
+    if (valueProp !== undefined) {
+      return valueToArray(valueProp);
+    }
+    return Array(maxLength).fill("");
+  };
+
+  const [values, setValues] = useState(getInitialValues);
+  const [visibleValues, setVisibleValues] = useState(getInitialValues);
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
   const timeoutsRef = useRef<(NodeJS.Timeout | null)[]>(
     Array(maxLength).fill(null),
@@ -84,11 +111,17 @@ function InputOTP({
     clearTimeoutForIndex(idx);
 
     const newValues = [...values];
-    const newVisibleValues = [...visibleValues];
     newValues[idx] = val;
-    newVisibleValues[idx] = val;
+
     setValues(newValues);
-    setVisibleValues(newVisibleValues);
+    setVisibleValues([...newValues]);
+
+    // Notify parent (for controlled mode via Controller)
+    onChange?.(newValues.join(""));
+
+    if (newValues.every((v) => v)) {
+      onComplete?.(newValues.join(""));
+    }
 
     if (mask && val) {
       applyMaskWithDelay(idx, val);
@@ -97,15 +130,11 @@ function InputOTP({
     if (val && idx < maxLength - 1) {
       inputsRef.current[idx + 1]?.focus();
     }
-
-    if (newValues.every((v) => v)) {
-      onComplete?.(newValues.join(''));
-    }
   };
 
   const handlePaste = (e: React.ClipboardEvent, startIdx: number) => {
     e.preventDefault();
-    const pastedText = e.clipboardData.getData('text');
+    const pastedText = e.clipboardData.getData("text");
 
     if (!pastedText) return;
 
@@ -156,20 +185,20 @@ function InputOTP({
     }, 0);
 
     if (newValues.every((v) => v)) {
-      onComplete?.(newValues.join(''));
+      onComplete?.(newValues.join(""));
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, idx: number) => {
-    if (e.key === 'Backspace') {
+    if (e.key === "Backspace") {
       clearTimeoutForIndex(idx);
       if (!values[idx] && idx > 0) {
         inputsRef.current[idx - 1]?.focus();
       } else {
         const newValues = [...values];
         const newVisibleValues = [...visibleValues];
-        newValues[idx] = '';
-        newVisibleValues[idx] = '';
+        newValues[idx] = "";
+        newVisibleValues[idx] = "";
         setValues(newValues);
         setVisibleValues(newVisibleValues);
       }
@@ -226,13 +255,13 @@ function InputOTP({
   return (
     <InputOtpContext.Provider value={contextValue}>
       <div
-        data-slot='input-otp'
+        data-slot="input-otp"
         className={cn(
-          'flex items-center gap-1 sm:gap-2 has-disabled:opacity-50',
+          "flex items-center gap-1 sm:gap-2 has-disabled:opacity-50",
           containerClassName,
         )}
       >
-        <div className={cn('flex items-center gap-1 sm:gap-2', className)}>
+        <div className={cn("flex items-center gap-1 sm:gap-2", className)}>
           {children}
         </div>
       </div>
@@ -244,13 +273,13 @@ function InputOTPGroup({
   className,
   children,
   ...props
-}: React.ComponentProps<'div'>) {
+}: React.ComponentProps<"div">) {
   return (
     <div
-      data-slot='input-otp-group'
+      data-slot="input-otp-group"
       className={cn(
-        'flex items-center gap-1 sm:gap-2 px-1 py-0.5 rounded-md sm:rounded-lg',
-        'bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10',
+        "flex items-center gap-1 sm:gap-2 px-1 py-0.5 rounded-md sm:rounded-lg",
+        "bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10",
         className,
       )}
       {...props}
@@ -263,14 +292,13 @@ function InputOTPGroup({
 function InputOTPSlot({
   index,
   className,
-  ...props
-}: Omit<React.ComponentProps<'div'>, 'children'> & {
+}: Omit<React.ComponentProps<"div">, "children"> & {
   index: number;
 }) {
   const context = useContext(InputOtpContext);
 
   if (!context) {
-    throw new Error('InputOTPSlot must be used within InputOTP');
+    throw new Error("InputOTPSlot must be used within InputOTP");
   }
 
   const {
@@ -281,14 +309,13 @@ function InputOTPSlot({
     handleBlur,
     handlePaste,
     inputsRef,
-    mask,
     maskSymbol,
     inputClassName,
   } = context;
 
   return (
     <motion.div
-      className='relative'
+      className="relative"
       initial={{ scale: 1 }}
       whileFocus={{ scale: 1.05 }}
       whileHover={{ scale: 1.02 }}
@@ -297,8 +324,8 @@ function InputOTPSlot({
         ref={(el) => {
           inputsRef.current[index] = el;
         }}
-        type='text'
-        inputMode='text'
+        type="text"
+        inputMode="text"
         maxLength={1}
         value={visibleValues[index]}
         onChange={(e) => handleChange(e.target.value, index)}
@@ -307,23 +334,23 @@ function InputOTPSlot({
         onBlur={() => handleBlur(index)}
         onPaste={(e) => handlePaste(e, index)}
         className={cn(
-          'w-8 h-10 sm:w-10 sm:h-12 md:w-12 md:h-14',
-          'rounded-lg sm:rounded-xl text-center font-semibold outline-hidden transition-all duration-200',
-          'border border-transparent bg-white/60 dark:bg-white/10 shadow-inner',
-          'focus:ring-2 focus:ring-primary/70 dark:focus:ring-primary/40 focus:border-primary/30',
-          'backdrop-blur-md text-black dark:text-white placeholder-transparent',
+          "w-8 h-10 sm:w-10 sm:h-12 md:w-12 md:h-14",
+          "rounded-lg sm:rounded-xl text-center font-semibold outline-hidden transition-all duration-200",
+          "border border-transparent bg-white/60 dark:bg-white/10 shadow-inner",
+          "focus:ring-2 focus:ring-primary/70 dark:focus:ring-primary/40 focus:border-primary/30",
+          "backdrop-blur-md text-black dark:text-white placeholder-transparent",
           visibleValues[index] === maskSymbol
-            ? 'text-lg sm:text-xl md:text-2xl'
-            : 'text-sm sm:text-base md:text-lg',
-          'font-mono',
+            ? "text-lg sm:text-xl md:text-2xl"
+            : "text-sm sm:text-base md:text-lg",
+          "font-mono",
           inputClassName,
           className,
         )}
       />
       <motion.div
         layoutId={`glow-${index}`}
-        className='absolute inset-0 rounded-lg sm:rounded-xl pointer-events-none'
-        style={{ boxShadow: '0 0 4px 1px rgba(0,0,0,0.06)' }}
+        className="absolute inset-0 rounded-lg sm:rounded-xl pointer-events-none"
+        style={{ boxShadow: "0 0 4px 1px rgba(0,0,0,0.06)" }}
       />
     </motion.div>
   );
@@ -333,17 +360,17 @@ function InputOTPSeparator({
   separatorSymbol,
   className,
   ...props
-}: React.ComponentProps<'div'> & {
+}: React.ComponentProps<"div"> & {
   separatorSymbol?: React.ReactNode;
 }) {
   return (
     <div
-      data-slot='input-otp-separator'
-      role='separator'
-      className={cn('flex items-center justify-center', className)}
+      data-slot="input-otp-separator"
+      role="separator"
+      className={cn("flex items-center justify-center", className)}
       {...props}
     >
-      {separatorSymbol || <MinusIcon className='w-3 h-3 sm:w-4 sm:h-4' />}
+      {separatorSymbol || <MinusIcon className="w-3 h-3 sm:w-4 sm:h-4" />}
     </div>
   );
 }

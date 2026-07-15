@@ -259,11 +259,7 @@ function FileUpload(props: FileUploadProps) {
   });
 
   const store = React.useMemo<Store>(() => {
-    let state: StoreState = {
-      files,
-      dragOver: false,
-      invalid: invalid,
-    };
+    const stateRef = { current: { files, dragOver: false, invalid } };
 
     function reducer(state: StoreState, action: StoreAction): StoreState {
       switch (action.type) {
@@ -390,9 +386,9 @@ function FileUpload(props: FileUploadProps) {
     }
 
     return {
-      getState: () => state,
+      getState: () => stateRef.current,
       dispatch: (action) => {
-        state = reducer(state, action);
+        stateRef.current = reducer(stateRef.current, action);
         for (const listener of listeners) {
           listener();
         }
@@ -785,6 +781,7 @@ function FileUploadDropzone(props: FileUploadDropzoneProps) {
   );
 
   const onDrop = React.useCallback(
+    // eslint-disable-next-line react-hooks/immutability -- DOM manipulation via ref is intentional for file input bridging
     (event: React.DragEvent<HTMLDivElement>) => {
       propsRef.current.onDrop?.(event);
 
@@ -802,6 +799,7 @@ function FileUploadDropzone(props: FileUploadDropzoneProps) {
         dataTransfer.items.add(file);
       }
 
+      // eslint-disable-next-line react-hooks/immutability -- Setting files on hidden input to trigger change handler
       inputElement.files = dataTransfer.files;
       inputElement.dispatchEvent(new Event("change", { bubbles: true }));
     },
@@ -809,6 +807,7 @@ function FileUploadDropzone(props: FileUploadDropzoneProps) {
   );
 
   const onPaste = React.useCallback(
+    // eslint-disable-next-line react-hooks/immutability -- DOM manipulation via ref is intentional for file input bridging
     (event: React.ClipboardEvent<HTMLDivElement>) => {
       propsRef.current.onPaste?.(event);
 
@@ -841,6 +840,7 @@ function FileUploadDropzone(props: FileUploadDropzoneProps) {
         dataTransfer.items.add(file);
       }
 
+      // eslint-disable-next-line react-hooks/immutability -- Setting files on hidden input to trigger change handler
       inputElement.files = dataTransfer.files;
       inputElement.dispatchEvent(new Event("change", { bubbles: true }));
     },
@@ -865,6 +865,7 @@ function FileUploadDropzone(props: FileUploadDropzoneProps) {
   return useRender({
     defaultTagName: "div",
     props: mergeProps<"div">(
+      // eslint-disable-next-line react-hooks/refs -- Base UI useRender pattern requires passing context with refs
       {
         role: "region",
         id: context.dropzoneId,
@@ -924,6 +925,7 @@ function FileUploadTrigger(props: FileUploadTriggerProps) {
   return useRender({
     defaultTagName: "button",
     props: mergeProps<"button">(
+      // eslint-disable-next-line react-hooks/refs -- Base UI useRender pattern requires passing context with refs
       {
         type: "button",
         "aria-controls": context.inputId,

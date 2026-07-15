@@ -69,6 +69,7 @@ export type PasswordInputProps = {
   id?: string;
   value?: string;
   defaultValue?: string;
+  onChange?: (value: string) => void;
   onValueChange?: (value: string) => void;
   disabled?: boolean;
   scorer?: PasswordScorer;
@@ -79,6 +80,7 @@ function PasswordInput({
   id,
   value: valueProp,
   defaultValue = "",
+  onChange,
   onValueChange,
   disabled,
   scorer = defaultPasswordScorer,
@@ -92,9 +94,10 @@ function PasswordInput({
   const setValue = React.useCallback(
     (next: string) => {
       if (valueProp === undefined) setInternalValue(next);
+      onChange?.(next);
       onValueChange?.(next);
     },
-    [valueProp, onValueChange],
+    [valueProp, onChange, onValueChange],
   );
 
   const [visible, setVisible] = React.useState(false);
@@ -150,6 +153,7 @@ function PasswordInputField({
         type={ctx.visible ? "text" : "password"}
         value={ctx.value}
         onChange={(e) => ctx.setValue(e.target.value)}
+        placeholder="Enter your password"
         disabled={ctx.disabled}
         autoComplete="current-password"
         {...props}

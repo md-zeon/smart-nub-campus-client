@@ -7,12 +7,14 @@ import { useCallback, useRef, useState } from "react";
 
 interface ImageUploadProps {
   value: string;
-  onChange: (url: string, file: File | null) => void;
+  onChange: (url: string) => void;
   error?: string;
 }
 
 export function ImageUpload({ value, onChange, error }: ImageUploadProps) {
-  const [preview, setPreview] = useState<string>(value);
+  const [preview, setPreview] = useState<string | undefined>(
+    value || undefined,
+  );
   const [isDragOver, setIsDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -37,7 +39,6 @@ export function ImageUpload({ value, onChange, error }: ImageUploadProps) {
       // For now, just store a dummy URL since cloudinary isn't set up
       onChange(
         "https://res.cloudinary.com/demo/image/upload/dummy_id_card.jpg",
-        file,
       );
     },
     [onChange],
@@ -72,8 +73,8 @@ export function ImageUpload({ value, onChange, error }: ImageUploadProps) {
   );
 
   const handleRemove = useCallback(() => {
-    setPreview("");
-    onChange("", null);
+    setPreview(undefined);
+    onChange("");
     if (inputRef.current) {
       inputRef.current.value = "";
     }

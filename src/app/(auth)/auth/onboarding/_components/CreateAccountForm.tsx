@@ -1,44 +1,69 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordField } from "@/components/forms/fields/password-field";
 import { createAccount } from "@/actions/account.action";
 import { parseStudentId } from "@/lib/student-id-parser";
+import {
+  createAccountSchema,
+  type CreateAccountFormValues,
+} from "@/schemas/onboarding/account.schema";
+import { OnboardingStepValue } from "@/constants/enums";
+import { VerificationRequestData } from "@/types";
 
 interface CreateAccountFormProps {
   defaultName: string;
   defaultStudentId: string;
   defaultEmail: string;
+  setCurrentStep: (step: OnboardingStepValue) => void;
+  setVerificationRequest: (
+    verificationRequest: VerificationRequestData,
+  ) => void;
 }
 
 export function CreateAccountForm({
   defaultName,
   defaultStudentId,
   defaultEmail,
+  setCurrentStep,
+  setVerificationRequest,
 }: CreateAccountFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const studentIdInfo = parseStudentId(defaultStudentId);
 
-  const handleSubmit = useCallback(async (formData: FormData) => {
+  const { control, handleSubmit } = useForm<CreateAccountFormValues>({
+    resolver: zodResolver(createAccountSchema),
+    defaultValues: {
+      password: "",
+    },
+  });
+
+  const onSubmit = useCallback(async (values: CreateAccountFormValues) => {
     setIsSubmitting(true);
     setError(null);
 
     try {
-      await createAccount(formData.get("password") as string);
+      const result = await createAccount(values.password);
+      sessionStorage.setItem("pending_verification_email", result.user.email);
+      sessionStorage.setItem("pending_verification_source", "signup");
+      setCurrentStep(result.currentStep);
+      setVerificationRequest(result.verificationRequest);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Account creation failed.";
       setError(message);
-    } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  }, [setCurrentStep, setVerificationRequest]);
 
   return (
-    <form action={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Student ID - Read only */}
       <div className="space-y-2">
         <Label>Student ID</Label>
@@ -74,27 +99,23 @@ export function CreateAccountForm({
       {/* Email - Read only */}
       <div className="space-y-2">
         <Label>Email</Label>
-        <Input value={defaultEmail} disabled className="bg-muted/50" />
+        <Input
+          value={defaultEmail}
+          type="email"
+          disabled
+          className="bg-muted/50"
+        />
       </div>
 
       {/* Password */}
-      <div className="space-y-2">
-        <Label htmlFor="password">
-          Password <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="password"
-          type="password"
-          placeholder="Create a strong password"
-          name="password"
-          required
-          disabled={isSubmitting}
-        />
-        <p className="text-xs text-muted-foreground">
-          Password must be at least 8 characters with uppercase, lowercase, and
-          numbers.
-        </p>
-      </div>
+      <PasswordField
+        control={control}
+        name="password"
+        label="Password *"
+        description="Password must be at least 8 characters with uppercase, lowercase, and numbers."
+        showStrength
+        disabled={isSubmitting}
+      />
 
       {error && (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">

@@ -3,7 +3,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/providers/theme-provider";
-
+import { Toaster } from "@/components/ui/sonner";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
@@ -48,6 +48,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <main className="max-w-360 mx-auto p-4">{children}</main>
+          <Toaster richColors={true} />
         </ThemeProvider>
       </body>
     </html>

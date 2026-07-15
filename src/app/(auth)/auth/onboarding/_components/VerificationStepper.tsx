@@ -18,6 +18,7 @@ const STEPS = [
   { value: OnboardingStepValue.VERIFICATION_FORM, label: "Verify Identity" },
   { value: OnboardingStepValue.ADMIN_REVIEW, label: "Admin Review" },
   { value: OnboardingStepValue.ACCOUNT_CREATION, label: "Create Account" },
+  { value: OnboardingStepValue.VERIFY_EMAIL, label: "Verify Email" },
   { value: OnboardingStepValue.COMPLETED, label: "Done" },
 ] as const;
 

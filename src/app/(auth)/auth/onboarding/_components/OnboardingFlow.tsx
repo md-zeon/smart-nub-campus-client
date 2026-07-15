@@ -6,30 +6,31 @@ import { OnboardingInfo } from "./OnboardingInfo";
 import { VerifyIdentityForm } from "./VerifyIdentityForm";
 import { AdminReviewStatus } from "./AdminReviewStatus";
 import { CreateAccountForm } from "./CreateAccountForm";
+import { VerifyEmailForm } from "./VerifyEmailForm";
 import { CheckCircleIcon } from "@/components/ui/icons/check-circle";
 import { Button } from "@/components/ui/button";
-import { OnboardingStepValue, VerificationStatus } from "@/constants/enums";
+import { OnboardingStepValue } from "@/constants/enums";
 import type { VerificationRequestData } from "@/types";
 import { createVerificationRequest } from "@/actions/verification.action";
-import { getCurrentStep } from "@/actions/onboarding.action";
+import {
+  getCurrentStep,
+  completeOnboarding,
+} from "@/actions/onboarding.action";
+import Link from "next/link";
 
 interface OnboardingFlowProps {
   initialStep: OnboardingStepValue;
   initialVerificationRequest: VerificationRequestData | null;
-  initialVerificationStatus: VerificationStatus | null;
 }
 
 export function OnboardingFlow({
   initialStep,
   initialVerificationRequest,
-  initialVerificationStatus,
 }: OnboardingFlowProps) {
   const [currentStep, setCurrentStep] =
     useState<OnboardingStepValue>(initialStep);
   const [verificationRequest, setVerificationRequest] =
     useState<VerificationRequestData | null>(initialVerificationRequest);
-  const [verificationStatus, setVerificationStatus] =
-    useState<VerificationStatus | null>(initialVerificationStatus);
 
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,18 +43,16 @@ export function OnboardingFlow({
       dateOfBirth: string;
       studentId: string;
       idCardImage: string;
+      idCardImagePublicId?: string | null;
     }) => {
       setIsSubmitting(true);
       setError(null);
 
       try {
         // Backend sets the onboarding_step cookie and returns full state
-        console.log("Submitting verification form data:", formData);
         const response = await createVerificationRequest(formData);
-        console.log("Response from createVerificationRequest:", response);
         setCurrentStep(response.currentStep);
         setVerificationRequest(response.verificationRequest);
-        setVerificationStatus(response.verificationStatus);
       } catch (err) {
         setError(
           err instanceof Error
@@ -96,9 +95,21 @@ export function OnboardingFlow({
 
   const handleRetry = () => {
     setCurrentStep(OnboardingStepValue.VERIFICATION_FORM);
-    setVerificationRequest(null);
     setError(null);
   };
+
+  const handleEmailVerified = useCallback(async () => {
+    try {
+      await completeOnboarding(verificationRequest?.email || "");
+      setCurrentStep(OnboardingStepValue.COMPLETED);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to complete onboarding. Please try again.",
+      );
+    }
+  }, [verificationRequest]);
 
   if (error && currentStep === OnboardingStepValue.VERIFICATION_FORM) {
     return (
@@ -151,6 +162,7 @@ export function OnboardingFlow({
               <VerifyIdentityForm
                 onSubmit={handleSubmitIdentity}
                 isSubmitting={isSubmitting}
+                defaultValue={verificationRequest}
               />
             </div>
           )}
@@ -187,6 +199,28 @@ export function OnboardingFlow({
                 defaultName={verificationRequest?.name ?? ""}
                 defaultStudentId={verificationRequest?.studentId ?? ""}
                 defaultEmail={verificationRequest?.email ?? ""}
+                setCurrentStep={setCurrentStep}
+                setVerificationRequest={setVerificationRequest}
+              />
+            </div>
+          )}
+
+          {currentStep === OnboardingStepValue.VERIFY_EMAIL && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">
+                  Verify Your Email
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Enter the verification code sent to your email to complete
+                  account setup.
+                </p>
+              </div>
+              <VerifyEmailForm
+                email={verificationRequest?.email}
+                skipInitialSend
+                isEmbedded
+                onSuccess={handleEmailVerified}
               />
             </div>
           )}
@@ -203,12 +237,8 @@ export function OnboardingFlow({
                   NUB Campus!
                 </p>
               </div>
-              <Button
-                onClick={() => {
-                  window.location.href = "/dashboard";
-                }}
-              >
-                Go to Dashboard
+              <Button>
+                <Link href="/">Go to Home</Link>
               </Button>
             </div>
           )}

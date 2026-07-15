@@ -1,0 +1,10 @@
+import { z } from "zod";
+
+export const forgotPasswordSchema = z.object({
+  identifier: z
+    .string()
+    .min(1, "Email or Student ID is required")
+    .max(100, "Identifier is too long"),
+});
+
+export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;

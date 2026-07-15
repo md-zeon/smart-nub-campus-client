@@ -5,7 +5,7 @@ export const authService = {
     const response = await serverApi.get<{ email: string }>(
       `/account/email-by-student-id/${studentId}`,
     );
-    console.log("Response from getEmailByStudentId:", response);
+
     if (!response.data || !response.data.email) {
       throw new Error("Invalid student ID or Password. Please try again.");
     }
@@ -28,22 +28,33 @@ export const authService = {
   /**
    * Request password reset OTP
    */
-  // async forgotPassword(email: string): Promise<void> {
-  //   await serverApi.post("/auth/email-otp/request-password-reset", { email });
-  // },
+  async forgotPassword(email: string): Promise<void> {
+    await serverApi.post("/auth/email-otp/request-password-reset", { email });
+  },
+
+  /**
+   * Request password reset via identifier (email or student ID)
+   */
+  async forgotPasswordWithIdentifier(identifier: string): Promise<string> {
+    const response = await serverApi.post<{ message: string }>(
+      "/auth/forgot-password",
+      { identifier },
+    );
+    return response.message ?? "If an account exists with that identifier, a password reset code has been sent.";
+  },
 
   /**
    * Reset password with OTP
    */
-  // async resetPassword(
-  //   email: string,
-  //   otp: string,
-  //   password: string,
-  // ): Promise<void> {
-  //   await serverApi.post("/auth/email-otp/reset-password", {
-  //     email,
-  //     otp,
-  //     password,
-  //   });
-  // },
+  async resetPasswordByIdentifier(
+    identifier: string,
+    otp: string,
+    password: string,
+  ): Promise<string> {
+    const response = await serverApi.post<{ message: string }>(
+      "/auth/reset-password",
+      { identifier, otp, password },
+    );
+    return response.message ?? "Password has been reset successfully.";
+  },
 };

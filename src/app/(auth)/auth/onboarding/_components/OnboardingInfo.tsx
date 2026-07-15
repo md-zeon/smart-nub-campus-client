@@ -116,11 +116,61 @@ const STEP_INFO: Record<OnboardingStepValue, StepInfo> = {
     title: "Create Your Account",
     description: "Set up your Smart NUB Campus account credentials.",
     accent: "brand",
-    items: [],
+    items: [
+      {
+        icon: CheckCircle,
+        title: "Your info is ready",
+        description:
+          "Student ID, name, department, and email are pre-filled from verification",
+        variant: "success",
+      },
+      {
+        icon: ShieldCheck,
+        title: "Set your password",
+        description:
+          "Choose a strong password with at least 8 characters, including uppercase, lowercase, and numbers",
+      },
+      {
+        icon: Mail,
+        title: "Email verification next",
+        description:
+          "After creating your account, verify your email to complete setup",
+      },
+    ],
     badge: {
       title: "Account security",
       description:
         "Choose a strong, unique password. Your NUB email is used for recovery and verification.",
+    },
+  },
+  [OnboardingStepValue.VERIFY_EMAIL]: {
+    icon: <Mail className="text-brand" size={ICON_SIZE} />,
+    title: "Verify Your Email",
+    description:
+      "We've sent a verification code to your email. Enter it below to confirm your identity and activate your account.",
+    accent: "brand",
+    items: [
+      {
+        icon: Mail,
+        title: "Check your inbox",
+        description: "A 6-digit code was sent to your registered email",
+      },
+      {
+        icon: Clock,
+        title: "Code expires in 5 minutes",
+        description: "Enter the code before it expires, or request a new one",
+      },
+      {
+        icon: ShieldCheck,
+        title: "One-time verification",
+        description: "Once verified, you'll have full access to your account",
+        variant: "success",
+      },
+    ],
+    badge: {
+      title: "Can't find the email?",
+      description:
+        "Check your spam/junk folder, or click 'Resend Code' to get a new verification code.",
     },
   },
   [OnboardingStepValue.COMPLETED]: {

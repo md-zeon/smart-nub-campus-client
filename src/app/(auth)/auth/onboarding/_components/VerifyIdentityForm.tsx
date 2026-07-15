@@ -1,207 +1,110 @@
 "use client";
 
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { TextField } from "@/components/forms/fields/text-field";
+import { DateField } from "@/components/forms/date-field";
+import { FileUploadField } from "@/components/forms/file-upload-field";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { CalendarDaysIcon } from "@/components/ui/icons/calendar-days";
-import { IdCardIcon } from "lucide-react";
-import { ImageUpload } from "./ImageUpload";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
-import isStudentId from "@/lib/isStudentId";
-
-interface FormData {
-  name: string;
-  email: string;
-  dateOfBirth: string;
-  studentId: string;
-  idCardImage: string;
-}
-
-interface FormErrors {
-  name?: string;
-  email?: string;
-  dateOfBirth?: string;
-  studentId?: string;
-  idCardImage?: string;
-}
+import {
+  verificationSchema,
+  type VerificationFormValues,
+} from "@/schemas/onboarding/verification.schema";
+import type { VerificationRequestData } from "@/types";
 
 interface VerifyIdentityFormProps {
-  onSubmit: (data: FormData) => Promise<void>;
+  onSubmit: (data: VerificationFormValues) => Promise<void>;
   isSubmitting: boolean;
+  defaultValue?: VerificationRequestData | null;
 }
 
 export function VerifyIdentityForm({
   onSubmit,
   isSubmitting,
+  defaultValue,
 }: VerifyIdentityFormProps) {
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    email: "",
-    dateOfBirth: "",
-    studentId: "",
-    idCardImage: "",
+  const { control, handleSubmit, setValue } = useForm<VerificationFormValues>({
+    resolver: zodResolver(verificationSchema),
+    defaultValues: {
+      name: defaultValue?.name ?? "",
+      email: defaultValue?.email ?? "",
+      dateOfBirth: defaultValue?.dateOfBirth
+        ? new Date(defaultValue.dateOfBirth).toISOString().split("T")[0]
+        : "",
+      studentId: defaultValue?.studentId ?? "",
+      idCardImage: defaultValue?.idCardImage ?? "",
+      idCardImagePublicId: defaultValue?.idCardImagePublicId ?? undefined,
+    },
   });
-  const [errors, setErrors] = useState<FormErrors>({});
-
-  const validate = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Full name is required";
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email address is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-
-    if (!formData.dateOfBirth) {
-      newErrors.dateOfBirth = "Date of birth is required";
-    } else {
-      const dob = new Date(formData.dateOfBirth);
-      const today = new Date();
-      const age = today.getFullYear() - dob.getFullYear();
-      if (age < 16) {
-        newErrors.dateOfBirth = "You must be at least 16 years old";
-      }
-    }
-
-    if (!formData.studentId.trim()) {
-      newErrors.studentId = "Student ID is required";
-    } else {
-      const isValid = isStudentId(formData.studentId);
-      if (!isValid) {
-        newErrors.studentId = "Invalid student ID format";
-      }
-    }
-
-    if (!formData.idCardImage) {
-      newErrors.idCardImage = "Please upload your student ID card";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validate()) {
-      await onSubmit(formData);
-    }
-  };
-
-  const updateField = (field: keyof FormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-  };
-
-  const handleImageChange = (url: string, _file: File | null) => {
-    updateField("idCardImage", url);
-    if (errors.idCardImage) {
-      setErrors((prev) => ({ ...prev, idCardImage: undefined }));
-    }
-  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="space-y-4">
-        {/* Full Name */}
+        <TextField
+          control={control}
+          name="name"
+          label={
+            <>
+              Full Name <span className="text-destructive">*</span>
+            </>
+          }
+          placeholder="Enter your full name"
+          disabled={isSubmitting}
+        />
+        <TextField
+          control={control}
+          name="email"
+          type="email"
+          label={
+            <>
+              Email Address <span className="text-destructive">*</span>
+            </>
+          }
+          placeholder="Enter your email address"
+          disabled={isSubmitting}
+        />
+        <DateField
+          control={control}
+          name="dateOfBirth"
+          label={
+            <>
+              Date of Birth <span className="text-destructive">*</span>
+            </>
+          }
+        />
+        <TextField
+          control={control}
+          name="studentId"
+          label={
+            <>
+              Student ID <span className="text-destructive">*</span>
+            </>
+          }
+          placeholder="Enter your student ID"
+          disabled={isSubmitting}
+          maxLength={11}
+        />
         <div className="space-y-2">
-          <Label htmlFor="name">
-            Full Name <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="name"
-            placeholder="Enter your full name"
-            value={formData.name}
-            onChange={(e) => updateField("name", e.target.value)}
-            aria-invalid={!!errors.name}
+          <FileUploadField
+            control={control}
+            name="idCardImage"
+            context="verification"
+            existingImageUrl={defaultValue?.idCardImage}
+            existingPublicId={defaultValue?.idCardImagePublicId}
+            onPublicIdChange={(publicId) =>
+              setValue("idCardImagePublicId", publicId ?? "", {
+                shouldValidate: true,
+              })
+            }
+            label={
+              <>
+                Student ID Card <span className="text-destructive">*</span>
+              </>
+            }
           />
-          {errors.name && (
-            <p className="text-xs text-destructive">{errors.name}</p>
-          )}
-        </div>
-
-        {/* Email */}
-        <div className="space-y-2">
-          <Label htmlFor="email">
-            Email Address <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="Enter your email address"
-            value={formData.email}
-            onChange={(e) => updateField("email", e.target.value)}
-            aria-invalid={!!errors.email}
-          />
-          {errors.email && (
-            <p className="text-xs text-destructive">{errors.email}</p>
-          )}
-        </div>
-
-        {/* Date of Birth */}
-        <div className="space-y-2">
-          <Label htmlFor="dateOfBirth">
-            Date of Birth <span className="text-destructive">*</span>
-          </Label>
-          <div className="relative">
-            <Input
-              id="dateOfBirth"
-              type="date"
-              value={formData.dateOfBirth}
-              onChange={(e) => updateField("dateOfBirth", e.target.value)}
-              aria-invalid={!!errors.dateOfBirth}
-              className={cn(
-                "[&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer",
-              )}
-            />
-            <CalendarDaysIcon
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              size={18}
-            />
-          </div>
-          {errors.dateOfBirth && (
-            <p className="text-xs text-destructive">{errors.dateOfBirth}</p>
-          )}
-        </div>
-
-        {/* Student ID */}
-        <div className="space-y-2">
-          <Label htmlFor="studentId">
-            Student ID <span className="text-destructive">*</span>
-          </Label>
-          <div className="relative">
-            <Input
-              id="studentId"
-              placeholder="Enter your 11-digit student ID"
-              value={formData.studentId}
-              onChange={(e) => updateField("studentId", e.target.value)}
-              aria-invalid={!!errors.studentId}
-              className="pl-10"
-              maxLength={11}
-            />
-            <IdCardIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          </div>
-          {errors.studentId && (
-            <p className="text-xs text-destructive">{errors.studentId}</p>
-          )}
-        </div>
-
-        {/* ID Card Upload */}
-        <div className="space-y-2">
-          <Label>
-            Student ID Card <span className="text-destructive">*</span>
-          </Label>
-          <ImageUpload
-            value={formData.idCardImage}
-            onChange={handleImageChange}
-            error={errors.idCardImage}
-          />
+          <p className="text-xs text-muted-foreground">
+            Upload a clear image of your student ID card.
+          </p>
         </div>
       </div>
 
