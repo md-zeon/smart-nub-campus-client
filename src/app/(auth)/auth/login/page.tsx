@@ -103,7 +103,7 @@ function LoginFormContent() {
     <main>
       <div className="grid overflow-hidden rounded-[32px] border bg-[url('/images/nub-campus.png')] dark:bg-[url('/images/nub-campus-night.png')] bg-cover bg-center bg-no-repeat text-card-foreground shadow-xl lg:grid-cols-2">
         {/* Left Section: Branding & Features */}
-        <AuthInfo />
+        <AuthInfo variant="login" />
 
         {/* Right Section: Login Form */}
         <section className="flex items-center justify-center py-8 px-6">

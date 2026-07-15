@@ -50,7 +50,7 @@ export default function VerifyEmailPage() {
   return (
     <main>
       <div className="grid overflow-hidden rounded-[32px] border bg-[url('/images/nub-campus.png')] dark:bg-[url('/images/nub-campus-night.png')] bg-cover bg-center bg-no-repeat text-card-foreground shadow-xl lg:grid-cols-2">
-        <AuthInfo />
+        <AuthInfo variant="verify-email" />
 
         <section className="flex items-center justify-center py-8 px-6">
           <div className="w-full rounded-3xl border bg-card p-10 shadow-lg text-card-foreground">
