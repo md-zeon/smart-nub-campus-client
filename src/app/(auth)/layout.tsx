@@ -12,16 +12,18 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col space-y-8">
-      <header className="w-full flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <AcademicCapIcon className="text-brand" size={36} />
-          <div className="-space-y-1">
-            <h1 className="font-bold text-xl text-foreground">Smart NUB</h1>
-            <p className="text-brand text-sm font-bold">Campus</p>
+    <div className="flex flex-col space-y-4 sm:space-y-8">
+      <header className="w-full flex justify-between items-center px-1 sm:px-0">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <AcademicCapIcon className="text-brand" size={32} />
+          <div className="-space-y-0.5 sm:-space-y-1">
+            <h1 className="font-bold text-base sm:text-xl text-foreground">
+              Smart NUB
+            </h1>
+            <p className="text-brand text-xs sm:text-sm font-bold">Campus</p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <ModeToggle />
           <Link
             href="/about"
@@ -30,15 +32,20 @@ export default function AuthLayout({
             <InformationCircleIcon />
             About Smart NUB Campus
           </Link>
-          <Button variant="outline">
+          <Button variant="ghost" size="icon" className="sm:hidden">
+            <CircleQuestionMark />
+          </Button>
+          <Button variant="outline" className="hidden sm:inline-flex">
             <CircleQuestionMark />
             Need Help?
           </Button>
         </div>
       </header>
 
-      <main className="flex-1 min-h-[calc(100vh-180px)]">{children}</main>
-      <footer className="w-full max-w-3xl mx-auto flex justify-between items-center text-xs text-muted-foreground flex-col sm:flex-row gap-4">
+      <main className="flex-1 min-h-[calc(100vh-120px)] sm:min-h-[calc(100vh-180px)]">
+        {children}
+      </main>
+      <footer className="w-full max-w-3xl mx-auto flex justify-between items-center text-xs text-muted-foreground flex-col sm:flex-row gap-3 sm:gap-4 px-1 sm:px-0">
         <p>
           © {new Date().getFullYear()} Northern University Bangladesh. All
           rights reserved.

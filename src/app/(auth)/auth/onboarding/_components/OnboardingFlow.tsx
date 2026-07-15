@@ -128,14 +128,14 @@ export function OnboardingFlow({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 sm:space-y-8">
       {/* Stepper */}
       <VerificationStepper currentStep={currentStep} />
 
       {/* Main content - 2 column layout */}
-      <div className="grid gap-8 lg:grid-cols-[1fr_1.5fr]">
+      <div className="grid gap-5 sm:gap-8 lg:grid-cols-[1fr_1.5fr]">
         {/* Left column - Info */}
-        <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
           <OnboardingInfo
             step={currentStep}
             verificationStatus={verificationRequest?.status}
@@ -143,7 +143,7 @@ export function OnboardingFlow({
         </div>
 
         {/* Right column - Form / Status */}
-        <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
           {currentStep === OnboardingStepValue.VERIFICATION_FORM && (
             <div className="space-y-6">
               <div>

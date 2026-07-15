@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -20,6 +20,12 @@ export const metadata: Metadata = {
   title: "Smart NUB Campus",
   description:
     "Smart NUB Campus is an exclusive platform for Northern University Bangladesh students. Collaborate, learn, share resources and grow together in a trusted academic environment.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
@@ -47,7 +53,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <main className="max-w-360 mx-auto p-4">{children}</main>
+          <main className="max-w-360 mx-auto p-3 sm:p-4">{children}</main>
           <Toaster richColors={true} />
         </ThemeProvider>
       </body>
