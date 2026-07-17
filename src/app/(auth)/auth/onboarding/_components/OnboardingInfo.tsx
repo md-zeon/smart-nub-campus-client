@@ -301,48 +301,48 @@ export function OnboardingInfo({
       initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: shouldReduceMotion ? 0 : 0.35, ease: "easeOut" }}
-      className="flex flex-col h-full p-4"
+      className="flex flex-col h-full p-2 sm:p-4"
     >
       <div className="flex-1 max-w-xl">
         <div
           className={cn(
-            "flex h-16 w-16 items-center justify-center rounded-full shrink-0 ring-4 ring-white/40 dark:ring-white/5",
+            "flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full shrink-0 ring-4 ring-white/40 dark:ring-white/5",
             headerAccent.bg,
           )}
         >
           {info.icon}
         </div>
-        <h1 className="mt-4 text-4xl font-bold max-w-xs tracking-tight leading-tight">
+        <h1 className="mt-3 sm:mt-4 text-2xl sm:text-4xl font-bold max-w-xs tracking-tight leading-tight">
           {info.title}
         </h1>
-        <p className="mt-3 text-muted-foreground leading-relaxed">
+        <p className="mt-2 sm:mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed">
           {info.description}
         </p>
 
         {info.items.length > 0 && (
-          <div className="relative mt-12 space-y-6 max-w-sm">
+          <div className="relative mt-6 sm:mt-12 space-y-4 sm:space-y-6 max-w-sm">
             {info.sequential && (
               <div
                 aria-hidden
-                className="absolute left-6 top-6 bottom-6 w-px bg-border"
+                className="absolute left-5 sm:left-6 top-5 sm:top-6 bottom-5 sm:bottom-6 w-px bg-border"
               />
             )}
             {info.items.map(
               ({ icon: Icon, title: label, description, variant }, i) => {
                 const itemAccent = ACCENT_STYLES[variant ?? "brand"];
                 return (
-                  <div key={i} className="relative flex items-center gap-4">
+                  <div key={i} className="relative flex items-center gap-3 sm:gap-4">
                     <div
                       className={cn(
-                        "relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full",
+                        "relative z-10 flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full",
                         itemAccent.bg,
                       )}
                     >
-                      <Icon className={cn("size-5", itemAccent.text)} />
+                      <Icon className={cn("size-4 sm:size-5", itemAccent.text)} />
                     </div>
                     <div>
-                      <span className="font-medium">{label}</span>
-                      <p className="text-sm text-muted-foreground">
+                      <span className="font-medium text-sm sm:text-base">{label}</span>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         {description}
                       </p>
                     </div>
@@ -357,21 +357,21 @@ export function OnboardingInfo({
       {/* Important Badge */}
       <div
         className={cn(
-          "flex sm:w-sm md:w-md gap-3 mt-12 rounded-2xl p-5",
+          "flex w-full sm:w-sm md:w-md gap-3 mt-6 sm:mt-12 rounded-2xl p-4 sm:p-5",
           headerAccent.badgeBg,
         )}
       >
         <div
           className={cn(
-            "flex h-12 w-12 items-center justify-center rounded-full shrink-0",
+            "flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full shrink-0",
             headerAccent.bg,
           )}
         >
           <InformationCircleIcon className={headerAccent.text} />
         </div>
         <div>
-          <h3 className="font-bold">{info.badge.title}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h3 className="font-bold text-sm sm:text-base">{info.badge.title}</h3>
+          <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-muted-foreground">
             {info.badge.description}
           </p>
         </div>

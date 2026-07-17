@@ -14,10 +14,10 @@
  * const data = await serverApi.get("/endpoint", { cache: "force-cache", revalidate: 60, tags: ["tag1"] });
  * const result = await serverApi.post("/endpoint", data, { invalidatesTags: ["tag1", "tag2"] });
  * Documentation:
- * https://github.com/smart-nub-campus/smart-nub-campus-client
+ * See docs/SERVER-API.md in the client package
  * @module serverApi
  * @exports serverApi
- * @see {@link https://github.com/smart-nub-campus-client/docs/server-api|Server API Documentation}
+ * @see {@link docs/SERVER-API.md|Server API Documentation}
  */
 
 import { env } from "@/env";

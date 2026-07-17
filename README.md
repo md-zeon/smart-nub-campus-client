@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Smart NUB Campus Client
+
+Frontend for Smart NUB Campus — an academic collaboration network for Northern University Bangladesh.
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router) + React 19
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS v4
+- **Components:** Custom shadcn-style primitives built on Base UI
+- **Forms:** react-hook-form v7 + Zod v4 validation
+- **Animations:** Framer Motion
+- **Icons:** Custom animated SVG icons
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── (auth)/                    # Auth pages (login, signup, onboarding)
+│   ├── (root)/                    # Root layout pages
+│   ├── globals.css                # Global styles
+│   └── layout.tsx                 # Root layout
+├── actions/                       # Server actions (API call proxies)
+├── components/
+│   ├── forms/                     # Reusable form components
+│   ├── home/                      # Home page components
+│   ├── theme/                     # Theme provider
+│   └── ui/                        # UI primitives (Base UI + CVA)
+├── constants/                     # App constants
+├── hooks/                         # Custom React hooks
+├── lib/
+│   ├── api-client.ts              # Client-side API (browser)
+│   └── server-api.ts              # Server-side API (Next.js server)
+├── providers/                     # Context providers
+├── schemas/                       # Zod validation schemas
+├── services/                      # API service functions
+└── types/                         # TypeScript type definitions
+```
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Install dependencies
+npm install
+
+# Set up environment
+cp .env.example .env.local
+# Edit .env.local with your API URL
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `NEXT_PUBLIC_API_URL` | Yes | Backend API URL (e.g., `http://localhost:5000/api/v1`) |
+| `API_URL` | No | Server-side API URL (overrides NEXT_PUBLIC_API_URL for server components) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### API Communication
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The app uses two API clients:
 
-## Deploy on Vercel
+1. **`serverApi`** (`src/lib/server-api.ts`) — For server components and server actions. Handles cookie forwarding and Next.js cache invalidation.
+2. **`apiClient`** (`src/lib/api-client.ts`) — For client components. Runs in the browser without Next.js server dependencies.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Component Library
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+UI components are built as shadcn-style primitives:
+- Built on [Base UI](https://baseui.com) (not Radix)
+- Styled with [CVA](https://cva.style) for variant management
+- Tailwind CSS v4 for styling
+- 24+ custom animated SVG icons using Framer Motion

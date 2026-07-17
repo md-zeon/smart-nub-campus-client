@@ -63,8 +63,8 @@ export function VerificationStepper({
     | undefined;
 
   return (
-    <div className="w-full rounded-3xl border bg-card p-6 shadow-sm">
-      <Stepper value={currentStep} steps={STEPS} className="w-full">
+    <div className="w-full rounded-2xl sm:rounded-3xl border bg-card p-4 sm:p-6 shadow-sm overflow-x-auto">
+      <Stepper value={currentStep} steps={STEPS} className="w-full min-w-[480px] sm:min-w-0">
         <StepperList
           aria-label={`Onboarding progress: step ${currentStepIndex + 1} of ${STEPS.length}`}
         >

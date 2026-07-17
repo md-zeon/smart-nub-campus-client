@@ -71,17 +71,19 @@ export default function ForgotPasswordPage() {
 
   return (
     <main>
-      <div className="grid overflow-hidden rounded-[32px] border bg-[url('/images/nub-campus.png')] dark:bg-[url('/images/nub-campus-night.png')] bg-cover bg-center bg-no-repeat text-card-foreground shadow-xl lg:grid-cols-2">
+      <div className="grid overflow-hidden rounded-2xl sm:rounded-[32px] border bg-[url('/images/nub-campus.png')] dark:bg-[url('/images/nub-campus-night.png')] bg-cover bg-center bg-no-repeat text-card-foreground shadow-xl lg:grid-cols-2">
         <AuthInfo variant="forgot-password" />
 
-        <section className="flex items-center justify-center py-8 px-6">
-          <div className="w-full rounded-3xl border bg-card p-10 shadow-lg text-card-foreground">
+        <section className="flex items-center justify-center py-5 sm:py-8 px-4 sm:px-6">
+          <div className="w-full rounded-2xl sm:rounded-3xl border bg-card p-6 sm:p-8 lg:p-10 shadow-lg text-card-foreground">
             <div className="text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand-light dark:bg-primary/20">
-                <Mail className="h-8 w-8 text-brand dark:text-primary" />
+              <div className="mx-auto flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-brand-light dark:bg-primary/20">
+                <Mail className="h-6 w-6 sm:h-8 sm:w-8 text-brand dark:text-primary" />
               </div>
-              <h2 className="mt-5 text-3xl font-bold">Forgot Password</h2>
-              <p className="mt-2 text-muted-foreground">
+              <h2 className="mt-3 sm:mt-5 text-2xl sm:text-3xl font-bold">
+                Forgot Password
+              </h2>
+              <p className="mt-1.5 sm:mt-2 text-sm sm:text-base text-muted-foreground">
                 Enter your email or student ID and we&apos;ll send you a
                 verification code
               </p>
