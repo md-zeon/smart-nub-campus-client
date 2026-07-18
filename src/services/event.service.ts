@@ -23,14 +23,11 @@ function buildQueryString(params: object): string {
 
 export const eventService = {
   /** List events with pagination and filtering. */
-  async listEvents(
-    params: ListEventsParams = {},
-  ): Promise<EventListResponse> {
+  async listEvents(params: ListEventsParams = {}): Promise<EventListResponse> {
     const query = buildQueryString(params);
-    const response = await serverApi.get<EventListResponse>(
-      `/events${query}`,
-      { tags: ["events-list"] },
-    );
+    const response = await serverApi.get<EventListResponse>(`/events${query}`, {
+      tags: ["events-list"],
+    });
     return response.data!;
   },
 

@@ -18,7 +18,7 @@ export default function HomePage() {
       <QuickAccess />
 
       {/* ── Two-Column Content Area ──────────────────────────────── */}
-      <section className="mx-auto max-w-screen-xl px-4 pb-16 sm:px-6">
+      <section className="mx-auto max-w-360 px-4 pb-16 sm:px-6">
         <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
           {/* ── Left column: Trending Resources ───────────────────── */}
           <TrendingResources />

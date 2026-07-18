@@ -36,8 +36,7 @@ export async function rsvpEvent(eventId: string): Promise<ApiResponse> {
     await eventService.rsvp(eventId);
     return { success: true, message: "RSVP recorded." };
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to RSVP.";
+    const message = error instanceof Error ? error.message : "Failed to RSVP.";
     return { success: false, message };
   }
 }
