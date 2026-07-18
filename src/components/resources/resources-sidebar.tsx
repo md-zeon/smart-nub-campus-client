@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Plus, Bookmark, Upload, BookOpen, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { listResources } from "@/actions/resource.actions";
-import type { Resource, ResourceCategory } from "@/types/resource.types";
+import type { ResourceCategory } from "@/types/resource.types";
 import { cn } from "@/lib/utils";
 
 /** Tab option for resource list filtering. */
@@ -20,6 +19,8 @@ interface ResourcesSidebarProps {
   selectedCategoryId: string | null;
   /** Callback when category is selected. */
   onCategoryChange: (categoryId: string | null) => void;
+  /** Categories with counts (fetched server-side). */
+  categories?: (ResourceCategory & { _count?: number })[];
 }
 
 /**
@@ -31,45 +32,9 @@ export function ResourcesSidebar({
   onTabChange,
   selectedCategoryId,
   onCategoryChange,
+  categories = [],
 }: ResourcesSidebarProps) {
-  const [categories, setCategories] = useState<(ResourceCategory & { _count?: number })[]>([]);
   const [courseSearch, setCourseSearch] = useState("");
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
-
-  /** Extract unique categories with resource counts from fetched resources. */
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchCategories() {
-      try {
-        const result = await listResources({ limit: 100 });
-        if (!cancelled && result.success && result.data) {
-          const data = result.data as { data?: Resource[] };
-          const resources = data.data ?? [];
-
-          const catMap = new Map<string, ResourceCategory & { _count: number }>();
-          for (const r of resources) {
-            if (r.category) {
-              const existing = catMap.get(r.category.id);
-              if (existing) {
-                existing._count += 1;
-              } else {
-                catMap.set(r.category.id, { ...r.category, _count: 1 });
-              }
-            }
-          }
-          setCategories(Array.from(catMap.values()));
-        }
-      } catch {
-        // Fallback: categories shown as empty
-      } finally {
-        if (!cancelled) setCategoriesLoading(false);
-      }
-    }
-
-    fetchCategories();
-    return () => { cancelled = true; };
-  }, []);
 
   const tabs: { id: TabOption; label: string; icon: React.ReactNode }[] = [
     { id: "all", label: "All Resources", icon: <BookOpen className="size-4" /> },
@@ -112,13 +77,7 @@ export function ResourcesSidebar({
         <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Categories
         </h3>
-        {categoriesLoading ? (
-          <div className="space-y-2">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-7 animate-pulse rounded bg-muted" />
-            ))}
-          </div>
-        ) : categories.length > 0 ? (
+        {categories.length > 0 ? (
           <nav className="space-y-0.5">
             <button
               onClick={() => onCategoryChange(null)}
