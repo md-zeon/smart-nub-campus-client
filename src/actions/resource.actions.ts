@@ -35,6 +35,7 @@ export async function createResource(data: {
   fileType: string;
   fileSize: number;
   courseId: string;
+  categoryId?: string;
   tags?: string[];
 }): Promise<ApiResponse> {
   try {

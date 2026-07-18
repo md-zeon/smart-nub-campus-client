@@ -151,6 +151,7 @@ export function ResourceUploadForm({
         fileType: file.type || "application/octet-stream",
         fileSize: file.size,
         courseId,
+        categoryId,
         tags,
       });
 
@@ -161,7 +162,8 @@ export function ResourceUploadForm({
         router.push(resourceId ? `/resources/${resourceId}` : "/resources");
       } else {
         setStage("error");
-        setError(result.message || "Failed to create resource.");
+        const fieldError = result.errorSources?.[0]?.message;
+        setError(fieldError || result.message || "Failed to create resource.");
       }
     } catch (err) {
       setStage("error");
