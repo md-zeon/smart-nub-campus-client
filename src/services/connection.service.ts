@@ -1,74 +1,123 @@
-/**
- * Connection API service module.
- * Uses serverApi for server-side calls (proxied through Next.js).
- */
-
 import serverApi from "@/lib/server-api";
 import type {
   ConnectionRequest,
-  ConnectionStatus,
-  ListConnectionsParams,
   ConnectionListResponse,
 } from "@/types/connection.types";
 
-function buildQueryString(params: object): string {
-  const searchParams = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null) {
-      searchParams.set(key, String(value));
-    }
-  }
-  const qs = searchParams.toString();
-  return qs ? `?${qs}` : "";
-}
-
 export const connectionService = {
-  /** List connections with pagination and filtering. */
   async listConnections(
-    params: ListConnectionsParams = {},
+    params: { filter?: string; page?: number; limit?: number } = {},
   ): Promise<ConnectionListResponse> {
-    const query = buildQueryString(params);
+    const searchParams = new URLSearchParams();
+    if (params.filter) searchParams.set("filter", params.filter);
+    if (params.page) searchParams.set("page", String(params.page));
+    if (params.limit) searchParams.set("limit", String(params.limit));
+    const qs = searchParams.toString();
     const response = await serverApi.get<ConnectionListResponse>(
-      `/connections${query}`,
+      `/connections${qs ? `?${qs}` : ""}`,
       { tags: ["connections-list"] },
     );
     return response.data!;
   },
 
-  /** Send a connection request. */
   async sendRequest(receiverId: string): Promise<ConnectionRequest> {
-    const response = await serverApi.post<ConnectionRequest>("/connections", {
-      receiverId,
-    });
+    const response = await serverApi.post<ConnectionRequest>(
+      "/connections/request",
+      { receiverId },
+    );
     return response.data!;
   },
 
-  /** Accept a connection request. */
-  async acceptRequest(connectionId: string): Promise<void> {
-    await serverApi.patch(`/connections/${connectionId}`, {
-      status: "ACCEPTED" as ConnectionStatus,
-    });
+  async acceptRequest(connectionId: string): Promise<unknown> {
+    const response = await serverApi.put<unknown>(
+      `/connections/${connectionId}/accept`,
+      {},
+    );
+    return response.data!;
   },
 
-  /** Reject a connection request. */
-  async rejectRequest(connectionId: string): Promise<void> {
-    await serverApi.patch(`/connections/${connectionId}`, {
-      status: "REJECTED" as ConnectionStatus,
-    });
+  async rejectRequest(connectionId: string): Promise<unknown> {
+    const response = await serverApi.put<unknown>(
+      `/connections/${connectionId}/reject`,
+      {},
+    );
+    return response.data!;
   },
 
-  /** Remove a connection. */
   async removeConnection(connectionId: string): Promise<void> {
     await serverApi.del(`/connections/${connectionId}`);
   },
 
-  /** Block a user. */
   async blockUser(userId: string): Promise<void> {
-    await serverApi.post(`/connections/block`, { userId });
+    await serverApi.post("/connections/block", { userId });
   },
 
-  /** Toggle favorite on a connection. */
-  async toggleFavorite(connectionId: string): Promise<void> {
-    await serverApi.patch(`/connections/${connectionId}/favorite`, {});
+  async unblockUser(blockedId: string): Promise<void> {
+    await serverApi.del(`/connections/block/${blockedId}`);
+  },
+
+  async toggleFavorite(connectionId: string): Promise<unknown> {
+    const response = await serverApi.put<unknown>(
+      `/connections/${connectionId}/favorite`,
+      {},
+    );
+    return response.data!;
+  },
+
+  async getPendingRequests(): Promise<ConnectionRequest[]> {
+    const response = await serverApi.get<ConnectionRequest[]>(
+      "/connections/pending",
+    );
+    return response.data!;
+  },
+
+  async getSentRequests(): Promise<ConnectionRequest[]> {
+    const response = await serverApi.get<ConnectionRequest[]>(
+      "/connections/sent",
+    );
+    return response.data!;
+  },
+
+  async getSuggestedPeople(): Promise<unknown[]> {
+    const response = await serverApi.get<unknown[]>(
+      "/connections/suggestions",
+    );
+    return response.data!;
+  },
+
+  async searchPeople(params: {
+    query?: string;
+    department?: string;
+    semester?: string;
+    skills?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<unknown> {
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null) {
+        searchParams.set(key, String(value));
+      }
+    }
+    const response = await serverApi.get<unknown>(
+      `/connections/search?${searchParams.toString()}`,
+    );
+    return response.data!;
+  },
+
+  async addSkill(name: string): Promise<unknown> {
+    const response = await serverApi.post<unknown>("/connections/skills", { name });
+    return response.data!;
+  },
+
+  async removeSkill(skillId: string): Promise<void> {
+    await serverApi.del(`/connections/skills/${skillId}`);
+  },
+
+  async getUserSkills(userId: string): Promise<unknown> {
+    const response = await serverApi.get<unknown>(
+      `/connections/skills/${userId}`,
+    );
+    return response.data!;
   },
 };

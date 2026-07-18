@@ -1,8 +1,3 @@
-/**
- * Gamification API service module.
- * Uses serverApi for server-side calls (proxied through Next.js).
- */
-
 import serverApi from "@/lib/server-api";
 import type {
   Badge,
@@ -13,24 +8,50 @@ import type {
 import type { PaginationMeta } from "@/types/resource.types";
 
 export const gamificationService = {
-  /** List all badges. */
-  async listBadges(): Promise<Badge[]> {
-    const response = await serverApi.get<Badge[]>("/gamification/badges", {
-      tags: ["badges-list"],
-    });
-    return response.data!;
-  },
-
-  /** Get badges earned by a user. */
-  async getUserBadges(userId: string): Promise<UserBadge[]> {
-    const response = await serverApi.get<UserBadge[]>(
-      `/gamification/users/${userId}/badges`,
-      { tags: ["user-badges"] },
+  async getMyPoints(): Promise<{ totalPoints: number }> {
+    const response = await serverApi.get<{ totalPoints: number }>(
+      "/gamification/points/me",
     );
     return response.data!;
   },
 
-  /** Get the leaderboard. */
+  async getMyReputationHistory(
+    page = 1,
+    limit = 20,
+  ): Promise<{ logs: ReputationPoint[]; meta: PaginationMeta }> {
+    const response = await serverApi.get<{ logs: ReputationPoint[]; meta: PaginationMeta }>(
+      `/gamification/history/me?page=${page}&limit=${limit}`,
+      { tags: ["reputation-log"] },
+    );
+    return response.data!;
+  },
+
+  async getMyBadges(): Promise<UserBadge[]> {
+    const response = await serverApi.get<UserBadge[]>("/gamification/badges/me", {
+      tags: ["user-badges"],
+    });
+    return response.data!;
+  },
+
+  async getUserPoints(userId: string): Promise<{ totalPoints: number }> {
+    const response = await serverApi.get<{ totalPoints: number }>(
+      `/gamification/points/${userId}`,
+    );
+    return response.data!;
+  },
+
+  async getUserReputationHistory(
+    userId: string,
+    page = 1,
+    limit = 20,
+  ): Promise<{ logs: ReputationPoint[]; meta: PaginationMeta }> {
+    const response = await serverApi.get<{ logs: ReputationPoint[]; meta: PaginationMeta }>(
+      `/gamification/history/${userId}?page=${page}&limit=${limit}`,
+      { tags: ["reputation-log"] },
+    );
+    return response.data!;
+  },
+
   async getLeaderboard(
     page = 1,
     limit = 50,
@@ -38,27 +59,6 @@ export const gamificationService = {
     const response = await serverApi.get<LeaderboardResponse>(
       `/gamification/leaderboard?page=${page}&limit=${limit}`,
       { tags: ["leaderboard"] },
-    );
-    return response.data!;
-  },
-
-  /** Get reputation log for a user. */
-  async getReputationLog(
-    userId: string,
-    page = 1,
-    limit = 20,
-  ): Promise<{ logs: ReputationPoint[]; meta: PaginationMeta }> {
-    const response = await serverApi.get<{ logs: ReputationPoint[]; meta: PaginationMeta }>(
-      `/gamification/users/${userId}/reputation?page=${page}&limit=${limit}`,
-      { tags: ["reputation-log"] },
-    );
-    return response.data!;
-  },
-
-  /** Get current user's total reputation points. */
-  async getMyReputation(): Promise<{ totalPoints: number }> {
-    const response = await serverApi.get<{ totalPoints: number }>(
-      "/gamification/my-reputation",
     );
     return response.data!;
   },

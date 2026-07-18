@@ -1,12 +1,6 @@
-/**
- * Resource API service module.
- * Uses serverApi for server-side calls (proxied through Next.js).
- */
-
 import serverApi from "@/lib/server-api";
 import type {
   Resource,
-  ResourceCategory,
   Comment,
   ListResourcesParams,
   ResourceListResponse,
@@ -25,7 +19,19 @@ function buildQueryString(params: object): string {
 }
 
 export const resourceService = {
-  /** List resources with pagination, filtering, and sorting. */
+  async createResource(data: {
+    title: string;
+    description?: string;
+    fileUrl: string;
+    fileType: string;
+    fileSize: number;
+    courseId: string;
+    tags?: string[];
+  }): Promise<Resource> {
+    const response = await serverApi.post<Resource>("/resources", data);
+    return response.data!;
+  },
+
   async listResources(
     params: ListResourcesParams = {},
   ): Promise<ResourceListResponse> {
@@ -37,7 +43,6 @@ export const resourceService = {
     return response.data!;
   },
 
-  /** Get a single resource by ID. */
   async getResourceById(id: string): Promise<Resource> {
     const response = await serverApi.get<Resource>(`/resources/${id}`, {
       tags: ["resource-detail"],
@@ -45,36 +50,43 @@ export const resourceService = {
     return response.data!;
   },
 
-  /** List all resource categories. */
-  async listCategories(): Promise<ResourceCategory[]> {
-    const response = await serverApi.get<ResourceCategory[]>(
-      "/resources/categories",
-      { tags: ["resource-categories"] },
+  async updateResource(id: string, data: Partial<{
+    title: string;
+    description: string;
+    tags: string[];
+  }>): Promise<Resource> {
+    const response = await serverApi.patch<Resource>(`/resources/${id}`, data);
+    return response.data!;
+  },
+
+  async deleteResource(id: string): Promise<void> {
+    await serverApi.del(`/resources/${id}`);
+  },
+
+  async toggleVote(resourceId: string): Promise<{ action: string; upvoteCount: number; downvoteCount: number }> {
+    const response = await serverApi.post<{ action: string; upvoteCount: number; downvoteCount: number }>(
+      `/resources/${resourceId}/upvote`,
+      {},
     );
     return response.data!;
   },
 
-  /** Upvote a resource. */
-  async upvoteResource(resourceId: string): Promise<void> {
-    await serverApi.post(`/resources/${resourceId}/vote`, { type: "UP" });
+  async toggleBookmark(resourceId: string): Promise<{ action: string }> {
+    const response = await serverApi.post<{ action: string }>(
+      `/resources/${resourceId}/bookmark`,
+      {},
+    );
+    return response.data!;
   },
 
-  /** Downvote a resource. */
-  async downvoteResource(resourceId: string): Promise<void> {
-    await serverApi.post(`/resources/${resourceId}/vote`, { type: "DOWN" });
+  async recordDownload(resourceId: string): Promise<{ fileUrl: string }> {
+    const response = await serverApi.post<{ fileUrl: string }>(
+      `/resources/${resourceId}/download`,
+      {},
+    );
+    return response.data!;
   },
 
-  /** Toggle bookmark on a resource. */
-  async toggleBookmark(resourceId: string): Promise<void> {
-    await serverApi.post(`/resources/${resourceId}/bookmark`, {});
-  },
-
-  /** Increment download count. */
-  async recordDownload(resourceId: string): Promise<void> {
-    await serverApi.post(`/resources/${resourceId}/download`, {});
-  },
-
-  /** Add a comment to a resource. */
   async addComment(
     resourceId: string,
     data: { content: string; parentId?: string },
@@ -86,7 +98,6 @@ export const resourceService = {
     return response.data!;
   },
 
-  /** List comments for a resource. */
   async listComments(
     resourceId: string,
     page = 1,
@@ -98,7 +109,10 @@ export const resourceService = {
     return response.data!;
   },
 
-  /** Report a resource. */
+  async deleteComment(commentId: string): Promise<void> {
+    await serverApi.del(`/resources/comments/${commentId}`);
+  },
+
   async reportResource(
     resourceId: string,
     data: { reason: string; description?: string },

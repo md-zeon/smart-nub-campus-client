@@ -1,8 +1,3 @@
-/**
- * Notification API service module.
- * Uses serverApi for server-side calls (proxied through Next.js).
- */
-
 import serverApi from "@/lib/server-api";
 import type {
   ListNotificationsParams,
@@ -22,7 +17,6 @@ function buildQueryString(params: object): string {
 }
 
 export const notificationService = {
-  /** List notifications with pagination and filtering. */
   async listNotifications(
     params: ListNotificationsParams = {},
   ): Promise<NotificationListResponse> {
@@ -34,7 +28,6 @@ export const notificationService = {
     return response.data!;
   },
 
-  /** Get unread notification count. */
   async getUnreadCount(): Promise<UnreadCountResponse> {
     const response = await serverApi.get<UnreadCountResponse>(
       "/notifications/unread-count",
@@ -43,17 +36,14 @@ export const notificationService = {
     return response.data!;
   },
 
-  /** Mark a notification as read. */
   async markAsRead(notificationId: string): Promise<void> {
     await serverApi.patch(`/notifications/${notificationId}/read`, {});
   },
 
-  /** Mark all notifications as read. */
   async markAllAsRead(): Promise<void> {
-    await serverApi.post("/notifications/mark-all-read", {});
+    await serverApi.patch("/notifications/read-all", {});
   },
 
-  /** Delete a notification. */
   async deleteNotification(notificationId: string): Promise<void> {
     await serverApi.del(`/notifications/${notificationId}`);
   },

@@ -30,6 +30,55 @@ export async function getTeamRequest(id: string): Promise<ApiResponse> {
   }
 }
 
+/** Create a new team request. */
+export async function createTeamRequest(data: {
+  title: string;
+  description: string;
+  category: string;
+  skills?: string[];
+  lookingFor?: string;
+}): Promise<ApiResponse> {
+  try {
+    const teamRequest = await teamService.createTeamRequest(data);
+    return { success: true, message: "Team request created.", data: teamRequest };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to create team request.";
+    return { success: false, message };
+  }
+}
+
+/** Update a team request. */
+export async function updateTeamRequest(id: string, data: {
+  title?: string;
+  description?: string;
+  category?: string;
+  skills?: string[];
+  lookingFor?: string;
+  status?: TeamRequestStatus;
+}): Promise<ApiResponse> {
+  try {
+    const teamRequest = await teamService.updateTeamRequest(id, data);
+    return { success: true, message: "Team request updated.", data: teamRequest };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to update team request.";
+    return { success: false, message };
+  }
+}
+
+/** Delete a team request. */
+export async function deleteTeamRequest(id: string): Promise<ApiResponse> {
+  try {
+    await teamService.deleteTeamRequest(id);
+    return { success: true, message: "Team request deleted." };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to delete team request.";
+    return { success: false, message };
+  }
+}
+
 /** Apply to a team request. */
 export async function applyToTeam(
   teamRequestId: string,
@@ -68,10 +117,9 @@ export async function reviewTeamApplication(
 /** Withdraw a team application. */
 export async function withdrawTeamApplication(
   teamRequestId: string,
-  applicationId: string,
 ): Promise<ApiResponse> {
   try {
-    await teamService.withdrawApplication(teamRequestId, applicationId);
+    await teamService.withdrawApplication(teamRequestId);
     return { success: true, message: "Application withdrawn." };
   } catch (error) {
     const message =
@@ -80,17 +128,38 @@ export async function withdrawTeamApplication(
   }
 }
 
-/** Update team request status. */
-export async function updateTeamStatus(
-  teamRequestId: string,
-  status: TeamRequestStatus,
-): Promise<ApiResponse> {
+/** Get team members. */
+export async function getTeamMembers(teamRequestId: string): Promise<ApiResponse> {
   try {
-    await teamService.updateTeamStatus(teamRequestId, status);
-    return { success: true, message: "Team status updated." };
+    const members = await teamService.getTeamMembers(teamRequestId);
+    return { success: true, message: "Members fetched.", data: members };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to update team status.";
+      error instanceof Error ? error.message : "Failed to fetch members.";
+    return { success: false, message };
+  }
+}
+
+/** Leave a team. */
+export async function leaveTeam(teamRequestId: string): Promise<ApiResponse> {
+  try {
+    await teamService.leaveTeam(teamRequestId);
+    return { success: true, message: "Left team." };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to leave team.";
+    return { success: false, message };
+  }
+}
+
+/** Remove a member from a team. */
+export async function removeTeamMember(teamRequestId: string, memberId: string): Promise<ApiResponse> {
+  try {
+    await teamService.removeMember(teamRequestId, memberId);
+    return { success: true, message: "Member removed." };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to remove member.";
     return { success: false, message };
   }
 }

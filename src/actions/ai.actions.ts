@@ -33,10 +33,11 @@ export async function getAISession(id: string): Promise<ApiResponse> {
 
 /** Send a message to the AI assistant. */
 export async function sendAIMessage(
+  sessionId: string,
   payload: SendAIMessagePayload,
 ): Promise<ApiResponse> {
   try {
-    const data = await aiService.sendMessage(payload);
+    const data = await aiService.sendMessage(sessionId, payload);
     return { success: true, message: "Message sent.", data };
   } catch (error) {
     const message =

@@ -1,8 +1,3 @@
-/**
- * Event API service module.
- * Uses serverApi for server-side calls (proxied through Next.js).
- */
-
 import serverApi from "@/lib/server-api";
 import type {
   Event,
@@ -22,7 +17,6 @@ function buildQueryString(params: object): string {
 }
 
 export const eventService = {
-  /** List events with pagination and filtering. */
   async listEvents(params: ListEventsParams = {}): Promise<EventListResponse> {
     const query = buildQueryString(params);
     const response = await serverApi.get<EventListResponse>(`/events${query}`, {
@@ -31,7 +25,13 @@ export const eventService = {
     return response.data!;
   },
 
-  /** Get a single event by ID. */
+  async getUpcomingEvents(): Promise<Event[]> {
+    const response = await serverApi.get<Event[]>("/events/upcoming", {
+      tags: ["upcoming-events"],
+    });
+    return response.data!;
+  },
+
   async getEventById(id: string): Promise<Event> {
     const response = await serverApi.get<Event>(`/events/${id}`, {
       tags: ["event-detail"],
@@ -39,13 +39,44 @@ export const eventService = {
     return response.data!;
   },
 
-  /** RSVP to an event. */
-  async rsvp(eventId: string): Promise<void> {
-    await serverApi.post(`/events/${eventId}/rsvp`, {});
+  async toggleRsvp(eventId: string): Promise<{ rsvpStatus: string | null }> {
+    const response = await serverApi.post<{ rsvpStatus: string | null }>(
+      `/events/${eventId}/rsvp`,
+      {},
+    );
+    return response.data!;
   },
 
-  /** Cancel RSVP. */
-  async cancelRsvp(eventId: string): Promise<void> {
-    await serverApi.del(`/events/${eventId}/rsvp`);
+  async createEvent(data: {
+    title: string;
+    description: string;
+    date: string;
+    location: string;
+    type?: string;
+    coverImage?: string;
+    maxParticipants?: number;
+  }): Promise<Event> {
+    const response = await serverApi.post<Event>("/events", data);
+    return response.data!;
+  },
+
+  async updateEvent(
+    id: string,
+    data: Partial<{
+      title: string;
+      description: string;
+      date: string;
+      location: string;
+      type: string;
+      coverImage: string;
+      maxParticipants: number;
+    }>,
+  ): Promise<Event> {
+    const response = await serverApi.patch<Event>(`/events/${id}`, data);
+    return response.data!;
+  },
+
+  async deleteEvent(id: string): Promise<void> {
+    await serverApi.del(`/events/${id}`);
   },
 };

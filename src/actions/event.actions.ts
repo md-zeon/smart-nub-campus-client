@@ -30,25 +30,13 @@ export async function getEvent(id: string): Promise<ApiResponse> {
   }
 }
 
-/** RSVP to an event. */
-export async function rsvpEvent(eventId: string): Promise<ApiResponse> {
+/** Toggle RSVP for an event. */
+export async function toggleRsvpEvent(eventId: string): Promise<ApiResponse> {
   try {
-    await eventService.rsvp(eventId);
-    return { success: true, message: "RSVP recorded." };
+    const data = await eventService.toggleRsvp(eventId);
+    return { success: true, message: "RSVP toggled.", data };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to RSVP.";
-    return { success: false, message };
-  }
-}
-
-/** Cancel RSVP. */
-export async function cancelRsvpEvent(eventId: string): Promise<ApiResponse> {
-  try {
-    await eventService.cancelRsvp(eventId);
-    return { success: true, message: "RSVP cancelled." };
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to cancel RSVP.";
+    const message = error instanceof Error ? error.message : "Failed to toggle RSVP.";
     return { success: false, message };
   }
 }

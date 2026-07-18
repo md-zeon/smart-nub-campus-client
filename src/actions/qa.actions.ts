@@ -36,15 +36,23 @@ export async function voteQuestion(
   type: "UP" | "DOWN",
 ): Promise<ApiResponse> {
   try {
-    if (type === "UP") {
-      await qaService.upvoteQuestion(questionId);
-    } else {
-      await qaService.downvoteQuestion(questionId);
-    }
-    return { success: true, message: "Vote recorded." };
+    const data = await qaService.voteQuestion(questionId, type);
+    return { success: true, message: "Vote recorded.", data };
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to record vote.";
+    return { success: false, message };
+  }
+}
+
+/** Toggle bookmark on a question. */
+export async function bookmarkQuestion(questionId: string): Promise<ApiResponse> {
+  try {
+    const data = await qaService.toggleBookmark(questionId);
+    return { success: true, message: "Bookmark toggled.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to toggle bookmark.";
     return { success: false, message };
   }
 }
@@ -64,17 +72,44 @@ export async function postAnswer(
   }
 }
 
+/** Delete an answer. */
+export async function deleteAnswer(questionId: string, answerId: string): Promise<ApiResponse> {
+  try {
+    await qaService.deleteAnswer(questionId, answerId);
+    return { success: true, message: "Answer deleted." };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to delete answer.";
+    return { success: false, message };
+  }
+}
+
 /** Accept an answer. */
 export async function acceptAnswer(
   questionId: string,
   answerId: string,
 ): Promise<ApiResponse> {
   try {
-    await qaService.acceptAnswer(questionId, answerId);
-    return { success: true, message: "Answer accepted." };
+    const data = await qaService.acceptAnswer(questionId, answerId);
+    return { success: true, message: "Answer accepted.", data };
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to accept answer.";
+    return { success: false, message };
+  }
+}
+
+/** Upvote or downvote an answer. */
+export async function voteAnswer(
+  answerId: string,
+  type: "UP" | "DOWN",
+): Promise<ApiResponse> {
+  try {
+    const data = await qaService.voteAnswer(answerId, type);
+    return { success: true, message: "Vote recorded.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to record vote.";
     return { success: false, message };
   }
 }

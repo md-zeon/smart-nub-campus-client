@@ -36,12 +36,8 @@ export async function voteDiscussion(
   type: "UP" | "DOWN",
 ): Promise<ApiResponse> {
   try {
-    if (type === "UP") {
-      await discussionService.upvoteDiscussion(discussionId);
-    } else {
-      await discussionService.downvoteDiscussion(discussionId);
-    }
-    return { success: true, message: "Vote recorded." };
+    const data = await discussionService.voteDiscussion(discussionId, type);
+    return { success: true, message: "Vote recorded.", data };
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to record vote.";

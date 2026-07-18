@@ -1,8 +1,3 @@
-/**
- * AI Assistant API service module.
- * Uses serverApi for server-side calls (proxied through Next.js).
- */
-
 import serverApi from "@/lib/server-api";
 import type {
   AIChatSession,
@@ -24,7 +19,14 @@ function buildQueryString(params: object): string {
 }
 
 export const aiService = {
-  /** List AI chat sessions. */
+  async createSession(data: { title?: string }): Promise<AIChatSession> {
+    const response = await serverApi.post<AIChatSession>(
+      "/ai/sessions",
+      data,
+    );
+    return response.data!;
+  },
+
   async listSessions(
     params: ListAISessionsParams = {},
   ): Promise<AISessionListResponse> {
@@ -36,32 +38,86 @@ export const aiService = {
     return response.data!;
   },
 
-  /** Get a single AI session by ID with messages. */
   async getSessionById(id: string): Promise<AIChatSession> {
-    const response = await serverApi.get<AIChatSession>(`/ai/sessions/${id}`);
+    const response = await serverApi.get<AIChatSession>(
+      `/ai/sessions/${id}`,
+    );
     return response.data!;
   },
 
-  /** Send a message to the AI assistant. */
+  async getMessages(sessionId: string): Promise<unknown> {
+    const response = await serverApi.get<unknown>(
+      `/ai/sessions/${sessionId}/messages`,
+    );
+    return response.data!;
+  },
+
   async sendMessage(
+    sessionId: string,
     payload: SendAIMessagePayload,
   ): Promise<SendAIMessageResponse> {
     const response = await serverApi.post<SendAIMessageResponse>(
-      "/ai/chat",
+      `/ai/sessions/${sessionId}/messages`,
       payload,
     );
     return response.data!;
   },
 
-  /** Delete an AI session. */
   async deleteSession(id: string): Promise<void> {
     await serverApi.del(`/ai/sessions/${id}`);
   },
 
-  /** Mark a message as helpful or not helpful. */
   async markHelpful(messageId: string, isHelpful: boolean): Promise<void> {
     await serverApi.patch(`/ai/messages/${messageId}/helpful`, {
       isHelpful,
     });
+  },
+
+  async getStudyStats(): Promise<unknown> {
+    const response = await serverApi.get<unknown>("/ai/stats");
+    return response.data!;
+  },
+
+  async getStudyStatsHistory(): Promise<unknown> {
+    const response = await serverApi.get<unknown>("/ai/stats/history");
+    return response.data!;
+  },
+
+  async summarizePdf(data: { fileUrl: string }): Promise<unknown> {
+    const response = await serverApi.post<unknown>(
+      "/ai/tools/summarize-pdf",
+      data,
+    );
+    return response.data!;
+  },
+
+  async generateQuiz(data: {
+    topic: string;
+    count?: number;
+  }): Promise<unknown> {
+    const response = await serverApi.post<unknown>(
+      "/ai/tools/generate-quiz",
+      data,
+    );
+    return response.data!;
+  },
+
+  async generateFlashcards(data: {
+    topic: string;
+    count?: number;
+  }): Promise<unknown> {
+    const response = await serverApi.post<unknown>(
+      "/ai/tools/generate-flashcards",
+      data,
+    );
+    return response.data!;
+  },
+
+  async explainCode(data: { code: string; language?: string }): Promise<unknown> {
+    const response = await serverApi.post<unknown>(
+      "/ai/tools/explain-code",
+      data,
+    );
+    return response.data!;
   },
 };

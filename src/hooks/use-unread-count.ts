@@ -39,7 +39,7 @@ export function useUnreadCount({
       const result = await apiClient.get<UnreadCountResponse>(
         "/notifications/unread-count",
       );
-      setCount(result.data?.count ?? 0);
+      setCount(result.data?.unreadCount ?? 0);
     } catch {
       // Swallow — callers can handle errors externally
     } finally {
@@ -59,7 +59,7 @@ export function useUnreadCount({
           "/notifications/unread-count",
         );
         if (!cancelled) {
-          setCount(result.data?.count ?? 0);
+      setCount(result.data?.unreadCount ?? 0);
         }
       } catch {
         // Swallow — callers can handle errors externally
