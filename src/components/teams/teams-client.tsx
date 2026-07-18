@@ -168,11 +168,15 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
       );
     }
     // Multi-skill filter (OR: team must have at least one selected skill).
+    // Match against both the tag name and slug (lowercased) so it works
+    // regardless of how the slug was generated (e.g. "Data Analysis" → "data-analysis").
     if (selectedSkills.length > 0) {
       list = list.filter((t) =>
-        (t.teamRequestSkills ?? []).some((s) =>
-          selectedSkills.includes((s.tag?.slug ?? "").toLowerCase()),
-        ),
+        (t.teamRequestSkills ?? []).some((s) => {
+          const name = (s.tag?.name ?? "").toLowerCase();
+          const slug = (s.tag?.slug ?? "").toLowerCase();
+          return selectedSkills.includes(name) || selectedSkills.includes(slug);
+        }),
       );
     }
     return list;
