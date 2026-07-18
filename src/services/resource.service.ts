@@ -35,7 +35,7 @@ export const resourceService = {
     tags?: string[];
   }): Promise<Resource> {
     const response = await serverApi.post<Resource>("/resources", data, {
-      invalidatesTags: [...RESOURCE_MUTATION_TAGS],
+      invalidatesTags: [...RESOURCE_MUTATION_TAGS, TAGS.LEADERBOARD],
     });
     return response.data!;
   },
@@ -103,6 +103,7 @@ export const resourceService = {
     const response = await serverApi.post<{ action: string; upvoteCount: number; downvoteCount: number }>(
       `/resources/${resourceId}/upvote`,
       { type },
+      { invalidatesTags: [TAGS.LEADERBOARD] },
     );
     return response.data!;
   },
@@ -111,6 +112,7 @@ export const resourceService = {
     const response = await serverApi.post<{ action: string }>(
       `/resources/${resourceId}/bookmark`,
       {},
+      { invalidatesTags: [TAGS.RESOURCE_DETAIL] },
     );
     return response.data!;
   },
