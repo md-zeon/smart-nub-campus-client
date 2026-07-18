@@ -113,8 +113,15 @@ export default async function ResourcesPage({
     initialResources = resourcesResult.data ?? [];
     initialMeta = resourcesResult.meta ?? null;
     trending = trendingResult.data ?? [];
-    const lb = leaderboardResult as unknown as { leaderboard?: LeaderboardEntry[] };
-    contributors = lb.leaderboard ?? [];
+    const lb = leaderboardResult as unknown as {
+      leaderboard?: { rank: number; user: { id: string; name: string; image?: string | null } | null; totalPoints: number }[];
+    };
+    contributors = (lb.leaderboard ?? []).map((entry) => ({
+      rank: entry.rank,
+      name: entry.user?.name ?? "Unknown",
+      image: entry.user?.image ?? null,
+      totalPoints: entry.totalPoints,
+    }));
   } catch {
     // Client component handles empty state gracefully
   }
