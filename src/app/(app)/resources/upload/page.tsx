@@ -1,59 +1,31 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { resourceService } from "@/services/resource.service";
 import { ResourceUploadForm } from "@/components/resources/resource-upload-form";
-import { listResources } from "@/actions/resource.actions";
-import type { Resource, ResourceCourse, ResourceCategory } from "@/types/resource.types";
+import type { ResourceCourse, ResourceCategory } from "@/types/resource.types";
 
 /**
- * Resource upload page — full-width layout with upload form.
- * Fetches courses and categories for form dropdowns.
+ * Resource upload page — Server Component.
+ * Fetches courses and categories on the server for form dropdowns.
  */
-export default function ResourceUploadPage() {
-  const [courses, setCourses] = useState<ResourceCourse[]>([]);
-  const [categories, setCategories] = useState<ResourceCategory[]>([]);
+export default async function ResourceUploadPage() {
+  let courses: ResourceCourse[] = [];
+  let categories: ResourceCategory[] = [];
 
-  /** Fetch resources to extract unique courses and categories for form dropdowns. */
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchData() {
-      try {
-        const result = await listResources({ limit: 100 });
-        if (!cancelled && result.success && result.data) {
-          const data = result.data as { data?: Resource[] };
-          const resources = data.data ?? [];
-
-          const courseMap = new Map<string, ResourceCourse>();
-          const categoryMap = new Map<string, ResourceCategory>();
-
-          for (const r of resources) {
-            if (r.course && !courseMap.has(r.course.id)) {
-              courseMap.set(r.course.id, r.course);
-            }
-            if (r.category && !categoryMap.has(r.category.id)) {
-              categoryMap.set(r.category.id, r.category);
-            }
-          }
-
-          setCourses(Array.from(courseMap.values()));
-          setCategories(Array.from(categoryMap.values()));
-        }
-      } catch {
-        // Dropdowns will be empty — user can still fill other fields
-      }
-    }
-
-    fetchData();
-    return () => { cancelled = true; };
-  }, []);
+  try {
+    const [coursesResult, categoriesResult] = await Promise.all([
+      resourceService.listCourses(),
+      resourceService.listCategories(),
+    ]);
+    courses = (coursesResult as unknown as ResourceCourse[]) ?? [];
+    categories = (categoriesResult as unknown as ResourceCategory[]) ?? [];
+  } catch {
+    // Form will have empty dropdowns — user can still fill other fields
+  }
 
   return (
     <div className="min-h-screen">
       <div className="mx-auto max-w-screen-xl px-4 py-6 sm:px-6">
-        {/* ── Back link ────────────────────────────────────────────── */}
         <Link
           href="/resources"
           className="mb-4 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -62,7 +34,6 @@ export default function ResourceUploadPage() {
           Back to Resources
         </Link>
 
-        {/* ── Page header ──────────────────────────────────────────── */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-foreground">Upload Resource</h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -70,7 +41,6 @@ export default function ResourceUploadPage() {
           </p>
         </div>
 
-        {/* ── Upload form ──────────────────────────────────────────── */}
         <ResourceUploadForm courses={courses} categories={categories} />
       </div>
     </div>

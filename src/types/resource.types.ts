@@ -73,7 +73,7 @@ export interface Tag {
   id: string;
   name: string;
   slug: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 export interface ResourceVote {

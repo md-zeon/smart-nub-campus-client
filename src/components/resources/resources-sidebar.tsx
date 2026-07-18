@@ -1,41 +1,34 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { Plus, Bookmark, Upload, BookOpen, Filter } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Plus, Bookmark, Upload, BookOpen } from "lucide-react";
 import type { ResourceCategory } from "@/types/resource.types";
 import { cn } from "@/lib/utils";
 
-/** Tab option for resource list filtering. */
 type TabOption = "all" | "bookmarks" | "uploads";
 
 interface ResourcesSidebarProps {
-  /** Currently active tab. */
   activeTab: TabOption;
-  /** Callback when tab changes. */
   onTabChange: (tab: TabOption) => void;
-  /** Currently selected category ID. */
   selectedCategoryId: string | null;
-  /** Callback when category is selected. */
   onCategoryChange: (categoryId: string | null) => void;
-  /** Categories with counts (fetched server-side). */
-  categories?: (ResourceCategory & { _count?: number })[];
+  selectedTag: string | null;
+  onTagChange: (tag: string | null) => void;
+  categories?: (ResourceCategory & { _count: { resources: number } })[];
+  courses?: { id: string; code: string; name: string; department: string; _count: { resources: number } }[];
+  onCourseChange?: (courseId: string | null) => void;
 }
 
-/**
- * Left sidebar for the resources list page.
- * Contains upload button, tabs, categories with counts, and course filter.
- */
 export function ResourcesSidebar({
   activeTab,
   onTabChange,
   selectedCategoryId,
   onCategoryChange,
+  selectedTag,
+  onTagChange,
   categories = [],
+  courses = [],
 }: ResourcesSidebarProps) {
-  const [courseSearch, setCourseSearch] = useState("");
-
   const tabs: { id: TabOption; label: string; icon: React.ReactNode }[] = [
     { id: "all", label: "All Resources", icon: <BookOpen className="size-4" /> },
     { id: "bookmarks", label: "My Bookmarks", icon: <Bookmark className="size-4" /> },
@@ -102,11 +95,9 @@ export function ResourcesSidebar({
                 )}
               >
                 <span className="truncate">{cat.name}</span>
-                {cat._count != null && (
-                  <span className="ml-auto rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
-                    {cat._count}
-                  </span>
-                )}
+                <span className="ml-auto rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
+                  {cat._count.resources}
+                </span>
               </button>
             ))}
           </nav>
@@ -115,20 +106,32 @@ export function ResourcesSidebar({
         )}
       </div>
 
-      {/* ── Filter by Course ──────────────────────────────────────── */}
+      {/* ── Courses ──────────────────────────────────────────────── */}
       <div>
         <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Filter by Course
+          Courses
         </h3>
-        <div className="relative">
-          <Filter className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search courses..."
-            value={courseSearch}
-            onChange={(e) => setCourseSearch(e.target.value)}
-            className="h-8 pl-8 text-xs"
-          />
-        </div>
+        {courses.length > 0 ? (
+          <nav className="space-y-0.5">
+            {courses.map((course) => (
+              <Link
+                key={course.id}
+                href={`/resources?category=${course.id}`}
+                className={cn(
+                  "flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-sm transition-colors",
+                  "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <span className="truncate">{course.code} — {course.name}</span>
+                <span className="ml-auto rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
+                  {course._count.resources}
+                </span>
+              </Link>
+            ))}
+          </nav>
+        ) : (
+          <p className="text-xs text-muted-foreground">No courses found.</p>
+        )}
       </div>
     </div>
   );

@@ -45,6 +45,22 @@ export const resourceService = {
     return response.data!;
   },
 
+  async listCategories(): Promise<{ id: string; name: string; slug: string; _count: { resources: number } }[]> {
+    const response = await serverApi.get<{ id: string; name: string; slug: string; _count: { resources: number } }[]>(
+      "/resources/categories",
+      { tags: ["resources-list"] },
+    );
+    return response.data!;
+  },
+
+  async listCourses(): Promise<{ id: string; code: string; name: string; department: string; _count: { resources: number } }[]> {
+    const response = await serverApi.get<{ id: string; code: string; name: string; department: string; _count: { resources: number } }[]>(
+      "/resources/courses",
+      { tags: ["resources-list"] },
+    );
+    return response.data!;
+  },
+
   async getResourceById(id: string): Promise<Resource> {
     const response = await serverApi.get<Resource>(`/resources/${id}`, {
       tags: ["resource-detail"],

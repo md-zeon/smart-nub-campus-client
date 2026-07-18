@@ -13,7 +13,6 @@ interface LeaderboardEntry {
   totalPoints: number;
 }
 
-/** Loading skeleton for sidebar items. */
 function SidebarSkeleton() {
   return (
     <div className="space-y-2">
@@ -30,11 +29,11 @@ function SidebarSkeleton() {
   );
 }
 
-/**
- * Right sidebar for the resources page.
- * Shows trending resources, popular tags, top contributors, and request button.
- */
-export function ResourcesTrending() {
+interface ResourcesTrendingProps {
+  onTagClick?: (tag: string) => void;
+}
+
+export function ResourcesTrending({ onTagClick }: ResourcesTrendingProps) {
   const [trending, setTrending] = useState<Resource[]>([]);
   const [contributors, setContributors] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,6 +68,16 @@ export function ResourcesTrending() {
     fetchData();
     return () => { cancelled = true; };
   }, []);
+
+  // Collect unique tags from trending resources
+  const trendingTags = Array.from(
+    new Map(
+      trending
+        .flatMap((r) => r.resourceTags ?? [])
+        .filter((rt) => rt.tag)
+        .map((rt) => [rt.tag!.id, rt.tag!])
+    ).values()
+  ).slice(0, 10);
 
   return (
     <div className="space-y-6">
@@ -116,16 +125,18 @@ export function ResourcesTrending() {
           <h3 className="text-sm font-semibold text-foreground">Popular Tags</h3>
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {["DSA", "DBMS", "OOP", "OS", "Math", "CN", "AI", "Web", "Java", "Python"].map(
-            (tag) => (
-              <Link
-                key={tag}
-                href={`/resources?tag=${encodeURIComponent(tag)}`}
+          {trendingTags.length > 0 ? (
+            trendingTags.map((tag) => (
+              <button
+                key={tag.id}
+                onClick={() => onTagClick?.(tag.slug)}
                 className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-primary/10 hover:text-primary"
               >
-                {tag}
-              </Link>
-            )
+                {tag.name}
+              </button>
+            ))
+          ) : (
+            <p className="text-xs text-muted-foreground">No tags yet.</p>
           )}
         </div>
       </div>
