@@ -99,10 +99,10 @@ export const resourceService = {
     });
   },
 
-  async toggleVote(resourceId: string): Promise<{ action: string; upvoteCount: number; downvoteCount: number }> {
+  async toggleVote(resourceId: string, type: "UP" | "DOWN" = "UP"): Promise<{ action: string; upvoteCount: number; downvoteCount: number }> {
     const response = await serverApi.post<{ action: string; upvoteCount: number; downvoteCount: number }>(
       `/resources/${resourceId}/upvote`,
-      {},
+      { type },
     );
     return response.data!;
   },
