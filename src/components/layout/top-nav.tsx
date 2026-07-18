@@ -157,8 +157,7 @@ export function TopNav({ userName, userImage }: TopNavProps) {
           {/* ── User avatar / dropdown (desktop) ────────────────────────── */}
           <div className="hidden md:block">
             <DropdownMenu>
-              <DropdownMenuTrigger>
-                <Button variant="ghost" size="icon" className="size-8 rounded-full">
+              <DropdownMenuTrigger className="flex size-8 items-center justify-center rounded-full hover:bg-muted transition-colors outline-none">
                   {userImage ? (
                     <img
                       src={userImage}
@@ -170,7 +169,6 @@ export function TopNav({ userName, userImage }: TopNavProps) {
                       {userName?.charAt(0)?.toUpperCase() ?? "U"}
                     </div>
                   )}
-                </Button>
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end" className="w-48">
