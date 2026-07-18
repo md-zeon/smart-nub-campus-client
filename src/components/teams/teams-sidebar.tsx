@@ -10,9 +10,11 @@ export type TeamsTab = "finder" | "applications" | "teams";
 interface TeamsSidebarProps {
   activeTab: TeamsTab;
   onTabChange: (tab: TeamsTab) => void;
-  /** Selected skill slug used to filter the finder. */
-  selectedSkill?: string | null;
+  /** Selected skill slugs used to filter the finder (multi-select). */
+  selectedSkills?: string[];
   onSkillToggle?: (skill: string) => void;
+  /** Clears all selected skills. */
+  onSkillsClear?: () => void;
 }
 
 const TABS: { id: TeamsTab; label: string; icon: React.ReactNode }[] = [
@@ -28,8 +30,9 @@ const TABS: { id: TeamsTab; label: string; icon: React.ReactNode }[] = [
 export function TeamsSidebar({
   activeTab,
   onTabChange,
-  selectedSkill,
+  selectedSkills = [],
   onSkillToggle,
+  onSkillsClear,
 }: TeamsSidebarProps) {
   return (
     <div className="space-y-6">
@@ -79,16 +82,28 @@ export function TeamsSidebar({
       {/* ── Popular Skills ───────────────────────────────────────── */}
       {onSkillToggle && (
         <div>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Popular Skills
-          </h3>
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Popular Skills
+            </h3>
+            {selectedSkills.length > 0 && onSkillsClear && (
+              <button
+                onClick={onSkillsClear}
+                className="text-[10px] font-medium text-primary hover:underline"
+              >
+                Clear ({selectedSkills.length})
+              </button>
+            )}
+          </div>
           <div className="flex flex-wrap gap-1.5">
             {POPULAR_SKILLS.map((skill) => {
-              const active = selectedSkill === skill.toLowerCase();
+              const slug = skill.toLowerCase();
+              const active = selectedSkills.includes(slug);
               return (
                 <button
                   key={skill}
-                  onClick={() => onSkillToggle(skill.toLowerCase())}
+                  onClick={() => onSkillToggle(slug)}
+                  aria-pressed={active}
                   className={cn(
                     "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
                     active
@@ -101,6 +116,12 @@ export function TeamsSidebar({
               );
             })}
           </div>
+          {selectedSkills.length > 0 && (
+            <p className="mt-2 text-[10px] text-muted-foreground">
+              Filtering by {selectedSkills.length} skill
+              {selectedSkills.length === 1 ? "" : "s"} (any match).
+            </p>
+          )}
         </div>
       )}
     </div>

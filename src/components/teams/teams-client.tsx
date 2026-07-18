@@ -58,7 +58,8 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
 
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
   const search = searchParams.get("search") ?? "";
-  const skill = searchParams.get("skill") ?? null;
+  const skillsParam = searchParams.get("skills") ?? "";
+  const selectedSkills = skillsParam ? skillsParam.split(",").map((s) => s.trim()).filter(Boolean) : [];
   const filterTab = (searchParams.get("filter") as FilterTab) ?? "all";
   const category = searchParams.get("category") ?? null;
   const status = searchParams.get("status") ?? null;
@@ -114,12 +115,16 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
       try {
         // Build query params. Include the user's own requests so newly created
         // teams appear immediately; tab filtering is applied client-side.
-        const params: Record<string, unknown> = { page, limit: 12, excludeOwn: false };
+        // Use a larger page when client-side skill filtering is active so the
+        // filtered result set is meaningful.
+        const limit = selectedSkills.length > 0 ? 60 : 12;
+        const params: Record<string, unknown> = { page, limit, excludeOwn: false };
         if (search) params.search = search;
-        if (skill) params.skill = skill;
         if (category) params.category = category;
         if (status) params.status = status;
         if (filterTab === "open") params.status = "OPEN";
+        // NOTE: multi-skill filtering is applied client-side (OR match) because the
+        // server list endpoint currently accepts a single `skill` slug.
 
         const result = await listTeamRequests(params as Parameters<typeof listTeamRequests>[0]);
         if (!cancelled && result.success && result.data) {
@@ -141,30 +146,46 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
     return () => {
       cancelled = true;
     };
-  }, [page, search, skill, category, status, filterTab, tab]);
+  }, [page, search, selectedSkills, category, status, filterTab, tab]);
 
-  // Derive visible teams based on the active tab.
+  // Derive visible teams based on the active tab, then apply multi-skill filter.
   // NOTE: "My Teams" / "My Applications" are derived client-side because the
   // server list endpoint does not yet expose per-user membership/application context.
   const visibleTeams = (() => {
+    let list = teams;
     if (tab === "teams" || tab === "applications") {
       // Include teams the user created or is a member of.
-      return teams.filter(
+      list = teams.filter(
         (t) =>
           currentUserId != null &&
           (t.creatorId === currentUserId ||
             (t.teamMembers ?? []).some((m) => m.userId === currentUserId)),
       );
     }
-    return teams;
+    // Multi-skill filter (OR: team must have at least one selected skill).
+    if (selectedSkills.length > 0) {
+      list = list.filter((t) =>
+        (t.teamRequestSkills ?? []).some((s) =>
+          selectedSkills.includes((s.tag?.slug ?? "").toLowerCase()),
+        ),
+      );
+    }
+    return list;
   })();
 
   const toggleSkill = useCallback(
     (slug: string) => {
-      updateParams({ skill: skill === slug ? null : slug });
+      const next = selectedSkills.includes(slug)
+        ? selectedSkills.filter((s) => s !== slug)
+        : [...selectedSkills, slug];
+      updateParams({ skills: next.length > 0 ? next.join(",") : null });
     },
-    [skill, updateParams],
+    [selectedSkills, updateParams],
   );
+
+  const clearSkills = useCallback(() => {
+    updateParams({ skills: null });
+  }, [updateParams]);
 
   return (
     <PageLayout
@@ -172,8 +193,9 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
         <TeamsSidebar
           activeTab={tab}
           onTabChange={(t) => updateParams({ tab: t === "finder" ? null : t })}
-          selectedSkill={skill}
+          selectedSkills={selectedSkills}
           onSkillToggle={toggleSkill}
+          onSkillsClear={clearSkills}
         />
       }
       rightSidebar={
@@ -233,6 +255,34 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
                 {ft.label}
               </button>
             ))}
+          </div>
+        )}
+
+        {/* ── Active skill filters ────────────────────────────────── */}
+        {selectedSkills.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground">Skills:</span>
+            {selectedSkills.map((slug) => (
+              <span
+                key={slug}
+                className="flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary ring-1 ring-primary/30"
+              >
+                {slug}
+                <button
+                  onClick={() => toggleSkill(slug)}
+                  className="rounded-full p-0.5 hover:bg-muted"
+                  aria-label={`Remove ${slug} filter`}
+                >
+                  <X className="size-3" />
+                </button>
+              </span>
+            ))}
+            <button
+              onClick={clearSkills}
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Clear all
+            </button>
           </div>
         )}
 
