@@ -36,6 +36,7 @@ import { useTheme } from "next-themes";
 import { useUnreadCount } from "@/hooks/use-unread-count";
 import ROUTES from "@/constants/routes";
 import { AcademicCapIcon } from "../ui/icons/academic-cap";
+import Image from "next/image";
 
 // ── Navigation items ─────────────────────────────────────────────────────────
 
@@ -159,9 +160,12 @@ export function TopNav({ userName, userImage }: TopNavProps) {
             <DropdownMenu>
               <DropdownMenuTrigger className="flex size-8 items-center justify-center rounded-full hover:bg-muted transition-colors outline-none">
                 {userImage ? (
-                  <img
+                  <Image
                     src={userImage}
                     alt={userName ?? "User"}
+                    width={28}
+                    height={28}
+                    unoptimized
                     className="size-7 rounded-full object-cover"
                   />
                 ) : (
@@ -272,9 +276,12 @@ export function TopNav({ userName, userImage }: TopNavProps) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {userImage ? (
-                  <img
+                  <Image
                     src={userImage}
                     alt={userName ?? "User"}
+                    width={32}
+                    height={32}
+                    unoptimized
                     className="size-8 rounded-full object-cover"
                   />
                 ) : (

@@ -107,6 +107,7 @@ export function ImageUpload({ value, onChange, error }: ImageUploadProps) {
 
         {preview ? (
           <div className="relative w-full max-w-xs">
+            {/* eslint-disable-next-line @next/next/no-img-element -- blob URL from URL.createObjectURL can't use next/image */}
             <img
               src={preview}
               alt="ID Card Preview"

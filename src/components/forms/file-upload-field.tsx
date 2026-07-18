@@ -19,6 +19,7 @@ import { type UploadContext } from "@/lib/upload/types";
 import { useUpload } from "@/hooks/use-upload";
 import { uploadService } from "@/services/upload.service";
 import * as React from "react";
+import Image from "next/image";
 import { UploadCloud, XIcon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -224,9 +225,12 @@ export function FileUploadField<TFieldValues extends FieldValues>({
       {/* Existing image preview — shown when no new file has been uploaded */}
       {showExistingImage && (
         <div className="relative overflow-hidden rounded-lg border">
-          <img
+          <Image
             src={existingImageUrl}
             alt="Uploaded ID card"
+            width={600}
+            height={192}
+            unoptimized
             className="h-48 w-full object-contain"
           />
           <button
