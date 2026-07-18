@@ -33,7 +33,7 @@ export function TopContributors({ contributors }: TopContributorsProps) {
         <div className="space-y-2">
           {contributors.map((contributor) => (
             <div
-              key={contributor.userId}
+              key={contributor.user?.id ?? contributor.rank}
               className="flex items-center gap-3 rounded-lg border bg-card p-3 ring-1 ring-foreground/10"
             >
               {/* Rank */}
@@ -43,7 +43,7 @@ export function TopContributors({ contributors }: TopContributorsProps) {
               {/* Name */}
               <div className="min-w-0 flex-1">
                 <h3 className="truncate text-sm font-medium text-foreground">
-                  {contributor.name ?? "Unknown"}
+                  {contributor.user?.name ?? "Unknown"}
                 </h3>
                 <p className="text-xs text-muted-foreground">
                   {contributor.totalPoints} pts

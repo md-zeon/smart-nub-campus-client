@@ -21,8 +21,8 @@ export default async function HomePage() {
   ]);
 
   const trendingResources = trendingResult.data ?? [];
-  const topContributors = leaderboardResult.leaderboard ?? [];
-  const upcomingEvents = eventsResult.events ?? [];
+  const topContributors = leaderboardResult.data ?? [];
+  const upcomingEvents = eventsResult.data ?? [];
 
   return (
     <div className="min-h-screen">

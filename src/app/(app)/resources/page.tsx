@@ -114,9 +114,9 @@ export default async function ResourcesPage({
     initialMeta = resourcesResult.meta ?? null;
     trending = trendingResult.data ?? [];
     const lb = leaderboardResult as unknown as {
-      leaderboard?: { rank: number; user: { id: string; name: string; image?: string | null } | null; totalPoints: number }[];
+      data?: { rank: number; user: { id: string; name: string; image?: string | null } | null; totalPoints: number }[];
     };
-    contributors = (lb.leaderboard ?? []).map((entry) => ({
+    contributors = (lb.data ?? []).map((entry) => ({
       rank: entry.rank,
       name: entry.user?.name ?? "Unknown",
       image: entry.user?.image ?? null,

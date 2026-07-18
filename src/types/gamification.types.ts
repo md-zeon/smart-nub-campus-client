@@ -35,13 +35,16 @@ export interface ReputationPoint {
   createdAt: string;
 }
 
-export interface Leaderboard {
-  userId: string;
+export interface LeaderboardUser {
+  id: string;
   name: string;
   image?: string | null;
-  totalPoints: number;
-  badgeCount: number;
+}
+
+export interface Leaderboard {
   rank: number;
+  user: LeaderboardUser | null;
+  totalPoints: number;
 }
 
 // ── Enums ────────────────────────────────────────────────────────────────────
@@ -81,6 +84,6 @@ export type ReputationEvent =
 // ── API query / list types ───────────────────────────────────────────────────
 
 export interface LeaderboardResponse {
-  leaderboard: Leaderboard[];
+  data: Leaderboard[];
   meta: import("./resource.types").PaginationMeta;
 }
