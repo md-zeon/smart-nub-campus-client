@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Search, X, Loader2, AlertCircle } from "lucide-react";
 import { PageLayout } from "@/components/layout/page-layout";
@@ -59,7 +59,12 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
   const search = searchParams.get("search") ?? "";
   const skillsParam = searchParams.get("skills") ?? "";
-  const selectedSkills = skillsParam ? skillsParam.split(",").map((s) => s.trim()).filter(Boolean) : [];
+  // Memoize so the reference is stable across renders — an unmemoized array here
+  // would re-trigger the fetch effect on every render (infinite loop).
+  const selectedSkills = useMemo(
+    () => (skillsParam ? skillsParam.split(",").map((s) => s.trim()).filter(Boolean) : []),
+    [skillsParam],
+  );
   const filterTab = (searchParams.get("filter") as FilterTab) ?? "all";
   const category = searchParams.get("category") ?? null;
   const status = searchParams.get("status") ?? null;
