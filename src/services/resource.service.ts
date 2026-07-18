@@ -28,7 +28,9 @@ export const resourceService = {
     courseId: string;
     tags?: string[];
   }): Promise<Resource> {
-    const response = await serverApi.post<Resource>("/resources", data);
+    const response = await serverApi.post<Resource>("/resources", data, {
+      invalidatesTags: ["resources-list"],
+    });
     return response.data!;
   },
 
@@ -55,12 +57,16 @@ export const resourceService = {
     description: string;
     tags: string[];
   }>): Promise<Resource> {
-    const response = await serverApi.patch<Resource>(`/resources/${id}`, data);
+    const response = await serverApi.patch<Resource>(`/resources/${id}`, data, {
+      invalidatesTags: ["resources-list"],
+    });
     return response.data!;
   },
 
   async deleteResource(id: string): Promise<void> {
-    await serverApi.del(`/resources/${id}`);
+    await serverApi.del(`/resources/${id}`, {
+      invalidatesTags: ["resources-list"],
+    });
   },
 
   async toggleVote(resourceId: string): Promise<{ action: string; upvoteCount: number; downvoteCount: number }> {
