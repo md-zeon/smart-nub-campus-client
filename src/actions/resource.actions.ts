@@ -125,3 +125,44 @@ export async function reportResource(
     return { success: false, message };
   }
 }
+
+export async function listResourceComments(
+  resourceId: string,
+  page = 1,
+  limit = 50,
+): Promise<ApiResponse> {
+  try {
+    const data = await resourceService.listComments(resourceId, page, limit);
+    return { success: true, message: "Comments fetched.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch comments.";
+    return { success: false, message };
+  }
+}
+
+export async function deleteResourceComment(
+  commentId: string,
+): Promise<ApiResponse> {
+  try {
+    await resourceService.deleteComment(commentId);
+    return { success: true, message: "Comment deleted." };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to delete comment.";
+    return { success: false, message };
+  }
+}
+
+export async function recordResourceDownload(
+  resourceId: string,
+): Promise<ApiResponse> {
+  try {
+    const data = await resourceService.recordDownload(resourceId);
+    return { success: true, message: "Download recorded.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to record download.";
+    return { success: false, message };
+  }
+}
