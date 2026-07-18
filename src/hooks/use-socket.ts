@@ -2,12 +2,7 @@
 
 import { useEffect, useRef, useCallback, useState } from "react";
 import { io, type Socket } from "socket.io-client";
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-type EventName = string;
+import type { SocketEvents, ServerEvents } from "@/lib/types/socket-events";
 
 interface UseSocketOptions {
   /** Socket.IO server URL. Defaults to NEXT_PUBLIC_API_URL. */
@@ -151,10 +146,10 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
  * @param event - The event name to listen for.
  * @param handler - The callback invoked when the event fires.
  */
-export function useSocketEvent<T = unknown>(
+export function useSocketEvent<E extends ServerEvents>(
   socket: Socket | null,
-  event: EventName,
-  handler: (data: T) => void,
+  event: E,
+  handler: (data: SocketEvents[E]) => void,
 ): void {
   const handlerRef = useRef(handler);
 
@@ -166,14 +161,16 @@ export function useSocketEvent<T = unknown>(
   useEffect(() => {
     if (!socket) return;
 
-    const listener = (data: T) => {
+    const listener = (data: SocketEvents[E]) => {
       handlerRef.current(data);
     };
 
-    socket.on(event, listener);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    socket.on(event as any, listener);
 
     return () => {
-      socket.off(event, listener);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      socket.off(event as any, listener);
     };
   }, [socket, event]);
 }
