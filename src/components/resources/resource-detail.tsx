@@ -111,8 +111,33 @@ export function ResourceDetail({ resource: initialResource }: ResourceDetailProp
   async function handleDownload() {
     setDownloading(true);
     try {
-      await recordResourceDownload(resource.id);
-      window.open(resource.fileUrl, "_blank");
+      const result = await recordResourceDownload(resource.id);
+      const fileUrl =
+        (result.data as { fileUrl?: string } | undefined)?.fileUrl ?? resource.fileUrl;
+
+      // Derive a sensible filename with extension so the downloaded file is viewable.
+      const ext = (resource.fileType.split("/").pop() ?? "")
+        .replace(/[^a-z0-9]/gi, "")
+        .toLowerCase();
+      const safeTitle = resource.title.replace(/[^a-z0-9\s-]/gi, "").trim().replace(/\s+/g, "-").slice(0, 60);
+      const filename = `${safeTitle || "resource"}${ext ? `.${ext}` : ""}`;
+
+      // Fetch as a blob (Cloudinary is CORS-enabled) so we control the
+      // saved filename + extension. Opening the raw URL directly would save
+      // the Cloudinary public id (e.g. "kgmplug3irvqwebfpb7w") with no extension.
+      const response = await fetch(fileUrl);
+      if (!response.ok) throw new Error("Failed to fetch file");
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      const anchor = document.createElement("a");
+      anchor.href = blobUrl;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(blobUrl);
+
       setResource((prev) => ({
         ...prev,
         downloadCount: prev.downloadCount + 1,
