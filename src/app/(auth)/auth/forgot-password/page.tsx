@@ -15,6 +15,7 @@ import {
   forgotPasswordSchema,
   type ForgotPasswordFormValues,
 } from "@/schemas/auth/forgot-password.schema";
+import ROUTES from "@/constants/routes";
 
 export default function ForgotPasswordPage() {
   const [isPending, setIsPending] = useState(false);
@@ -52,7 +53,7 @@ export default function ForgotPasswordPage() {
 
       setTimeout(() => {
         router.push(
-          `/auth/reset-password?identifier=${encodeURIComponent(data.identifier)}`,
+          `${ROUTES.RESET_PASSWORD}?identifier=${encodeURIComponent(data.identifier)}`,
         );
       }, 1500);
     } catch (error) {
@@ -123,7 +124,7 @@ export default function ForgotPasswordPage() {
 
               <div className="text-center text-sm">
                 <Link
-                  href="/auth/login"
+                  href={ROUTES.LOGIN}
                   className="text-brand hover:underline"
                 >
                   Back to Login

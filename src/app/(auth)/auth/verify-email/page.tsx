@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ShieldCheck, Loader2 } from "lucide-react";
 import AuthInfo from "../_components/AuthInfo";
 import { VerifyEmailForm } from "../onboarding/_components/VerifyEmailForm";
+import ROUTES from "@/constants/routes";
 
 export default function VerifyEmailPage() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function VerifyEmailPage() {
   }, []);
 
   const handleSuccess = useCallback(() => {
-    router.push("/auth/login?verified=true");
+    router.push(`${ROUTES.LOGIN}?verified=true`);
   }, [router]);
 
   if (!ready) {

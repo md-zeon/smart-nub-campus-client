@@ -17,6 +17,7 @@ import {
   completeOnboarding,
 } from "@/actions/onboarding.action";
 import Link from "next/link";
+import ROUTES from "@/constants/routes";
 
 interface OnboardingFlowProps {
   initialStep: OnboardingStepValue;
@@ -238,7 +239,7 @@ export function OnboardingFlow({
                 </p>
               </div>
               <Button>
-                <Link href="/">Go to Home</Link>
+                <Link href={ROUTES.HOME}>Go to Home</Link>
               </Button>
             </div>
           )}

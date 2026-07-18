@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import AuthInfo from "./_components/AuthInfo";
+import ROUTES from "@/constants/routes";
 
 export default function AuthPage() {
   return (
@@ -49,7 +50,7 @@ export default function AuthPage() {
                       nativeButton={false}
                       className="mt-2.5 sm:mt-5 group w-full sm:w-auto px-5 sm:px-10"
                       render={
-                        <Link href="/auth/onboarding">
+                        <Link href={ROUTES.ONBOARDING}>
                           Verify My Identity{" "}
                           <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-300 h-4 w-4" />
                         </Link>
@@ -77,7 +78,7 @@ export default function AuthPage() {
                       nativeButton={false}
                       className="mt-2.5 sm:mt-5 border border-success w-full sm:w-auto px-5 sm:px-10"
                       render={
-                        <Link href="/auth/login">
+                        <Link href={ROUTES.LOGIN}>
                           Login to My Account{" "}
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>

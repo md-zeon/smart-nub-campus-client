@@ -1,26 +1,27 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import ROUTES from "@/constants/routes";
 
 /**
  * Routes that require authentication.
- * The "/" entry is matched exactly (not as a prefix) to avoid
+ * The HOME entry is matched exactly (not as a prefix) to avoid
  * catching every path.
  */
 const PROTECTED_ROUTES = [
-  "/",
-  "/resources",
-  "/teams",
-  "/discussions",
-  "/qa",
-  "/ai",
-  "/connections",
-  "/messages",
-  "/notifications",
-  "/settings",
+  ROUTES.HOME,
+  ROUTES.RESOURCES,
+  ROUTES.TEAMS,
+  ROUTES.DISCUSSIONS,
+  ROUTES.QA,
+  ROUTES.AI,
+  ROUTES.CONNECTIONS,
+  ROUTES.MESSAGES,
+  ROUTES.NOTIFICATIONS,
+  ROUTES.SETTINGS,
 ];
 
 /** Routes that should only be accessible to unauthenticated users. */
-const AUTH_ROUTES = ["/auth"];
+const AUTH_ROUTES = [ROUTES.AUTH];
 
 /** Paths that must never be intercepted by this proxy. */
 const EXCLUDED_PREFIXES = ["/api", "/_next", "/favicon.ico"];
@@ -73,7 +74,7 @@ export async function proxy(request: NextRequest) {
 
   // Redirect unauthenticated users away from protected routes
   if (needsAuth && !isAuthenticated) {
-    const loginUrl = new URL("/auth/login", request.url);
+    const loginUrl = new URL(ROUTES.LOGIN, request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
@@ -83,7 +84,7 @@ export async function proxy(request: NextRequest) {
     // Respect any "redirect" param that was set before login
     const redirectParam = request.nextUrl.searchParams.get("redirect");
     return NextResponse.redirect(
-      new URL(redirectParam || "/", request.url),
+      new URL(redirectParam || ROUTES.HOME, request.url),
     );
   }
 
