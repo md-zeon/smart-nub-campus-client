@@ -13,8 +13,8 @@ const COLLAPSED_LIMIT = 6;
 interface ResourcesSidebarProps {
   activeTab: TabOption;
   onTabChange: (tab: TabOption) => void;
-  selectedCategoryId: string | null;
-  onCategoryChange: (categoryId: string | null) => void;
+  selectedCategorySlug: string | null;
+  onCategoryChange: (slug: string | null) => void;
   selectedTags: string[];
   onTagToggle: (slug: string) => void;
   categories?: (ResourceCategory & { _count: { resources: number } })[];
@@ -26,7 +26,7 @@ interface ResourcesSidebarProps {
 export function ResourcesSidebar({
   activeTab,
   onTabChange,
-  selectedCategoryId,
+  selectedCategorySlug,
   onCategoryChange,
   selectedTags,
   onTagToggle,
@@ -107,7 +107,7 @@ export function ResourcesSidebar({
                 onClick={() => onCategoryChange(null)}
                 className={cn(
                   "flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-sm transition-colors",
-                  selectedCategoryId === null
+                  selectedCategorySlug === null
                     ? "bg-primary/10 text-primary font-medium"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
@@ -117,10 +117,10 @@ export function ResourcesSidebar({
               {visibleCategories.map((cat) => (
                 <button
                   key={cat.id}
-                  onClick={() => onCategoryChange(cat.id)}
+                  onClick={() => onCategoryChange(cat.slug)}
                   className={cn(
                     "flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-sm transition-colors",
-                    selectedCategoryId === cat.id
+                    selectedCategorySlug === cat.slug
                       ? "bg-primary/10 text-primary font-medium"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
@@ -171,7 +171,7 @@ export function ResourcesSidebar({
               {visibleCourses.map((course) => (
                 <Link
                   key={course.id}
-                  href={`/resources?category=${course.id}`}
+                  href={`/resources?courseId=${course.id}`}
                   className={cn(
                     "flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-sm transition-colors",
                     "text-muted-foreground hover:bg-muted hover:text-foreground"

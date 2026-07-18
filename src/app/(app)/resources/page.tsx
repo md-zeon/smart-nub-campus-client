@@ -64,7 +64,8 @@ export default async function ResourcesPage({
   const params = await searchParams;
   const page = typeof params.page === "string" ? parseInt(params.page, 10) || 1 : 1;
   const search = typeof params.search === "string" ? params.search : undefined;
-  const category = typeof params.category === "string" ? params.category : undefined;
+  const categorySlug = typeof params.category === "string" ? params.category : undefined;
+  const courseId = typeof params.courseId === "string" ? params.courseId : undefined;
   const tags = typeof params.tags === "string"
     ? params.tags.split(",").map((t) => t.trim()).filter(Boolean)
     : [];
@@ -80,28 +81,37 @@ export default async function ResourcesPage({
   let contributors: LeaderboardEntry[] = [];
 
   try {
-    const [resourcesResult, categoriesResult, coursesResult, tagsResult, trendingResult, leaderboardResult] =
-      await Promise.all([
-        resourceService.listResources({
-          page,
-          limit: 12,
-          search,
-          categoryId: category,
-          tag: tags.length > 0 ? tags : undefined,
-          sort: sort as "newest" | "popular" | "downloads",
-        }),
-        resourceService.listCategories(),
-        resourceService.listCourses(),
-        resourceService.listTags(),
-        resourceService.listResources({ sort: "popular", limit: 3 }),
-        gamificationService.getLeaderboard(1, 5),
-      ]);
+    // Fetch reference data first so we can resolve the category slug → id
+    const [categoriesResult, coursesResult, tagsResult] = await Promise.all([
+      resourceService.listCategories(),
+      resourceService.listCourses(),
+      resourceService.listTags(),
+    ]);
 
-    initialResources = resourcesResult.data ?? [];
-    initialMeta = resourcesResult.meta ?? null;
     categories = (categoriesResult as unknown as (ResourceCategory & { _count: { resources: number } })[]) ?? [];
     courses = (coursesResult as unknown as CourseWithCount[]) ?? [];
     allTags = (tagsResult as unknown as { id: string; name: string; slug: string; _count: { resourceTags: number } }[]) ?? [];
+
+    const resolvedCategoryId = categorySlug
+      ? (categories.find((c) => c.slug === categorySlug)?.id ?? undefined)
+      : undefined;
+
+    const [resourcesResult, trendingResult, leaderboardResult] = await Promise.all([
+      resourceService.listResources({
+        page,
+        limit: 12,
+        search,
+        categoryId: resolvedCategoryId,
+        courseId,
+        tag: tags.length > 0 ? tags : undefined,
+        sort: sort as "newest" | "popular" | "downloads",
+      }),
+      resourceService.listResources({ sort: "popular", limit: 3 }),
+      gamificationService.getLeaderboard(1, 5),
+    ]);
+
+    initialResources = resourcesResult.data ?? [];
+    initialMeta = resourcesResult.meta ?? null;
     trending = trendingResult.data ?? [];
     const lb = leaderboardResult as unknown as { leaderboard?: LeaderboardEntry[] };
     contributors = lb.leaderboard ?? [];
@@ -121,7 +131,7 @@ export default async function ResourcesPage({
         contributors={contributors}
         initialFilters={{
           search: search ?? "",
-          category: category ?? null,
+          category: categorySlug ?? null,
           tags,
           sort,
           view: view === "list" ? "list" : "grid",

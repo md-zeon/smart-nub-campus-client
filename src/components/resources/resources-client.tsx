@@ -81,11 +81,17 @@ export function ResourcesClient({
 
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
   const search = searchParams.get("search") ?? "";
-  const category = searchParams.get("category");
+  const categorySlug = searchParams.get("category");
+  const courseIdParam = searchParams.get("courseId");
   const tagsParam = searchParams.get("tags") ?? "";
   const tags = tagsParam ? tagsParam.split(",").filter(Boolean) : [];
   const sort = searchParams.get("sort") ?? "newest";
   const view: ViewMode = searchParams.get("view") === "list" ? "list" : "grid";
+
+  // Resolve category slug → id for the API (URL uses slug for readability)
+  const categoryId = categorySlug
+    ? (categories.find((c) => c.slug === categorySlug)?.id ?? null)
+    : null;
 
   const [resources, setResources] = useState<Resource[]>(initialResources);
   const [meta, setMeta] = useState<PaginationMeta | null>(initialMeta);
@@ -144,7 +150,8 @@ export function ResourcesClient({
       try {
         const params: Record<string, unknown> = { page, limit: 12 };
         if (search) params.search = search;
-        if (category) params.categoryId = category;
+        if (categoryId) params.categoryId = categoryId;
+        if (courseIdParam) params.courseId = courseIdParam;
         if (tags.length > 0) params.tags = tags;
         if (sort) params.sort = sort;
 
@@ -163,7 +170,7 @@ export function ResourcesClient({
 
     fetchData();
     return () => { cancelled = true; };
-  }, [page, search, category, tagsParam, sort, initialized]);
+  }, [page, search, categorySlug, categoryId, courseIdParam, tagsParam, sort, initialized]);
 
   // ── Optimistic vote toggle ─────────────────────────────────────
   const handleVote = useCallback(async (resourceId: string, currentVote: Resource["userVote"]) => {
@@ -248,8 +255,8 @@ export function ResourcesClient({
         <ResourcesSidebar
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          selectedCategoryId={category}
-          onCategoryChange={(id) => updateParams({ category: id })}
+          selectedCategorySlug={categorySlug}
+          onCategoryChange={(slug) => updateParams({ category: slug })}
           selectedTags={tags}
           onTagToggle={toggleTag}
           categories={categories}
@@ -358,13 +365,13 @@ export function ResourcesClient({
               <div>
                 <label className="text-xs font-semibold text-muted-foreground">Category</label>
                 <select
-                  value={category ?? ""}
+                  value={categorySlug ?? ""}
                   onChange={(e) => updateParams({ category: e.target.value || null })}
                   className="mt-1 h-8 w-full rounded-md border bg-transparent px-2 text-xs outline-none ring-1 ring-foreground/10"
                 >
                   <option value="">All Categories</option>
                   {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
+                    <option key={cat.id} value={cat.slug}>
                       {cat.name}
                     </option>
                   ))}
@@ -375,7 +382,7 @@ export function ResourcesClient({
         )}
 
         {/* ── Active Filters Display ──────────────────────────────── */}
-        {(search || category || tags.length > 0) && (
+        {(search || categorySlug || tags.length > 0) && (
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground">Active filters:</span>
             {search && (
@@ -386,9 +393,9 @@ export function ResourcesClient({
                 </button>
               </span>
             )}
-            {category && (
+            {categorySlug && (
               <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs text-primary">
-                Category: {categories.find((c) => c.id === category)?.name ?? category}
+                Category: {categories.find((c) => c.slug === categorySlug)?.name ?? categorySlug}
                 <button onClick={() => updateParams({ category: null })}>
                   <X className="size-3" />
                 </button>
