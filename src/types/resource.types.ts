@@ -57,6 +57,8 @@ export interface Resource {
   deletedAt?: string | null;
   resourceTags?: ResourceTag[];
   comments?: Comment[];
+  userVote?: VoteType | null;
+  isBookmarked?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -148,7 +150,7 @@ export interface ListResourcesParams {
   categoryId?: string;
   search?: string;
   sort?: "newest" | "popular" | "downloads";
-  tag?: string;
+  tag?: string | string[];
 }
 
 export interface ResourceListResponse {

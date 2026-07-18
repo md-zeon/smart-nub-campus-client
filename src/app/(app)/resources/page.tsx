@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { resourceService } from "@/services/resource.service";
+import { gamificationService } from "@/services/gamification.service";
 import { ResourcesClient } from "@/components/resources/resources-client";
 import { PageLayout } from "@/components/layout/page-layout";
 import type {
@@ -14,6 +15,13 @@ interface CourseWithCount {
   name: string;
   department: string;
   _count: { resources: number };
+}
+
+interface LeaderboardEntry {
+  rank: number;
+  name: string;
+  image?: string | null;
+  totalPoints: number;
 }
 
 /** Page loading skeleton. */
@@ -57,25 +65,46 @@ export default async function ResourcesPage({
   const page = typeof params.page === "string" ? parseInt(params.page, 10) || 1 : 1;
   const search = typeof params.search === "string" ? params.search : undefined;
   const category = typeof params.category === "string" ? params.category : undefined;
-  const tag = typeof params.tag === "string" ? params.tag : undefined;
+  const tags = typeof params.tags === "string"
+    ? params.tags.split(",").map((t) => t.trim()).filter(Boolean)
+    : [];
   const sort = typeof params.sort === "string" ? params.sort : "newest";
+  const view = typeof params.view === "string" ? params.view : "grid";
 
   let initialResources: Resource[] = [];
   let initialMeta: PaginationMeta | null = null;
   let categories: (ResourceCategory & { _count: { resources: number } })[] = [];
   let courses: CourseWithCount[] = [];
+  let allTags: { id: string; name: string; slug: string; _count: { resourceTags: number } }[] = [];
+  let trending: Resource[] = [];
+  let contributors: LeaderboardEntry[] = [];
 
   try {
-    const [resourcesResult, categoriesResult, coursesResult] = await Promise.all([
-      resourceService.listResources({ page, limit: 12, search, categoryId: category, tag, sort: sort as "newest" | "popular" | "downloads" }),
-      resourceService.listCategories(),
-      resourceService.listCourses(),
-    ]);
+    const [resourcesResult, categoriesResult, coursesResult, tagsResult, trendingResult, leaderboardResult] =
+      await Promise.all([
+        resourceService.listResources({
+          page,
+          limit: 12,
+          search,
+          categoryId: category,
+          tag: tags.length > 0 ? tags : undefined,
+          sort: sort as "newest" | "popular" | "downloads",
+        }),
+        resourceService.listCategories(),
+        resourceService.listCourses(),
+        resourceService.listTags(),
+        resourceService.listResources({ sort: "popular", limit: 3 }),
+        gamificationService.getLeaderboard(1, 5),
+      ]);
 
     initialResources = resourcesResult.data ?? [];
     initialMeta = resourcesResult.meta ?? null;
     categories = (categoriesResult as unknown as (ResourceCategory & { _count: { resources: number } })[]) ?? [];
     courses = (coursesResult as unknown as CourseWithCount[]) ?? [];
+    allTags = (tagsResult as unknown as { id: string; name: string; slug: string; _count: { resourceTags: number } }[]) ?? [];
+    trending = trendingResult.data ?? [];
+    const lb = leaderboardResult as unknown as { leaderboard?: LeaderboardEntry[] };
+    contributors = lb.leaderboard ?? [];
   } catch {
     // Client component handles empty state gracefully
   }
@@ -87,7 +116,16 @@ export default async function ResourcesPage({
         initialMeta={initialMeta}
         categories={categories}
         courses={courses}
-        initialFilters={{ search: search ?? "", category: category ?? null, tag: tag ?? null, sort }}
+        allTags={allTags}
+        trendingResources={trending}
+        contributors={contributors}
+        initialFilters={{
+          search: search ?? "",
+          category: category ?? null,
+          tags,
+          sort,
+          view: view === "list" ? "list" : "grid",
+        }}
       />
     </Suspense>
   );

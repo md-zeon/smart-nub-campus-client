@@ -2,18 +2,27 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import {
+  Search,
+  SlidersHorizontal,
+  X,
+  LayoutGrid,
+  List,
+  ChevronUp,
+  Bookmark,
+} from "lucide-react";
 import { PageLayout } from "@/components/layout/page-layout";
 import { ResourcesSidebar } from "@/components/resources/resources-sidebar";
 import { ResourcesTrending } from "@/components/resources/resources-trending";
 import { ResourceCard } from "@/components/resources/resource-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { listResources } from "@/actions/resource.actions";
+import { listResources, voteResource, bookmarkResource } from "@/actions/resource.actions";
 import type { Resource, ResourceCategory, PaginationMeta } from "@/types/resource.types";
 import { cn } from "@/lib/utils";
 
 type TabOption = "all" | "bookmarks" | "uploads";
+type ViewMode = "grid" | "list";
 
 const SORT_OPTIONS = [
   { value: "newest", label: "Newest" },
@@ -44,11 +53,15 @@ interface ResourcesClientProps {
   initialMeta: PaginationMeta | null;
   categories: (ResourceCategory & { _count: { resources: number } })[];
   courses: { id: string; code: string; name: string; department: string; _count: { resources: number } }[];
+  allTags: { id: string; name: string; slug: string; _count: { resourceTags: number } }[];
+  trendingResources: Resource[];
+  contributors: { rank: number; name: string; image?: string | null; totalPoints: number }[];
   initialFilters: {
     search: string;
     category: string | null;
-    tag: string | null;
+    tags: string[];
     sort: string;
+    view: ViewMode;
   };
 }
 
@@ -57,6 +70,9 @@ export function ResourcesClient({
   initialMeta,
   categories,
   courses,
+  allTags,
+  trendingResources,
+  contributors,
   initialFilters,
 }: ResourcesClientProps) {
   const router = useRouter();
@@ -66,8 +82,10 @@ export function ResourcesClient({
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
   const search = searchParams.get("search") ?? "";
   const category = searchParams.get("category");
-  const tag = searchParams.get("tag");
+  const tagsParam = searchParams.get("tags") ?? "";
+  const tags = tagsParam ? tagsParam.split(",").filter(Boolean) : [];
   const sort = searchParams.get("sort") ?? "newest";
+  const view: ViewMode = searchParams.get("view") === "list" ? "list" : "grid";
 
   const [resources, setResources] = useState<Resource[]>(initialResources);
   const [meta, setMeta] = useState<PaginationMeta | null>(initialMeta);
@@ -127,7 +145,7 @@ export function ResourcesClient({
         const params: Record<string, unknown> = { page, limit: 12 };
         if (search) params.search = search;
         if (category) params.categoryId = category;
-        if (tag) params.tag = tag;
+        if (tags.length > 0) params.tags = tags;
         if (sort) params.sort = sort;
 
         const result = await listResources(params as Parameters<typeof listResources>[0]);
@@ -145,7 +163,84 @@ export function ResourcesClient({
 
     fetchData();
     return () => { cancelled = true; };
-  }, [page, search, category, tag, sort, initialized]);
+  }, [page, search, category, tagsParam, sort, initialized]);
+
+  // ── Optimistic vote toggle ─────────────────────────────────────
+  const handleVote = useCallback(async (resourceId: string, currentVote: Resource["userVote"]) => {
+    // Update UI instantly
+    setResources((prev) =>
+      prev.map((r) => {
+        if (r.id !== resourceId) return r;
+        const wasUp = currentVote === "UP";
+        return {
+          ...r,
+          userVote: wasUp ? null : "UP",
+          upvoteCount: r.upvoteCount + (wasUp ? -1 : 1),
+        };
+      }),
+    );
+
+    try {
+      const result = await voteResource(resourceId);
+      if (result.success && result.data) {
+        const data = result.data as { upvoteCount: number; action: string };
+        setResources((prev) =>
+          prev.map((r) =>
+            r.id === resourceId
+              ? { ...r, upvoteCount: data.upvoteCount, userVote: data.action === "added" ? "UP" : data.action === "updated" ? "UP" : null }
+              : r,
+          ),
+        );
+      }
+    } catch {
+      // Revert on failure
+      setResources((prev) =>
+        prev.map((r) =>
+          r.id === resourceId
+            ? { ...r, userVote: currentVote, upvoteCount: r.upvoteCount + (currentVote === "UP" ? 1 : -1) }
+            : r,
+        ),
+      );
+    }
+  }, []);
+
+  // ── Optimistic bookmark toggle ─────────────────────────────────
+  const handleBookmark = useCallback(async (resourceId: string, currentBookmarked: boolean) => {
+    setResources((prev) =>
+      prev.map((r) =>
+        r.id === resourceId ? { ...r, isBookmarked: !currentBookmarked } : r,
+      ),
+    );
+
+    try {
+      const result = await bookmarkResource(resourceId);
+      if (!result.success) {
+        // Revert on failure
+        setResources((prev) =>
+          prev.map((r) =>
+            r.id === resourceId ? { ...r, isBookmarked: currentBookmarked } : r,
+          ),
+        );
+      }
+    } catch {
+      setResources((prev) =>
+        prev.map((r) =>
+          r.id === resourceId ? { ...r, isBookmarked: currentBookmarked } : r,
+        ),
+      );
+    }
+  }, []);
+
+  const toggleTag = useCallback((slug: string) => {
+    const current = new Set(tags);
+    if (current.has(slug)) {
+      current.delete(slug);
+    } else {
+      current.add(slug);
+    }
+    const next = Array.from(current);
+    updateParams({ tags: next.length > 0 ? next.join(",") : null });
+  }, [tags, updateParams]);
 
   return (
     <PageLayout
@@ -155,22 +250,62 @@ export function ResourcesClient({
           onTabChange={setActiveTab}
           selectedCategoryId={category}
           onCategoryChange={(id) => updateParams({ category: id })}
-          selectedTag={tag}
-          onTagChange={(t) => updateParams({ tag: t })}
+          selectedTags={tags}
+          onTagToggle={toggleTag}
           categories={categories}
           courses={courses}
-          onCourseChange={(id) => updateParams({ category: null, tag: null })}
+          allTags={allTags}
+          onCourseChange={(id) => updateParams({ category: null, tags: null })}
         />
       }
-      rightSidebar={<ResourcesTrending onTagClick={(t) => updateParams({ tag: t })} />}
+      rightSidebar={
+        <ResourcesTrending
+          trendingResources={trendingResources}
+          contributors={contributors}
+          selectedTags={tags}
+          onTagToggle={toggleTag}
+        />
+      }
     >
       <div className="space-y-4">
         {/* ── Page Header ─────────────────────────────────────────── */}
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Resources</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Discover and access study materials shared by the community.
-          </p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Resources</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Discover and access study materials shared by the community.
+            </p>
+          </div>
+
+          {/* List / Grid view toggle */}
+          <div className="flex shrink-0 items-center gap-1 rounded-lg border bg-card p-0.5 ring-1 ring-foreground/10">
+            <button
+              onClick={() => updateParams({ view: "grid" })}
+              className={cn(
+                "flex size-8 items-center justify-center rounded-md transition-colors",
+                view === "grid"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+              aria-label="Grid view"
+              title="Grid view"
+            >
+              <LayoutGrid className="size-4" />
+            </button>
+            <button
+              onClick={() => updateParams({ view: "list" })}
+              className={cn(
+                "flex size-8 items-center justify-center rounded-md transition-colors",
+                view === "list"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+              aria-label="List view"
+              title="List view"
+            >
+              <List className="size-4" />
+            </button>
+          </div>
         </div>
 
         {/* ── Search + Filters Bar ────────────────────────────────── */}
@@ -235,32 +370,12 @@ export function ResourcesClient({
                   ))}
                 </select>
               </div>
-
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground">Course</label>
-                <select
-                  onChange={(e) => {
-                    const courseId = e.target.value;
-                    if (courseId) {
-                      window.location.href = `/resources?category=${courseId}`;
-                    }
-                  }}
-                  className="mt-1 h-8 w-full rounded-md border bg-transparent px-2 text-xs outline-none ring-1 ring-foreground/10"
-                >
-                  <option value="">All Courses</option>
-                  {courses.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.code} — {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
           </div>
         )}
 
         {/* ── Active Filters Display ──────────────────────────────── */}
-        {(search || category || tag) && (
+        {(search || category || tags.length > 0) && (
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground">Active filters:</span>
             {search && (
@@ -279,24 +394,35 @@ export function ResourcesClient({
                 </button>
               </span>
             )}
-            {tag && (
-              <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs text-primary">
-                Tag: {tag}
-                <button onClick={() => updateParams({ tag: null })}>
+            {tags.map((t) => (
+              <span
+                key={t}
+                className="flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs text-primary"
+              >
+                Tag: {t}
+                <button onClick={() => toggleTag(t)}>
                   <X className="size-3" />
                 </button>
               </span>
-            )}
+            ))}
           </div>
         )}
 
-        {/* ── Resource Cards Grid ─────────────────────────────────── */}
+        {/* ── Resource Cards ──────────────────────────────────────── */}
         {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <ResourceCardSkeleton key={i} />
-            ))}
-          </div>
+          view === "grid" ? (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <ResourceCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <ResourceCardSkeleton key={i} />
+              ))}
+            </div>
+          )
         ) : resources.length === 0 ? (
           <div className="rounded-xl border bg-card p-12 text-center ring-1 ring-foreground/10">
             <Search className="mx-auto size-10 text-muted-foreground/40" />
@@ -305,10 +431,27 @@ export function ResourcesClient({
               Try adjusting your search or filters.
             </p>
           </div>
-        ) : (
+        ) : view === "grid" ? (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {resources.map((resource) => (
-              <ResourceCard key={resource.id} resource={resource} />
+              <ResourceCard
+                key={resource.id}
+                resource={resource}
+                onVote={handleVote}
+                onBookmark={handleBookmark}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {resources.map((resource) => (
+              <ResourceCard
+                key={resource.id}
+                resource={resource}
+                variant="list"
+                onVote={handleVote}
+                onBookmark={handleBookmark}
+              />
             ))}
           </div>
         )}

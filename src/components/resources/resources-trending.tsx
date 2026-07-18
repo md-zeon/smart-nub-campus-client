@@ -1,78 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { TrendingUp, Tag, Users, FileText, ChevronRight } from "lucide-react";
-import { listResources } from "@/actions/resource.actions";
-import { getLeaderboard } from "@/actions/gamification.actions";
+import { TrendingUp, Tag, Users, FileText, ChevronRight, Check } from "lucide-react";
 import type { Resource } from "@/types/resource.types";
+import { cn } from "@/lib/utils";
 
 interface LeaderboardEntry {
   rank: number;
-  user: { id: string; name: string; image?: string | null } | null;
+  name: string;
+  image?: string | null;
   totalPoints: number;
 }
 
-function SidebarSkeleton() {
-  return (
-    <div className="space-y-2">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="flex items-center gap-3 animate-pulse rounded-lg bg-muted/50 p-2">
-          <div className="size-8 rounded bg-muted" />
-          <div className="flex-1 space-y-1">
-            <div className="h-3 w-3/4 rounded bg-muted" />
-            <div className="h-2.5 w-1/2 rounded bg-muted" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 interface ResourcesTrendingProps {
-  onTagClick?: (tag: string) => void;
+  trendingResources: Resource[];
+  contributors: LeaderboardEntry[];
+  selectedTags?: string[];
+  onTagToggle?: (slug: string) => void;
 }
 
-export function ResourcesTrending({ onTagClick }: ResourcesTrendingProps) {
-  const [trending, setTrending] = useState<Resource[]>([]);
-  const [contributors, setContributors] = useState<LeaderboardEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchData() {
-      try {
-        const [resourcesResult, leaderboardResult] = await Promise.all([
-          listResources({ sort: "popular", limit: 3 }),
-          getLeaderboard(1, 5),
-        ]);
-
-        if (!cancelled) {
-          if (resourcesResult.success && resourcesResult.data) {
-            const data = resourcesResult.data as { data?: Resource[] };
-            setTrending(data.data ?? []);
-          }
-          if (leaderboardResult.success && leaderboardResult.data) {
-            const data = leaderboardResult.data as { data?: LeaderboardEntry[] };
-            setContributors(data.data ?? []);
-          }
-        }
-      } catch {
-        // Empty state handled by checking array lengths
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    fetchData();
-    return () => { cancelled = true; };
-  }, []);
-
+export function ResourcesTrending({
+  trendingResources,
+  contributors,
+  selectedTags = [],
+  onTagToggle,
+}: ResourcesTrendingProps) {
   // Collect unique tags from trending resources
   const trendingTags = Array.from(
     new Map(
-      trending
+      trendingResources
         .flatMap((r) => r.resourceTags ?? [])
         .filter((rt) => rt.tag)
         .map((rt) => [rt.tag!.id, rt.tag!])
@@ -87,11 +43,9 @@ export function ResourcesTrending({ onTagClick }: ResourcesTrendingProps) {
           <TrendingUp className="size-4 text-primary" />
           <h3 className="text-sm font-semibold text-foreground">Trending Resources</h3>
         </div>
-        {loading ? (
-          <SidebarSkeleton />
-        ) : trending.length > 0 ? (
+        {trendingResources.length > 0 ? (
           <div className="space-y-2">
-            {trending.map((resource, idx) => (
+            {trendingResources.map((resource, idx) => (
               <Link
                 key={resource.id}
                 href={`/resources/${resource.id}`}
@@ -119,27 +73,38 @@ export function ResourcesTrending({ onTagClick }: ResourcesTrendingProps) {
       </div>
 
       {/* ── Popular Tags ─────────────────────────────────────────── */}
-      <div>
-        <div className="mb-3 flex items-center gap-2">
-          <Tag className="size-4 text-primary" />
-          <h3 className="text-sm font-semibold text-foreground">Popular Tags</h3>
+      {onTagToggle && (
+        <div>
+          <div className="mb-3 flex items-center gap-2">
+            <Tag className="size-4 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Popular Tags</h3>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {trendingTags.length > 0 ? (
+              trendingTags.map((tag) => {
+                const active = selectedTags.includes(tag.slug);
+                return (
+                  <button
+                    key={tag.id}
+                    onClick={() => onTagToggle(tag.slug)}
+                    className={cn(
+                      "flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
+                      active
+                        ? "bg-primary/10 text-primary ring-1 ring-primary/30"
+                        : "bg-secondary text-secondary-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    {tag.name}
+                    {active && <Check className="size-3" />}
+                  </button>
+                );
+              })
+            ) : (
+              <p className="text-xs text-muted-foreground">No tags yet.</p>
+            )}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {trendingTags.length > 0 ? (
-            trendingTags.map((tag) => (
-              <button
-                key={tag.id}
-                onClick={() => onTagClick?.(tag.slug)}
-                className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-primary/10 hover:text-primary"
-              >
-                {tag.name}
-              </button>
-            ))
-          ) : (
-            <p className="text-xs text-muted-foreground">No tags yet.</p>
-          )}
-        </div>
-      </div>
+      )}
 
       {/* ── Top Contributors ──────────────────────────────────────── */}
       <div>
@@ -147,31 +112,29 @@ export function ResourcesTrending({ onTagClick }: ResourcesTrendingProps) {
           <Users className="size-4 text-primary" />
           <h3 className="text-sm font-semibold text-foreground">Top Contributors</h3>
         </div>
-        {loading ? (
-          <SidebarSkeleton />
-        ) : contributors.length > 0 ? (
+        {contributors.length > 0 ? (
           <div className="space-y-1.5">
             {contributors.map((entry) => (
               <div
-                key={entry.user?.id ?? entry.rank}
+                key={entry.rank}
                 className="flex items-center gap-2.5 rounded-lg bg-card p-2 ring-1 ring-foreground/10"
               >
                 <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
                   {entry.rank}
                 </span>
-                {entry.user?.image ? (
+                {entry.image ? (
                   <img
-                    src={entry.user.image}
-                    alt={entry.user.name}
+                    src={entry.image}
+                    alt={entry.name}
                     className="size-6 rounded-full object-cover"
                   />
                 ) : (
                   <div className="flex size-6 items-center justify-center rounded-full bg-muted text-[10px] font-medium text-muted-foreground">
-                    {entry.user?.name?.charAt(0) ?? "?"}
+                    {entry.name?.charAt(0) ?? "?"}
                   </div>
                 )}
                 <span className="truncate text-xs font-medium text-foreground">
-                  {entry.user?.name ?? "Unknown"}
+                  {entry.name ?? "Unknown"}
                 </span>
               </div>
             ))}

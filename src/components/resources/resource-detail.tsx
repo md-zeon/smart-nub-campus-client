@@ -271,7 +271,7 @@ export function ResourceDetail({ resource: initialResource }: ResourceDetailProp
               {resource.resourceTags.map((rt) => (
                 <Link
                   key={rt.id}
-                  href={`/resources?tag=${encodeURIComponent(rt.tag?.name ?? "")}`}
+                  href={`/resources?tags=${encodeURIComponent(rt.tag?.slug ?? "")}`}
                   className="rounded-full bg-secondary px-2.5 py-0.5 text-xs text-secondary-foreground transition-colors hover:bg-primary/10 hover:text-primary"
                 >
                   {rt.tag?.name}
