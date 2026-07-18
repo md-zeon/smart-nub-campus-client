@@ -4,8 +4,8 @@ import { buttonVariants } from "@/components/ui/button";
 /** Hero section at the top of the home page — headline, subtext, CTAs, and avatar stack. */
 export function HeroBanner() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-primary/10">
-      <div className="mx-auto flex max-w-screen-xl flex-col items-center gap-8 px-4 py-16 sm:px-6 md:flex-row md:py-24">
+    <section className="relative overflow-hidden bg-linear-to-br from-primary/5 via-background to-primary/10">
+      <div className="mx-auto flex max-w-360 flex-col items-center gap-8 px-4 py-16 sm:px-6 md:flex-row md:py-24">
         {/* ── Text content ─────────────────────────────────────────── */}
         <div className="flex-1 space-y-6 text-center md:text-left">
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
@@ -24,7 +24,10 @@ export function HeroBanner() {
             <Link href="/resources" className={buttonVariants()}>
               Explore Resources
             </Link>
-            <Link href="/teams" className={buttonVariants({ variant: "secondary" })}>
+            <Link
+              href="/teams"
+              className={buttonVariants({ variant: "secondary" })}
+            >
               Find Teams
             </Link>
           </div>

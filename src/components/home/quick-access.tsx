@@ -20,7 +20,7 @@ const shortcuts = [
 /** Horizontal row of shortcut cards linking to main platform features. */
 export function QuickAccess() {
   return (
-    <section className="mx-auto max-w-screen-xl px-4 py-8 sm:px-6">
+    <section className="mx-auto max-w-360 px-4 py-8 sm:px-6">
       <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
         {shortcuts.map(({ label, icon: Icon, href }) => (
           <Link

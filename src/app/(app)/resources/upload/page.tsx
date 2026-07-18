@@ -25,7 +25,7 @@ export default async function ResourceUploadPage() {
 
   return (
     <div className="min-h-screen">
-      <div className="mx-auto max-w-screen-xl px-4 py-6 sm:px-6">
+      <div className="mx-auto max-w-360 px-4 py-6 sm:px-6">
         <Link
           href="/resources"
           className="mb-4 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -35,7 +35,9 @@ export default async function ResourceUploadPage() {
         </Link>
 
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Upload Resource</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            Upload Resource
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Share study materials with the NSU community.
           </p>
