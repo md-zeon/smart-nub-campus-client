@@ -34,9 +34,11 @@ export async function getTeamRequest(id: string): Promise<ApiResponse> {
 export async function createTeamRequest(data: {
   title: string;
   description: string;
-  category: string;
-  skills?: string[];
-  lookingFor?: string;
+  lookingForCount: number;
+  projectName?: string;
+  deadline?: string;
+  category?: string;
+  skillTagIds: string[];
 }): Promise<ApiResponse> {
   try {
     const teamRequest = await teamService.createTeamRequest(data);
@@ -53,9 +55,11 @@ export async function updateTeamRequest(id: string, data: {
   title?: string;
   description?: string;
   category?: string;
-  skills?: string[];
-  lookingFor?: string;
+  projectName?: string;
+  deadline?: string;
+  lookingForCount?: number;
   status?: TeamRequestStatus;
+  skillTagIds?: string[];
 }): Promise<ApiResponse> {
   try {
     const teamRequest = await teamService.updateTeamRequest(id, data);

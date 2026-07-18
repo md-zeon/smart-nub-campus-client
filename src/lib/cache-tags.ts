@@ -24,7 +24,16 @@ export const TAGS = {
 
   /** Leaderboard / gamification. */
   LEADERBOARD: "leaderboard",
+
+  /** Team requests list (finder, my teams, my applications). */
+  TEAMS_LIST: "teams-list",
+
+  /** Single team request detail page. */
+  TEAM_DETAIL: "team-detail",
 } as const;
 
 /** All tags that should be invalidated when any resource is created/updated/deleted. */
 export const RESOURCE_MUTATION_TAGS = [TAGS.RESOURCES, TAGS.RESOURCES_TRENDING] as const;
+
+/** All tags that should be invalidated when a team request is created/updated/deleted. */
+export const TEAM_MUTATION_TAGS = [TAGS.TEAMS_LIST, TAGS.TEAM_DETAIL] as const;

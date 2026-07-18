@@ -9,15 +9,20 @@ export const createTeamRequestSchema = z
       .trim()
       .min(1, "Title is required")
       .max(200, "Title must be at most 200 characters"),
-    description: z.string().trim().min(1, "Description is required"),
+    description: z
+      .string()
+      .trim()
+      .min(10, "Description must be at least 10 characters")
+      .max(2000, "Description must be at most 2000 characters"),
     lookingForCount: z
       .number()
       .int()
-      .positive("Must look for at least 1 member"),
-    projectName: z.string().trim().optional(),
+      .min(1, "Must look for at least 1 member")
+      .max(20, "Cannot look for more than 20 members"),
+    projectName: z.string().trim().max(200).optional(),
     deadline: z.string().datetime().optional(),
     category: z.string().trim().optional(),
-    tags: z.array(z.string().trim().min(1)).min(1).optional(),
+    skillTagIds: z.array(z.string().uuid("Invalid skill tag ID")).min(1, "At least one skill is required"),
   })
   .strict();
 
@@ -39,7 +44,7 @@ export const updateTeamRequestSchema = z
     deadline: z.string().datetime().optional(),
     status: z.enum(["OPEN", "FILLED", "CLOSED"]).optional(),
     category: z.string().trim().optional(),
-    tags: z.array(z.string().trim().min(1)).min(1).optional(),
+    skillTagIds: z.array(z.string().uuid("Invalid skill tag ID")).min(1).optional(),
   })
   .strict();
 
@@ -49,7 +54,7 @@ export type UpdateTeamRequestInput = z.infer<typeof updateTeamRequestSchema>;
 
 export const createApplicationSchema = z
   .object({
-    message: z.string().trim().optional(),
+    message: z.string().trim().max(1000, "Message must be at most 1000 characters").optional(),
   })
   .strict();
 
