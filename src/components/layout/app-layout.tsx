@@ -1,7 +1,4 @@
-"use client";
-
-import { Sidebar } from "./sidebar";
-import { Topbar } from "./topbar";
+import { TopNav } from "./top-nav";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -12,30 +9,21 @@ interface AppLayoutProps {
 }
 
 /**
- * The main app shell that combines the sidebar, topbar, and main content area.
+ * The main app shell that combines the horizontal TopNav with page content.
  * Used by authenticated route layouts.
  *
  * @example
  * ```tsx
  * <AppLayout userName={user.name} userImage={user.image}>
- *   <DashboardPage />
+ *   <HomePage />
  * </AppLayout>
  * ```
  */
 export function AppLayout({ children, userName, userImage }: AppLayoutProps) {
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* ── Sidebar ────────────────────────────────────────────────────── */}
-      <Sidebar userName={userName} />
-
-      {/* ── Main area ──────────────────────────────────────────────────── */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* ── Top bar ──────────────────────────────────────────────────── */}
-        <Topbar userName={userName} userImage={userImage} />
-
-        {/* ── Page content ─────────────────────────────────────────────── */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
-      </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-background">
+      <TopNav userName={userName} userImage={userImage} />
+      <main>{children}</main>
     </div>
   );
 }
