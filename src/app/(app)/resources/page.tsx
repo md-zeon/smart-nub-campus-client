@@ -115,26 +115,22 @@ function ResourcesContent() {
         // Map sort option to API params
         switch (sortBy) {
           case "popular":
-            params.sortBy = "upvoteCount";
-            params.sortOrder = "desc";
+            params.sort = "popular";
             break;
           case "downloads":
-            params.sortBy = "downloadCount";
-            params.sortOrder = "desc";
+            params.sort = "downloads";
             break;
           case "views":
-            params.sortBy = "viewCount";
-            params.sortOrder = "desc";
+            params.sort = "downloads";
             break;
           default:
-            params.sortBy = "createdAt";
-            params.sortOrder = "desc";
+            params.sort = "newest";
         }
 
         const result = await listResources(params as Parameters<typeof listResources>[0]);
         if (!cancelled && result.success && result.data) {
-          const data = result.data as { resources?: Resource[]; meta?: PaginationMeta };
-          setResources(data.resources ?? []);
+          const data = result.data as { data?: Resource[]; meta?: PaginationMeta };
+          setResources(data.data ?? []);
           setMeta(data.meta ?? null);
         }
       } catch {

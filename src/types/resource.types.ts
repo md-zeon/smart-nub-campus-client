@@ -29,8 +29,8 @@ export interface ResourceCategory {
   slug: string;
   icon?: string | null;
   description?: string | null;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Resource {
@@ -147,13 +147,12 @@ export interface ListResourcesParams {
   courseId?: string;
   categoryId?: string;
   search?: string;
-  sortBy?: "createdAt" | "upvoteCount" | "downloadCount" | "viewCount";
-  sortOrder?: "asc" | "desc";
+  sort?: "newest" | "popular" | "downloads";
   tag?: string;
 }
 
 export interface ResourceListResponse {
-  resources: Resource[];
+  data: Resource[];
   meta: PaginationMeta;
 }
 

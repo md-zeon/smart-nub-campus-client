@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Plus, Bookmark, Upload, BookOpen, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { listResources } from "@/actions/resource.actions";
-import type { ResourceCategory } from "@/types/resource.types";
+import type { Resource, ResourceCategory } from "@/types/resource.types";
 import { cn } from "@/lib/utils";
 
 /** Tab option for resource list filtering. */
@@ -32,22 +32,33 @@ export function ResourcesSidebar({
   selectedCategoryId,
   onCategoryChange,
 }: ResourcesSidebarProps) {
-  const [categories, setCategories] = useState<ResourceCategory[]>([]);
+  const [categories, setCategories] = useState<(ResourceCategory & { _count?: number })[]>([]);
   const [courseSearch, setCourseSearch] = useState("");
   const [categoriesLoading, setCategoriesLoading] = useState(true);
 
-  /** Fetch categories and their resource counts. */
+  /** Extract unique categories with resource counts from fetched resources. */
   useEffect(() => {
     let cancelled = false;
 
     async function fetchCategories() {
       try {
-        const result = await listResources({ limit: 1 });
+        const result = await listResources({ limit: 100 });
         if (!cancelled && result.success && result.data) {
-          const data = result.data as { categories?: ResourceCategory[] };
-          if (data.categories) {
-            setCategories(data.categories);
+          const data = result.data as { data?: Resource[] };
+          const resources = data.data ?? [];
+
+          const catMap = new Map<string, ResourceCategory & { _count: number }>();
+          for (const r of resources) {
+            if (r.category) {
+              const existing = catMap.get(r.category.id);
+              if (existing) {
+                existing._count += 1;
+              } else {
+                catMap.set(r.category.id, { ...r.category, _count: 1 });
+              }
+            }
           }
+          setCategories(Array.from(catMap.values()));
         }
       } catch {
         // Fallback: categories shown as empty
@@ -132,6 +143,11 @@ export function ResourcesSidebar({
                 )}
               >
                 <span className="truncate">{cat.name}</span>
+                {cat._count != null && (
+                  <span className="ml-auto rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
+                    {cat._count}
+                  </span>
+                )}
               </button>
             ))}
           </nav>

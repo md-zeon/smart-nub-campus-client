@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ResourceUploadForm } from "@/components/resources/resource-upload-form";
 import { listResources } from "@/actions/resource.actions";
-import type { ResourceCourse, ResourceCategory } from "@/types/resource.types";
+import type { Resource, ResourceCourse, ResourceCategory } from "@/types/resource.types";
 
 /**
  * Resource upload page — full-width layout with upload form.
@@ -15,20 +15,31 @@ export default function ResourceUploadPage() {
   const [courses, setCourses] = useState<ResourceCourse[]>([]);
   const [categories, setCategories] = useState<ResourceCategory[]>([]);
 
-  /** Fetch courses and categories for form dropdowns. */
+  /** Fetch resources to extract unique courses and categories for form dropdowns. */
   useEffect(() => {
     let cancelled = false;
 
     async function fetchData() {
       try {
-        const result = await listResources({ limit: 1 });
+        const result = await listResources({ limit: 100 });
         if (!cancelled && result.success && result.data) {
-          const data = result.data as {
-            courses?: ResourceCourse[];
-            categories?: ResourceCategory[];
-          };
-          if (data.courses) setCourses(data.courses);
-          if (data.categories) setCategories(data.categories);
+          const data = result.data as { data?: Resource[] };
+          const resources = data.data ?? [];
+
+          const courseMap = new Map<string, ResourceCourse>();
+          const categoryMap = new Map<string, ResourceCategory>();
+
+          for (const r of resources) {
+            if (r.course && !courseMap.has(r.course.id)) {
+              courseMap.set(r.course.id, r.course);
+            }
+            if (r.category && !categoryMap.has(r.category.id)) {
+              categoryMap.set(r.category.id, r.category);
+            }
+          }
+
+          setCourses(Array.from(courseMap.values()));
+          setCategories(Array.from(categoryMap.values()));
         }
       } catch {
         // Dropdowns will be empty — user can still fill other fields

@@ -45,14 +45,14 @@ export function ResourcesTrending() {
     async function fetchData() {
       try {
         const [resourcesResult, leaderboardResult] = await Promise.all([
-          listResources({ sortBy: "upvoteCount", sortOrder: "desc", limit: 3 }),
+          listResources({ sort: "popular", limit: 3 }),
           getLeaderboard(1, 5),
         ]);
 
         if (!cancelled) {
           if (resourcesResult.success && resourcesResult.data) {
-            const data = resourcesResult.data as { resources?: Resource[] };
-            setTrending(data.resources ?? []);
+            const data = resourcesResult.data as { data?: Resource[] };
+            setTrending(data.data ?? []);
           }
           if (leaderboardResult.success && leaderboardResult.data) {
             const data = leaderboardResult.data as { data?: LeaderboardEntry[] };

@@ -62,8 +62,8 @@ export function ResourceDetail({ resource: initialResource }: ResourceDetailProp
           limit: 3,
         });
         if (!cancelled && result.success && result.data) {
-          const data = result.data as { resources?: Resource[] };
-          const resources = data.resources ?? [];
+          const data = result.data as { data?: Resource[] };
+          const resources = data.data ?? [];
           setRelatedResources(
             resources.filter((r) => r.id !== resource.id).slice(0, 3)
           );
