@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getLeaderboard } from "@/actions/gamification.actions";
-import type { Leaderboard, LeaderboardResponse } from "@/types/gamification.types";
+
+interface LeaderboardEntry {
+  rank: number;
+  user: { id: string; name: string; image?: string | null } | null;
+  totalPoints: number;
+}
 
 /** Loading skeleton for a single contributor card. */
 function ContributorCardSkeleton() {
@@ -20,7 +25,7 @@ function ContributorCardSkeleton() {
 
 /** Top contributors section — fetches top 3 users by reputation. */
 export function TopContributors() {
-  const [contributors, setContributors] = useState<Leaderboard[]>([]);
+  const [contributors, setContributors] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,8 +35,8 @@ export function TopContributors() {
       try {
         const result = await getLeaderboard(1, 3);
         if (!cancelled && result.success && result.data) {
-          const data = result.data as LeaderboardResponse;
-          setContributors(data.leaderboard ?? []);
+          const data = result.data as { data: LeaderboardEntry[] };
+          setContributors(data.data ?? []);
         }
       } catch {
         // Empty state handled by checking contributors.length
@@ -79,7 +84,7 @@ export function TopContributors() {
         <div className="space-y-2">
           {contributors.map((contributor) => (
             <div
-              key={contributor.userId}
+              key={contributor.user?.id ?? contributor.rank}
               className="flex items-center gap-3 rounded-lg border bg-card p-3 ring-1 ring-foreground/10"
             >
               {/* Rank */}
@@ -89,7 +94,7 @@ export function TopContributors() {
               {/* Name */}
               <div className="min-w-0 flex-1">
                 <h3 className="truncate text-sm font-medium text-foreground">
-                  {contributor.name}
+                  {contributor.user?.name ?? "Unknown"}
                 </h3>
                 <p className="text-xs text-muted-foreground">
                   {contributor.totalPoints} pts

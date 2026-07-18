@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CalendarDays } from "lucide-react";
 import { listEvents } from "@/actions/event.actions";
-import type { Event, EventListResponse } from "@/types/event.types";
+import type { Event } from "@/types/event.types";
 
 /** Loading skeleton for a single event card. */
 function EventCardSkeleton() {
@@ -33,9 +33,92 @@ export function UpcomingEvents() {
           status: "UPCOMING",
           limit: 3,
         });
+        console.log("Events List:", result);
+        /*
+        Events List: {
+    "success": true,
+    "message": "Events fetched.",
+    "data": {
+        "data": [
+            {
+                "id": "a847efc7-d6a5-45f5-a219-00cbccd1af78",
+                "title": "Annual Career Fair",
+                "description": "Connect with top employers looking to hire NUB graduates. Bring your resume and dress to impress.",
+                "eventDate": "2026-09-01T10:00:00.000Z",
+                "location": "Student Center, Hall A",
+                "imageUrl": "https://res.cloudinary.com/example/image/upload/career-fair.jpg",
+                "organizerId": "YmURNdS2K4869bY5XX2SA8EhCNVzUycx",
+                "status": "UPCOMING",
+                "isFeatured": true,
+                "createdAt": "2026-07-18T02:09:14.884Z",
+                "updatedAt": "2026-07-18T02:09:14.884Z",
+                "organizer": {
+                    "id": "YmURNdS2K4869bY5XX2SA8EhCNVzUycx",
+                    "name": "System Administrator",
+                    "image": null
+                },
+                "_count": {
+                    "rsvps": 0
+                },
+                "isRsvpd": false
+            },
+            {
+                "id": "8e4b56c8-8dd4-4f8a-8286-1469f2d280af",
+                "title": "Tech Talk: AI in 2026",
+                "description": "Join industry experts as they discuss the latest advancements in artificial intelligence and how they impact the tech landscape.",
+                "eventDate": "2026-08-25T14:00:00.000Z",
+                "location": "CSE Building, Room 301",
+                "imageUrl": "https://res.cloudinary.com/example/image/upload/ai-tech-talk.jpg",
+                "organizerId": "YmURNdS2K4869bY5XX2SA8EhCNVzUycx",
+                "status": "UPCOMING",
+                "isFeatured": false,
+                "createdAt": "2026-07-18T02:09:14.822Z",
+                "updatedAt": "2026-07-18T02:09:14.822Z",
+                "organizer": {
+                    "id": "YmURNdS2K4869bY5XX2SA8EhCNVzUycx",
+                    "name": "System Administrator",
+                    "image": null
+                },
+                "_count": {
+                    "rsvps": 0
+                },
+                "isRsvpd": false
+            },
+            {
+                "id": "051a7cdc-8022-4e66-be2b-9e696a340a0b",
+                "title": "Campus Welcome Week 2026",
+                "description": "Kick off the new semester with a week of fun activities, club fairs, and networking events. Meet fellow students and discover what NUB has to offer.",
+                "eventDate": "2026-08-15T09:00:00.000Z",
+                "location": "NUB Main Campus, Auditorium",
+                "imageUrl": "https://res.cloudinary.com/example/image/upload/welcome-week.jpg",
+                "organizerId": "YmURNdS2K4869bY5XX2SA8EhCNVzUycx",
+                "status": "UPCOMING",
+                "isFeatured": true,
+                "createdAt": "2026-07-18T02:09:14.763Z",
+                "updatedAt": "2026-07-18T02:09:14.763Z",
+                "organizer": {
+                    "id": "YmURNdS2K4869bY5XX2SA8EhCNVzUycx",
+                    "name": "System Administrator",
+                    "image": null
+                },
+                "_count": {
+                    "rsvps": 0
+                },
+                "isRsvpd": false
+            }
+        ],
+        "meta": {
+            "page": 1,
+            "limit": 3,
+            "total": 3,
+            "totalPages": 1
+        }
+    }
+}
+        */
         if (!cancelled && result.success && result.data) {
-          const data = result.data as EventListResponse;
-          setEvents(data.events ?? []);
+          const data = result.data as { data: Event[] };
+          setEvents(data.data ?? []);
         }
       } catch {
         // Empty state handled by checking events.length
@@ -45,7 +128,9 @@ export function UpcomingEvents() {
     }
 
     fetchEvents();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   /** Format a date string to a readable short format. */

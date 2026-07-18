@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FileText, FileImage, Presentation, File } from "lucide-react";
 import { listResources } from "@/actions/resource.actions";
-import type { Resource, ResourceListResponse } from "@/types/resource.types";
+import type { Resource } from "@/types/resource.types";
 
 /** Returns a lucide icon based on file type extension. */
 function getFileIcon(fileType: string) {
@@ -46,13 +46,12 @@ export function TrendingResources() {
     async function fetchResources() {
       try {
         const result = await listResources({
-          sortBy: "upvoteCount",
-          sortOrder: "desc",
+          sort: "popular",
           limit: 3,
-        });
+        } as Parameters<typeof listResources>[0]);
         if (!cancelled && result.success && result.data) {
-          const data = result.data as ResourceListResponse;
-          setResources(data.resources ?? []);
+          const data = result.data as { data: Resource[] };
+          setResources(data.data ?? []);
         }
       } catch {
         // Empty state handled by checking resources.length
