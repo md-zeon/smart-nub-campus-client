@@ -1,9 +1,5 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FileText, FileImage, Presentation, File } from "lucide-react";
-import { listResources } from "@/actions/resource.actions";
 import type { Resource } from "@/types/resource.types";
 
 /** Returns a lucide icon based on file type extension. */
@@ -16,54 +12,12 @@ function getFileIcon(fileType: string) {
   return File;
 }
 
-/** Loading skeleton for a single resource card. */
-function ResourceCardSkeleton() {
-  return (
-    <div className="animate-pulse rounded-xl border bg-card p-4 ring-1 ring-foreground/10">
-      <div className="flex items-start gap-3">
-        <div className="size-10 rounded-lg bg-muted" />
-        <div className="flex-1 space-y-2">
-          <div className="h-4 w-3/4 rounded bg-muted" />
-          <div className="h-3 w-1/2 rounded bg-muted" />
-          <div className="flex gap-2">
-            <div className="h-5 w-12 rounded-full bg-muted" />
-            <div className="h-5 w-16 rounded-full bg-muted" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+interface TrendingResourcesProps {
+  resources: Resource[];
 }
 
-/** Trending resources section — fetches top 3 resources by upvote count. */
-export function TrendingResources() {
-  const [resources, setResources] = useState<Resource[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchResources() {
-      try {
-        const result = await listResources({
-          sort: "popular",
-          limit: 3,
-        } as Parameters<typeof listResources>[0]);
-        if (!cancelled && result.success && result.data) {
-          const data = result.data as { data: Resource[] };
-          setResources(data.data ?? []);
-        }
-      } catch {
-        // Empty state handled by checking resources.length
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    fetchResources();
-    return () => { cancelled = true; };
-  }, []);
-
+/** Trending resources section — renders top resources by upvote count (server-fetched). */
+export function TrendingResources({ resources }: TrendingResourcesProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -78,24 +32,15 @@ export function TrendingResources() {
         </Link>
       </div>
 
-      {/* ── Loading skeletons ─────────────────────────────────────── */}
-      {loading && (
-        <div className="space-y-3">
-          <ResourceCardSkeleton />
-          <ResourceCardSkeleton />
-          <ResourceCardSkeleton />
-        </div>
-      )}
-
       {/* ── Empty state ───────────────────────────────────────────── */}
-      {!loading && resources.length === 0 && (
+      {resources.length === 0 && (
         <p className="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground ring-1 ring-foreground/10">
           No resources yet. Be the first to upload!
         </p>
       )}
 
       {/* ── Resource cards ────────────────────────────────────────── */}
-      {!loading && resources.length > 0 && (
+      {resources.length > 0 && (
         <div className="space-y-3">
           {resources.map((resource) => {
             const FileIcon = getFileIcon(resource.fileType);
