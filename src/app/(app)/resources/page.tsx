@@ -92,9 +92,10 @@ function ResourcesContent() {
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   /** Reset to page 1 when filters change (except page itself). */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, selectedCategoryId, sortBy, activeTab, setPage]);
+  }, [debouncedSearch, selectedCategoryId, sortBy, activeTab]);
 
   /** Fetch resources whenever filters or page change. */
   useEffect(() => {
