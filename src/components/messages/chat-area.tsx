@@ -144,12 +144,7 @@ export function ChatArea({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-[#0b141a] px-4 py-4"
-        style={{
-          backgroundImage:
-            "radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)",
-          backgroundSize: "22px 22px",
-        }}
+        className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-muted/40 px-4 py-4"
       >
         {loadingMessages && messages.length === 0 ? (
           <div className="space-y-4">
@@ -170,7 +165,7 @@ export function ChatArea({
             {groups.map((bucket) => (
               <div key={bucket.label} className="space-y-2.5">
                 <div className="sticky top-0 z-10 flex justify-center py-1">
-                  <span className="rounded-md bg-[#182229] px-3 py-1 text-[11px] font-medium text-[#e9edef] shadow-sm">
+                  <span className="rounded-full bg-background/80 px-3 py-1 text-[11px] font-medium text-muted-foreground ring-1 ring-foreground/10 backdrop-blur">
                     {bucket.label}
                   </span>
                 </div>
