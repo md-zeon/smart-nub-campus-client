@@ -52,7 +52,14 @@ export function MessagesPageClient({
     Record<string, { active: boolean; names?: string[]; ts?: number }>
   >({});
 
-  const { socket, isConnected, status } = useSocket();
+  // Connect to the backend origin (not /api/v1) so Socket.IO uses the default
+  // "/" namespace; the server mounts the handler at path /socket.io.
+  const socketUrl =
+    (process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:5000").replace(
+      /\/+$/,
+      "",
+    );
+  const { socket, isConnected, status } = useSocket({ url: socketUrl });
 
   // ── Typing indicator debounce bookkeeping ──────────────────────────────────
   const typingStopTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -169,7 +176,7 @@ export function MessagesPageClient({
     if (status === "connected") {
       void refreshConversations();
       if (activeConversationId) {
-        socket?.emit("messaging:join", { conversationId: activeConversationId });
+        socket?.emit("conversation:join", { conversationId: activeConversationId });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -219,9 +226,9 @@ export function MessagesPageClient({
   // Join/leave room when the active conversation changes.
   useEffect(() => {
     if (!socket || !activeConversationId) return;
-    socket.emit("messaging:join", { conversationId: activeConversationId });
-    return () => {
-      socket.emit("messaging:leave", { conversationId: activeConversationId });
+      socket.emit("conversation:join", { conversationId: activeConversationId });
+      return () => {
+        socket.emit("conversation:leave", { conversationId: activeConversationId });
     };
   }, [socket, activeConversationId]);
 
