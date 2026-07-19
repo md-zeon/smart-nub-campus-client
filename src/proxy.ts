@@ -1,45 +1,73 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import ROUTES from "@/constants/routes";
+import { UserRole } from "./constants/enums";
 
-/**
- * Routes that require authentication.
- * The HOME entry is matched exactly (not as a prefix) to avoid
- * catching every path.
- */
-const PROTECTED_ROUTES = [
-  ROUTES.HOME,
-  ROUTES.RESOURCES,
-  ROUTES.TEAMS,
-  ROUTES.DISCUSSIONS,
-  ROUTES.QA,
-  ROUTES.AI,
-  ROUTES.CONNECTIONS,
-  ROUTES.MESSAGES,
-  ROUTES.NOTIFICATIONS,
-  ROUTES.SETTINGS,
-];
-
-/** Routes that should only be accessible to unauthenticated users. */
-const AUTH_ROUTES = [ROUTES.AUTH];
-
-/** Paths that must never be intercepted by this proxy. */
+/** Routes that must never be intercepted by this proxy. */
 const EXCLUDED_PREFIXES = ["/api", "/_next", "/favicon.ico"];
-
-function isProtectedRoute(pathname: string): boolean {
-  return PROTECTED_ROUTES.some((route) =>
-    route === "/" ? pathname === "/" : pathname.startsWith(route),
-  );
-}
-
-function isAuthRoute(pathname: string): boolean {
-  return AUTH_ROUTES.some((route) => pathname.startsWith(route));
-}
 
 function isExcluded(pathname: string): boolean {
   return EXCLUDED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
+/**
+ * Backend API envelope wrapping the actual identity payload.
+ */
+interface ApiEnvelope<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
+/**
+ * Identity payload inside the envelope returned by /identity/me.
+ */
+interface IdentityPayload {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    image: string | null;
+  };
+  student: Record<string, unknown> | null;
+  admin: Record<string, unknown> | null;
+}
+
+/**
+ * Checks the user's session and role via the backend identity endpoint.
+ * Returns the user's role or null if unauthenticated / unreachable.
+ */
+async function getUserRole(
+  request: NextRequest,
+): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/identity/me`,
+      {
+        headers: { Cookie: request.headers.get("cookie") || "" },
+        cache: "no-store",
+      },
+    );
+    if (!response.ok) return null;
+    const body = (await response.json()) as ApiEnvelope<IdentityPayload>;
+    return body.data?.user?.role ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Centralised proxy (Next.js 16).
+ *
+ * Responsibilities:
+ *  - Protect authenticated-only routes; redirect unauthenticated users to login.
+ *  - Redirect authenticated users away from auth pages (login, register, etc.).
+ *  - Role-based routing:
+ *      * ADMIN users visiting "/" are redirected to "/admin".
+ *      * Non-ADMIN users visiting "/admin" are redirected to "/".
+ *      * Unauthenticated users visiting "/admin" are sent to login.
+ */
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -48,49 +76,60 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const needsAuth = isProtectedRoute(pathname);
-  const isAuthPage = isAuthRoute(pathname);
+  const isHome = pathname === "/";
+  const isAuthPage = pathname.startsWith("/auth");
+  const isAdminRoute = pathname.startsWith("/admin");
 
-  // Fast-path: neither protected nor auth — pass through
-  if (!needsAuth && !isAuthPage) {
+  // Fast-path: not a route we handle — pass through.
+  if (!isHome && !isAuthPage && !isAdminRoute) {
     return NextResponse.next();
   }
 
-  // Check session by calling the backend identity endpoint
-  let isAuthenticated = false;
-  try {
-    const sessionResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/identity/me`,
-      {
-        headers: { Cookie: request.headers.get("cookie") || "" },
-        // Do not cache session checks
-        cache: "no-store",
-      },
-    );
-    isAuthenticated = sessionResponse.ok;
-  } catch {
-    // API unreachable — treat as unauthenticated
+  // --- From here on we handle auth pages, admin routes, and home ---
+
+  const role = await getUserRole(request);
+  const isAuthenticated = role !== null;
+
+  // ── Auth pages (login, register, forgot-password, etc.) ───────────
+  if (isAuthPage) {
+    if (isAuthenticated) {
+      // Already logged in — redirect away from auth pages.
+      // Respect any "redirect" query param that was set before login.
+      const redirectParam = request.nextUrl.searchParams.get("redirect");
+      if (role === UserRole.ADMIN) {
+        return NextResponse.redirect(new URL("/admin", request.url));
+      }
+      return NextResponse.redirect(
+        new URL(redirectParam || ROUTES.HOME, request.url),
+      );
+    }
+    return NextResponse.next();
   }
 
-  // Redirect unauthenticated users away from protected routes
-  if (needsAuth && !isAuthenticated) {
-    const loginUrl = new URL(ROUTES.LOGIN, request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
+  // ── Admin routes (/admin, /admin/users, /admin/verifications) ─────
+  if (isAdminRoute) {
+    if (!isAuthenticated) {
+      const loginUrl = new URL(ROUTES.LOGIN, request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    if (role !== UserRole.ADMIN) {
+      return NextResponse.redirect(new URL(ROUTES.HOME, request.url));
+    }
+    return NextResponse.next();
   }
 
-  // Redirect authenticated users away from auth pages
-  if (isAuthPage && isAuthenticated) {
-    // Respect any "redirect" param that was set before login
-    const redirectParam = request.nextUrl.searchParams.get("redirect");
-    return NextResponse.redirect(
-      new URL(redirectParam || ROUTES.HOME, request.url),
-    );
+  // ── Home (/) — redirect ADMIN users to /admin ──────────────────────
+  if (isHome && isAuthenticated && role === UserRole.ADMIN) {
+    return NextResponse.redirect(new URL("/admin", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    // Match all request paths
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
 };

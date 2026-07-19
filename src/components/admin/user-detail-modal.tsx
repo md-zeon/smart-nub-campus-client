@@ -101,8 +101,10 @@ export function UserDetailModal({
     (user.admin as { department?: string } | null)?.department ??
     "N/A";
 
-  const batch =
-    (user.student as { batch?: string } | null)?.batch ?? "N/A";
+  const student = user.student as Record<string, unknown> | null;
+  const semester = student
+    ? `${student.admissionYear ?? "N/A"} - ${student.admissionSemester ?? "N/A"}`
+    : "N/A";
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -137,8 +139,8 @@ export function UserDetailModal({
               <p className="text-sm">{department}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Batch</p>
-              <p className="text-sm">{batch}</p>
+              <p className="text-sm text-muted-foreground">Semester</p>
+              <p className="text-sm">{semester}</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Joined</p>

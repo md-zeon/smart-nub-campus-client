@@ -18,7 +18,8 @@ interface IdentityMeResponse {
  * Fetches the current user's identity from the backend and passes it
  * down to the client AppLayout shell (TopNav + content area).
  *
- * The middleware guarantees that only authenticated users reach this layout.
+ * Auth and role-based routing is handled centrally by the proxy (src/proxy.ts).
+ * Admin users are redirected to /admin before this layout ever runs.
  */
 export default async function AppGroupLayout({
   children,
@@ -35,7 +36,7 @@ export default async function AppGroupLayout({
     userName = result.data?.user?.name;
     userImage = result.data?.user?.image ?? undefined;
   } catch {
-    // Middleware handles auth redirect; this is a safety fallback.
+    // Proxy handles auth redirect; this is a safety fallback.
   }
 
   return (

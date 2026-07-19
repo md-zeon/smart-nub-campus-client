@@ -18,7 +18,8 @@ export interface AdminDashboardStats {
 export interface AdminUserStudent {
   id: string;
   department: string;
-  batch: string | null;
+  admissionYear: number;
+  admissionSemester: string;
 }
 
 export interface AdminUserAdmin {
