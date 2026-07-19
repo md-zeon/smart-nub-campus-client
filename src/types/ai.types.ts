@@ -47,8 +47,8 @@ export interface SendAIMessagePayload {
 }
 
 export interface SendAIMessageResponse {
-  session: AIChatSession;
-  message: AIMessage;
+  userMessage: AIMessage;
+  aiMessage: AIMessage;
 }
 
 export interface ListAISessionsParams {
