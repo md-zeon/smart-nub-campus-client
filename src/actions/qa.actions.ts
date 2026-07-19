@@ -4,6 +4,24 @@ import { qaService } from "@/services/qa.service";
 import type { ApiResponse } from "@/types";
 import type { ListQuestionsParams } from "@/types/qa.types";
 
+/** Create a new question. */
+export async function createQuestion(data: {
+  title: string;
+  content: string;
+  categoryId: string;
+  courseId?: string;
+  tagIds?: string[];
+}): Promise<ApiResponse> {
+  try {
+    const result = await qaService.createQuestion(data);
+    return { success: true, message: "Question created.", data: result };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to create question.";
+    return { success: false, message };
+  }
+}
+
 /** List questions with pagination and filtering. */
 export async function listQuestions(
   params: ListQuestionsParams = {},
@@ -46,10 +64,12 @@ export async function voteQuestion(
 }
 
 /** Toggle bookmark on a question. */
-export async function bookmarkQuestion(questionId: string): Promise<ApiResponse> {
+export async function bookmarkQuestion(
+  questionId: string,
+): Promise<ApiResponse> {
   try {
-    const data = await qaService.toggleBookmark(questionId);
-    return { success: true, message: "Bookmark toggled.", data };
+    await qaService.bookmarkQuestion(questionId);
+    return { success: true, message: "Bookmark toggled." };
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to toggle bookmark.";
@@ -57,44 +77,46 @@ export async function bookmarkQuestion(questionId: string): Promise<ApiResponse>
   }
 }
 
+/** List answers for a question. */
+export async function listAnswers(
+  questionId: string,
+): Promise<ApiResponse> {
+  try {
+    const data = await qaService.listAnswers(questionId);
+    return { success: true, message: "Answers fetched.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch answers.";
+    return { success: false, message };
+  }
+}
+
+/** List bookmarked questions for the current user. */
+export async function listBookmarkedQuestions(
+  page = 1,
+  limit = 12,
+): Promise<ApiResponse> {
+  try {
+    const data = await qaService.listBookmarks(page, limit);
+    return { success: true, message: "Bookmarks fetched.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch bookmarks.";
+    return { success: false, message };
+  }
+}
+
 /** Post an answer to a question. */
 export async function postAnswer(
   questionId: string,
-  data: { content: string },
+  content: string,
 ): Promise<ApiResponse> {
   try {
-    const answer = await qaService.postAnswer(questionId, data);
+    const answer = await qaService.createAnswer(questionId, { content });
     return { success: true, message: "Answer posted.", data: answer };
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to post answer.";
-    return { success: false, message };
-  }
-}
-
-/** Delete an answer. */
-export async function deleteAnswer(questionId: string, answerId: string): Promise<ApiResponse> {
-  try {
-    await qaService.deleteAnswer(questionId, answerId);
-    return { success: true, message: "Answer deleted." };
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to delete answer.";
-    return { success: false, message };
-  }
-}
-
-/** Accept an answer. */
-export async function acceptAnswer(
-  questionId: string,
-  answerId: string,
-): Promise<ApiResponse> {
-  try {
-    const data = await qaService.acceptAnswer(questionId, answerId);
-    return { success: true, message: "Answer accepted.", data };
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to accept answer.";
     return { success: false, message };
   }
 }
@@ -110,6 +132,21 @@ export async function voteAnswer(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to record vote.";
+    return { success: false, message };
+  }
+}
+
+/** Accept an answer (question author only). */
+export async function acceptAnswer(
+  questionId: string,
+  answerId: string,
+): Promise<ApiResponse> {
+  try {
+    const data = await qaService.acceptAnswer(questionId, answerId);
+    return { success: true, message: "Answer accepted.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to accept answer.";
     return { success: false, message };
   }
 }
