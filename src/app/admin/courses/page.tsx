@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { format } from "date-fns";
 import { adminService } from "@/services/admin.service";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,13 +23,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Trash2, BookOpen, MessageSquare, HelpCircle } from "lucide-react";
-import type {
-  AdminCourse,
-  AdminResourceCategory,
-  AdminDiscussionCategory,
-  AdminQuestionCategory,
-} from "@/types/admin.types";
+import { Plus, Trash2 } from "lucide-react";
+import type { AdminCourse } from "@/types/admin.types";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 

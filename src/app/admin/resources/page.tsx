@@ -16,7 +16,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, ChevronLeft, ChevronRight, ExternalLink, Trash2, Check, X } from "lucide-react";
 import type {
-  AdminResource,
   ListAdminResourcesResponse,
 } from "@/types/admin.types";
 import { toast } from "sonner";
