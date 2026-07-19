@@ -18,10 +18,10 @@ export default async function MessagesPage() {
   let initialConversations: Conversation[] = [];
 
   try {
-    const me = await serverApi.get<{ user: { id: string } }>("/identity/me", {
+    const me = await serverApi.get<{ data: { user: { id: string } } }>("/identity/me", {
       cache: "no-store",
     });
-    currentUserId = me.data?.user?.id ?? "";
+    currentUserId = me.data?.data?.user?.id ?? "";
 
     const res = await messageService.listConversations({ limit: 50 });
     initialConversations = res.conversations ?? [];
