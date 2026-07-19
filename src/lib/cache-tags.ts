@@ -30,6 +30,15 @@ export const TAGS = {
 
   /** Single team request detail page. */
   TEAM_DETAIL: "team-detail",
+
+  /** Discussion list + categories + tags. */
+  DISCUSSIONS: "discussions",
+
+  /** Single discussion detail page. */
+  DISCUSSION_DETAIL: "discussion-detail",
+
+  /** Trending discussions sidebar. */
+  DISCUSSIONS_TRENDING: "discussions-trending",
 } as const;
 
 /** All tags that should be invalidated when any resource is created/updated/deleted. */
@@ -37,3 +46,6 @@ export const RESOURCE_MUTATION_TAGS = [TAGS.RESOURCES, TAGS.RESOURCES_TRENDING] 
 
 /** All tags that should be invalidated when a team request is created/updated/deleted. */
 export const TEAM_MUTATION_TAGS = [TAGS.TEAMS_LIST, TAGS.TEAM_DETAIL] as const;
+
+/** All tags that should be invalidated when a discussion is created/updated/deleted. */
+export const DISCUSSION_MUTATION_TAGS = [TAGS.DISCUSSIONS, TAGS.DISCUSSION_DETAIL, TAGS.DISCUSSIONS_TRENDING] as const;

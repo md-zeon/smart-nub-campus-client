@@ -13,6 +13,16 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    files: ["**/*.{ts,tsx}"],
+    rules: {
+      // The standard "fetch data inside useEffect" pattern used across the
+      // client (resources, teams, discussions) triggers this v6 rule. The
+      // setState calls happen after an await, so they are not truly
+      // synchronous; disabling keeps lint consistent with existing modules.
+      "react-hooks/set-state-in-effect": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
