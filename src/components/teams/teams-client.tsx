@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, use } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Search, X, Loader2, AlertCircle } from "lucide-react";
 import { PageLayout } from "@/components/layout/page-layout";
@@ -49,12 +49,18 @@ interface TeamsClientProps {
  * Supports three primary tabs (Team Finder / My Applications / My Teams), search, filter tabs,
  * skill filtering, and pagination.
  */
-export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClientProps) {
+const sessionPromise = authClient.getSession();
+
+export function TeamsClient({
+  initialTeams,
+  initialMeta,
+  suggested,
+}: TeamsClientProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { data: session } = authClient.useSession();
-  const currentUserId = session?.user?.id ?? null;
+  const session = use(sessionPromise);
+  const currentUserId = session?.data?.user?.id;
 
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
   const search = searchParams.get("search") ?? "";
@@ -62,7 +68,13 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
   // Memoize so the reference is stable across renders — an unmemoized array here
   // would re-trigger the fetch effect on every render (infinite loop).
   const selectedSkills = useMemo(
-    () => (skillsParam ? skillsParam.split(",").map((s) => s.trim()).filter(Boolean) : []),
+    () =>
+      skillsParam
+        ? skillsParam
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
     [skillsParam],
   );
   const filterTab = (searchParams.get("filter") as FilterTab) ?? "all";
@@ -77,6 +89,13 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
   const [searchInput, setSearchInput] = useState(search);
   const [applyTeam, setApplyTeam] = useState<TeamRequest | null>(null);
   const hasFetched = useRef(false);
+  // "Now" timestamp, refreshed in an effect to avoid Date.now() during render.
+  const [nowTs, setNowTs] = useState(0);
+  // Precomputed deadline timestamps (ms) keyed by team id, populated in the
+  // fetch effect (post-render) to avoid impure Date calls during render.
+  const [deadlineTs, setDeadlineTs] = useState<Map<string, number | null>>(
+    () => new Map(),
+  );
 
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
@@ -122,8 +141,12 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
         // teams appear immediately; tab filtering is applied client-side.
         // Use a larger page when client-side skill filtering is active so the
         // filtered result set is meaningful.
-        const limit = selectedSkills.length > 0 ? 60 : 12;
-        const params: Record<string, unknown> = { page, limit, excludeOwn: false };
+        const limit = selectedSkills.length > 0 || deadline ? 60 : 12;
+        const params: Record<string, unknown> = {
+          page,
+          limit,
+          excludeOwn: false,
+        };
         if (search) params.search = search;
         if (category) params.category = category;
         if (status) params.status = status;
@@ -131,7 +154,9 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
         // NOTE: multi-skill filtering is applied client-side (OR match) because the
         // server list endpoint currently accepts a single `skill` slug.
 
-        const result = await listTeamRequests(params as Parameters<typeof listTeamRequests>[0]);
+        const result = await listTeamRequests(
+          params as Parameters<typeof listTeamRequests>[0],
+        );
         if (!cancelled && result.success && result.data) {
           const data = result.data as {
             data?: TeamRequest[];
@@ -139,6 +164,13 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
           };
           setTeams(data.data ?? []);
           setMeta(data.meta ?? null);
+          // Cache deadline timestamps post-render (avoids Date calls during render).
+          const map = new Map<string, number | null>();
+          for (const t of data.data ?? []) {
+            map.set(t.id, t.deadline ? Date.parse(t.deadline) : null);
+          }
+          setDeadlineTs(map);
+          setNowTs(Date.now());
         }
       } catch {
         // Empty state handles errors
@@ -151,15 +183,23 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
     return () => {
       cancelled = true;
     };
-  }, [page, search, selectedSkills, category, status, filterTab, tab]);
+  }, [
+    page,
+    search,
+    selectedSkills,
+    category,
+    status,
+    filterTab,
+    tab,
+    deadline,
+  ]);
 
-  // Derive visible teams based on the active tab, then apply multi-skill filter.
+  // Derive the displayed teams (tab + skills + deadline filters) via useMemo.
   // NOTE: "My Teams" / "My Applications" are derived client-side because the
   // server list endpoint does not yet expose per-user membership/application context.
-  const visibleTeams = (() => {
+  const displayTeams = useMemo(() => {
     let list = teams;
     if (tab === "teams" || tab === "applications") {
-      // Include teams the user created or is a member of.
       list = teams.filter(
         (t) =>
           currentUserId != null &&
@@ -168,8 +208,7 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
       );
     }
     // Multi-skill filter (OR: team must have at least one selected skill).
-    // Match against both the tag name and slug (lowercased) so it works
-    // regardless of how the slug was generated (e.g. "Data Analysis" → "data-analysis").
+    // Match against both the tag name and slug (lowercased).
     if (selectedSkills.length > 0) {
       list = list.filter((t) =>
         (t.teamRequestSkills ?? []).some((s) => {
@@ -179,8 +218,22 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
         }),
       );
     }
+    // Deadline filter (client-side; server list endpoint has no deadline param).
+    // Timestamps (`nowTs`, `deadlineTs`) are computed in effects to avoid Date
+    // calls during render.
+    if (deadline === "week" || deadline === "month") {
+      const maxMs = (deadline === "week" ? 7 : 30) * 24 * 60 * 60 * 1000;
+      list = list.filter((t) => {
+        const ts = deadlineTs.get(t.id);
+        if (ts == null) return false;
+        const diff = ts - nowTs;
+        return diff >= 0 && diff <= maxMs;
+      });
+    } else if (deadline === "none") {
+      list = list.filter((t) => deadlineTs.get(t.id) == null);
+    }
     return list;
-  })();
+  }, [teams, tab, currentUserId, selectedSkills, deadline, deadlineTs, nowTs]);
 
   const toggleSkill = useCallback(
     (slug: string) => {
@@ -253,7 +306,9 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
             {FILTER_TABS.map((ft) => (
               <button
                 key={ft.id}
-                onClick={() => updateParams({ filter: ft.id === "all" ? null : ft.id })}
+                onClick={() =>
+                  updateParams({ filter: ft.id === "all" ? null : ft.id })
+                }
                 className={cn(
                   "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
                   filterTab === ft.id
@@ -316,10 +371,12 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
               <TeamCardSkeleton key={i} />
             ))}
           </div>
-        ) : visibleTeams.length === 0 ? (
+        ) : displayTeams.length === 0 ? (
           <div className="rounded-xl border bg-card p-12 text-center ring-1 ring-foreground/10">
             <AlertCircle className="mx-auto size-10 text-muted-foreground/40" />
-            <p className="mt-3 text-sm font-medium text-foreground">No team requests found</p>
+            <p className="mt-3 text-sm font-medium text-foreground">
+              No team requests found
+            </p>
             <p className="mt-1 text-xs text-muted-foreground">
               {tab === "teams"
                 ? "You haven't created any teams yet."
@@ -328,7 +385,7 @@ export function TeamsClient({ initialTeams, initialMeta, suggested }: TeamsClien
           </div>
         ) : (
           <div className="space-y-3">
-            {visibleTeams.map((team) => (
+            {displayTeams.map((team) => (
               <TeamCard
                 key={team.id}
                 team={team}
