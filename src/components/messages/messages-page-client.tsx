@@ -131,10 +131,17 @@ export function MessagesPageClient({
     if (isActive) {
       setMessages((prev) => {
         if (isOwn) {
-          // Replace the optimistic temp (matched by content) with the real one.
-          const idx = prev.findIndex(
+          // Replace the optimistic temp with the real server echo.
+          // Match by content first, then fall back to the first pending temp
+          // (content can differ slightly after server persistence).
+          let idx = prev.findIndex(
             (m) => typeof m.id === "string" && m.id.startsWith("temp-") && m.content === msg.content,
           );
+          if (idx === -1) {
+            idx = prev.findIndex(
+              (m) => typeof m.id === "string" && m.id.startsWith("temp-"),
+            );
+          }
           if (idx !== -1) {
             const next = [...prev];
             next[idx] = incoming;
@@ -261,12 +268,18 @@ export function MessagesPageClient({
   );
 
   // Open the conversation referenced by ?c= on first mount (deep link / reload).
+  // Don't gate on `conversations` being populated yet — load it directly and
+  // refresh the list if it isn't present, so the selection + URL survive reload.
   useEffect(() => {
     const c = searchParams.get("c");
-    if (c && conversations.some((x) => x.id === c)) {
-      setActiveConversationId(c);
-      setMessagesPage(1);
-      void loadMessages(c);
+    if (!c) return;
+    setActiveConversationId(c);
+    setMessages([]);
+    setHasMore(false);
+    setMessagesPage(1);
+    void loadMessages(c);
+    if (!conversations.some((x) => x.id === c)) {
+      void refreshConversations();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
