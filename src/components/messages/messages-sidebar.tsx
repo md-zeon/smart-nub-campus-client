@@ -20,6 +20,7 @@ interface MessagesSidebarProps {
   currentUserId: string;
   onlineUsers: Set<string>;
   onNewMessage: () => void;
+  onNewGroup: () => void;
   onSelectGroup: (id: string) => void;
   activeConversationId: string | null;
   /** Count of online connections (for the Stay Connected indicator). */
@@ -44,6 +45,7 @@ export function MessagesSidebar({
   currentUserId,
   onlineUsers,
   onNewMessage,
+  onNewGroup,
   onSelectGroup,
   activeConversationId,
   onlineConnectionsCount,
@@ -79,9 +81,18 @@ export function MessagesSidebar({
 
       {/* Groups list */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Groups
-        </p>
+        <div className="mb-2 flex items-center justify-between px-1">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Groups
+          </p>
+          <button
+            type="button"
+            onClick={onNewGroup}
+            className="text-xs font-medium text-primary hover:underline"
+          >
+            + New
+          </button>
+        </div>
         {groups.length === 0 ? (
           <p className="px-1 text-xs text-muted-foreground">No groups yet.</p>
         ) : (

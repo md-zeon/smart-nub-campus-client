@@ -13,6 +13,7 @@ import { ConversationList } from "./conversation-list";
 import { ChatArea } from "./chat-area";
 import { UserProfilePanel } from "./user-profile-panel";
 import { NewMessageModal } from "./new-message-modal";
+import { CreateGroupModal } from "./create-group-modal";
 
 interface MessagesPageClientProps {
   /** Currently authenticated user id. */
@@ -43,6 +44,7 @@ export function MessagesPageClient({
   const [hasMore, setHasMore] = useState(false);
   const [profileOpen, setProfileOpen] = useState(true);
   const [newOpen, setNewOpen] = useState(false);
+  const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const [loadingConvos, setLoadingConvos] = useState(false);
 
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(
@@ -420,6 +422,7 @@ export function MessagesPageClient({
             currentUserId={currentUserId}
             onlineUsers={onlineUsers}
             onNewMessage={() => setNewOpen(true)}
+            onNewGroup={() => setCreateGroupOpen(true)}
             onSelectGroup={selectConversation}
             activeConversationId={activeConversationId}
             onlineConnectionsCount={onlineConnectionsCount}
@@ -473,6 +476,21 @@ export function MessagesPageClient({
             prev.some((x) => x.id === c.id) ? prev : [c, ...prev],
           );
           selectConversation(c.id);
+        }}
+      />
+
+      <CreateGroupModal
+        open={createGroupOpen}
+        onOpenChange={setCreateGroupOpen}
+        currentUserId={currentUserId}
+        createGroup={(data) => messageService.createGroup(data)}
+        onCreated={(c) => {
+          const conv = c as Conversation;
+          setActiveTab("groups");
+          setConversations((prev) =>
+            prev.some((x) => x.id === conv.id) ? prev : [conv, ...prev],
+          );
+          selectConversation(conv.id);
         }}
       />
     </>

@@ -118,4 +118,13 @@ export const messageClientService = {
   async markAsRead(conversationId: string): Promise<void> {
     await apiClient.post(`/messages/conversations/${conversationId}/read`, {});
   },
+
+  async createGroup(data: {
+    name: string;
+    participantIds: string[];
+    description?: string;
+  }): Promise<Conversation> {
+    const res = await apiClient.post<Conversation>("/messages/groups", data);
+    return unwrap<Conversation>(res.data);
+  },
 };
