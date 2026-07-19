@@ -18,9 +18,10 @@ interface MessageBubbleProps {
 }
 
 /**
- * A single message in the chat thread. Renders text, file, and image
- * variants. Own messages are right-aligned with a primary bubble; others are
- * left-aligned. Read receipts (checkmarks) are shown on own messages.
+ * A single WhatsApp-style message bubble. Own messages are right-aligned in a
+ * green bubble with a bottom-right tail; others are left-aligned in a white
+ * bubble with a bottom-left tail. The timestamp (and read tick for own
+ * messages) sits inside the bubble, bottom-right.
  */
 export function MessageBubble({
   message,
@@ -49,26 +50,28 @@ export function MessageBubble({
 
       <div
         className={cn(
-          "flex max-w-[78%] flex-col gap-1",
+          "flex max-w-[80%] flex-col gap-0.5",
           isOwn ? "items-end" : "items-start",
         )}
       >
         {!isOwn && showSender && sender && (
-          <span className="px-1 text-xs font-medium text-muted-foreground">
+          <span className="px-1 text-xs font-semibold text-emerald-600">
             {sender.name}
           </span>
         )}
 
         <div
           className={cn(
-            "rounded-2xl px-3 py-2 text-sm shadow-sm ring-1 ring-foreground/5",
+            "relative px-2.5 py-1.5 text-sm shadow-sm",
             isOwn
-              ? "rounded-br-sm bg-primary text-primary-foreground"
-              : "rounded-bl-sm bg-muted text-foreground",
+              ? "rounded-2xl rounded-br-md bg-[#d9fdd3] text-[#111b21]"
+              : "rounded-2xl rounded-bl-md bg-white text-[#111b21]",
+            isImage && "overflow-hidden p-1",
+            isFile && "min-w-64",
           )}
         >
           {message.replyTo && (
-            <div className="mb-1 border-l-2 border-foreground/20 pl-2 text-xs opacity-80">
+            <div className="mb-1 border-l-2 border-emerald-500/60 pl-2 text-xs text-[#54656f]">
               <span className="font-medium">
                 {message.replyTo.sender?.name ?? "Someone"}
               </span>
@@ -82,7 +85,7 @@ export function MessageBubble({
               src={message.fileUrl}
               alt={message.fileName ?? "image"}
               onClick={() => onAttachmentClick?.(message)}
-              className="max-h-64 cursor-zoom-in rounded-lg object-cover"
+              className="max-h-64 w-full cursor-zoom-in rounded-lg object-cover"
               loading="lazy"
             />
           ) : isFile && message.fileUrl ? (
@@ -91,44 +94,45 @@ export function MessageBubble({
               target="_blank"
               rel="noopener noreferrer"
               download={message.fileName ?? true}
-              className={cn(
-                "flex items-center gap-2 rounded-lg px-1 py-0.5",
-                isOwn ? "hover:bg-primary-foreground/10" : "hover:bg-foreground/5",
-              )}
+              className="flex items-center gap-2 py-1"
             >
-              <span
-                className={cn(
-                  "flex size-9 items-center justify-center rounded-lg",
-                  isOwn ? "bg-primary-foreground/15" : "bg-background",
-                )}
-              >
+              <span className="flex size-9 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-600">
                 <FileText className="size-4" />
               </span>
               <span className="flex min-w-0 flex-col">
-                <span className="truncate font-medium">{message.fileName}</span>
-                <span className="text-[11px] opacity-70">
+                <span className="truncate font-medium text-[#111b21]">
+                  {message.fileName}
+                </span>
+                <span className="text-[11px] text-[#667781]">
                   {formatFileSize(message.fileSize)}
                 </span>
               </span>
-              <Download className="size-4 shrink-0 opacity-70" />
+              <Download className="size-4 shrink-0 text-[#667781]" />
             </a>
           ) : (
-            <p className="whitespace-pre-wrap break-words">{message.content}</p>
+            <p className="whitespace-pre-wrap break-words leading-relaxed">
+              {message.content}
+            </p>
           )}
-        </div>
 
-        <div
-          className={cn(
-            "flex items-center gap-1 px-1 text-[11px] text-muted-foreground",
-            isOwn ? "flex-row-reverse" : "flex-row",
-          )}
-        >
-          <span>{formatClockTime(message.createdAt)}</span>
-          {isOwn && (
-            <span aria-label={message.isRead ? "Read" : "Sent"}>
-              {message.isRead ? "✓✓" : "✓"}
-            </span>
-          )}
+          {/* Timestamp + read receipt, pinned bottom-right of the bubble. */}
+          <div
+            className={cn(
+              "mt-0.5 flex items-center justify-end gap-1 text-[10px] text-[#667781]",
+              (isImage || isFile) && "absolute bottom-1 right-1.5 rounded bg-black/30 px-1 text-white/90",
+            )}
+          >
+            <span>{formatClockTime(message.createdAt)}</span>
+            {isOwn && (
+              <span aria-label={message.isRead ? "Read" : "Sent"}>
+                {message.isRead ? (
+                  <span className="text-[#53bdeb]">✓✓</span>
+                ) : (
+                  "✓"
+                )}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>

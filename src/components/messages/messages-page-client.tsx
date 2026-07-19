@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSocket, useSocketEvent } from "@/hooks/use-socket";
@@ -42,6 +43,7 @@ export function MessagesPageClient({
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [hasMore, setHasMore] = useState(false);
+  const [messagesPage, setMessagesPage] = useState(1);
   const [profileOpen, setProfileOpen] = useState(true);
   const [newOpen, setNewOpen] = useState(false);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
@@ -53,6 +55,9 @@ export function MessagesPageClient({
   const [typingByConversation, setTypingByConversation] = useState<
     Record<string, { active: boolean; names?: string[]; ts?: number }>
   >({});
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Connect to the backend origin (not /api/v1) so Socket.IO uses the default
   // "/" namespace; the server mounts the handler at path /socket.io.
@@ -97,6 +102,9 @@ export function MessagesPageClient({
       updatedAt: msg.createdAt,
     };
 
+    const isOwn = msg.senderId === currentUserId;
+    const isActive = msg.conversationId === activeConversationId;
+
     setConversations((prev) =>
       prev
         .map((c) =>
@@ -105,9 +113,10 @@ export function MessagesPageClient({
                 ...c,
                 lastMessage: incoming,
                 lastMessageAt: msg.createdAt,
+                // Don't bump unread if it's our own message or we're viewing it.
                 unreadCount:
-                  msg.senderId === currentUserId
-                    ? c.unreadCount ?? 0
+                  isOwn || isActive
+                    ? 0
                     : (c.unreadCount ?? 0) + 1,
               }
             : c,
@@ -119,8 +128,22 @@ export function MessagesPageClient({
         ),
     );
 
-    if (msg.conversationId === activeConversationId && msg.senderId !== currentUserId) {
-      setMessages((prev) => dedupe(prev.concat(incoming)));
+    if (isActive) {
+      setMessages((prev) => {
+        if (isOwn) {
+          // Replace the optimistic temp (matched by content) with the real one.
+          const idx = prev.findIndex(
+            (m) => m.id.startsWith("temp-") && m.content === msg.content,
+          );
+          if (idx !== -1) {
+            const next = [...prev];
+            next[idx] = incoming;
+            return dedupe(next);
+          }
+          return dedupe(prev.concat(incoming));
+        }
+        return dedupe(prev.concat(incoming));
+      });
     }
   });
 
@@ -185,19 +208,26 @@ export function MessagesPageClient({
   }, [status]);
 
   // ── Load conversation for active id ────────────────────────────────────────────
+  // Server returns messages DESC (newest first) using page/limit pagination.
+  // We reverse to ASC for display and prepend older pages on scroll-up.
   const loadMessages = useCallback(
-    async (conversationId: string, before?: string) => {
+    async (conversationId: string, page = 1) => {
       setLoadingMessages(true);
       try {
         const res = await messageService.listMessages({
           conversationId,
           limit: PAGE_SIZE,
-          before,
+          page,
         });
-        const fetched = res.messages ?? [];
-        setMessages((prev) => (before ? dedupe(fetched.concat(prev)) : fetched));
-        setHasMore((res.meta?.page ?? 1) < (res.meta?.totalPages ?? 1));
-        if (!before) {
+        const fetched = [...(res.messages ?? [])].reverse(); // DESC → ASC
+        setMessages((prev) => {
+          if (page === 1) return dedupe(fetched);
+          // Older page: prepend to the top (already-ascending prev).
+          return dedupe(fetched.concat(prev));
+        });
+        setMessagesPage(page);
+        setHasMore(page < (res.meta?.totalPages ?? 1));
+        if (page === 1) {
           // Mark as read locally + on server.
           void messageService.markAsRead(conversationId).catch(() => {});
           setConversations((prev) =>
@@ -220,10 +250,26 @@ export function MessagesPageClient({
       setActiveConversationId(id);
       setMessages([]);
       setHasMore(false);
+      setMessagesPage(1);
+      // Reflect the active conversation in the URL (?c=...).
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+      params.set("c", id);
+      router.replace(`?${params.toString()}`, { scroll: false });
       void loadMessages(id);
     },
-    [loadMessages],
+    [loadMessages, router, searchParams],
   );
+
+  // Open the conversation referenced by ?c= on first mount (deep link / reload).
+  useEffect(() => {
+    const c = searchParams.get("c");
+    if (c && conversations.some((x) => x.id === c)) {
+      setActiveConversationId(c);
+      setMessagesPage(1);
+      void loadMessages(c);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Join/leave room when the active conversation changes.
   useEffect(() => {
@@ -252,36 +298,14 @@ export function MessagesPageClient({
       };
       setMessages((prev) => dedupe(prev.concat(optimistic)));
 
+      // The socket handler persists + broadcasts; do NOT also call REST
+      // (that would create a second copy). The `messaging:new` echo
+      // reconciles the optimistic temp with the real record.
       socket?.emit("messaging:send", {
         conversationId: activeConversationId,
         content: text,
         type: "text",
       });
-
-      try {
-        const saved = await messageService.sendMessage(activeConversationId, {
-          content: text,
-          type: "TEXT",
-        });
-        setMessages((prev) =>
-          prev.map((m) => (m.id === tempId ? { ...saved, id: saved.id } : m)),
-        );
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.id === activeConversationId
-              ? {
-                  ...c,
-                  lastMessage: { ...saved },
-                  lastMessageAt: saved.createdAt,
-                }
-              : c,
-          ),
-        );
-      } catch (err) {
-        // Roll back optimistic message on failure.
-        setMessages((prev) => prev.filter((m) => m.id !== tempId));
-        toast.error(err instanceof Error ? err.message : "Failed to send message.");
-      }
     },
     [activeConversationId, currentUserId, socket],
   );
@@ -357,9 +381,8 @@ export function MessagesPageClient({
 
   const loadOlder = useCallback(() => {
     if (!activeConversationId || loadingMessages || !hasMore) return;
-    const oldest = messages[0];
-    if (oldest) void loadMessages(activeConversationId, oldest.id);
-  }, [activeConversationId, loadingMessages, hasMore, messages, loadMessages]);
+    void loadMessages(activeConversationId, messagesPage + 1);
+  }, [activeConversationId, loadingMessages, hasMore, messagesPage, loadMessages]);
 
   // ── Derived lists per tab ──────────────────────────────────────────────────────
   const filteredConversations = useMemo(() => {

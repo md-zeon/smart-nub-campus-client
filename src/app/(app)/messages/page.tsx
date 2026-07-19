@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { serverApi } from "@/lib/server-api";
 import { MessagesPageClient } from "@/components/messages/messages-page-client";
 import { messageService } from "@/services/message.service";
@@ -30,9 +31,11 @@ export default async function MessagesPage() {
   }
 
   return (
-    <MessagesPageClient
-      currentUserId={currentUserId}
-      initialConversations={initialConversations}
-    />
+    <Suspense fallback={null}>
+      <MessagesPageClient
+        currentUserId={currentUserId}
+        initialConversations={initialConversations}
+      />
+    </Suspense>
   );
 }
