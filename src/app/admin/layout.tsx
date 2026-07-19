@@ -1,0 +1,115 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface IdentityMeResponse {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    image: string | null;
+  };
+  student: Record<string, unknown> | null;
+  admin: Record<string, unknown> | null;
+}
+
+/**
+ * Admin route group layout.
+ * This is the ONLY page that uses a dashboard-style vertical sidebar.
+ * Does NOT use TopNav or PageLayout — completely separate layout.
+ *
+ * Route guard: checks user role on mount, redirects non-admins to "/".
+ */
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [userName, setUserName] = useState<string>("Admin");
+  const [userImage, setUserImage] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    async function checkAdminRole() {
+      try {
+        const result = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") || "http://localhost:5000"}/api/v1/identity/me`,
+          { credentials: "include" },
+        );
+
+        if (!result.ok) {
+          router.replace("/auth/login");
+          return;
+        }
+
+        const data: IdentityMeResponse = await result.json();
+
+        if (data.user.role !== "ADMIN") {
+          router.replace("/");
+          return;
+        }
+
+        setUserName(data.user.name);
+        setUserImage(data.user.image ?? undefined);
+        setIsLoading(false);
+      } catch {
+        router.replace("/auth/login");
+      }
+    }
+
+    checkAdminRole();
+  }, [router]);
+
+  /** Show loading state while checking admin role. */
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        {/* Sidebar skeleton */}
+        <aside className="fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-gray-900">
+          <div className="flex h-16 items-center gap-2 border-b border-gray-700 px-6">
+            <Skeleton className="size-8 rounded-lg bg-gray-700" />
+            <div className="space-y-1">
+              <Skeleton className="h-4 w-20 bg-gray-700" />
+              <Skeleton className="h-3 w-24 bg-gray-700" />
+            </div>
+          </div>
+          <div className="space-y-1 p-4">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full rounded-lg bg-gray-700" />
+            ))}
+          </div>
+        </aside>
+
+        {/* Main content skeleton */}
+        <main className="flex-1 ml-64 pt-16 p-6">
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-48" />
+            <div className="grid grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-32 rounded-xl" />
+              ))}
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Admin uses its OWN layout — no TopNav, no PageLayout */}
+      <div className="flex">
+        <AdminSidebar
+          userName={userName}
+          userImage={userImage}
+        />
+        <main className="flex-1 ml-64 pt-16">{children}</main>
+      </div>
+    </div>
+  );
+}
