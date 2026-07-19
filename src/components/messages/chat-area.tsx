@@ -162,8 +162,8 @@ export function ChatArea({
                 Load older messages…
               </p>
             )}
-            {groups.map((bucket) => (
-              <div key={bucket.label} className="space-y-2.5">
+            {groups.map((bucket, bucketIdx) => (
+              <div key={`day-${bucketIdx}`} className="space-y-2.5">
                 <div className="sticky top-0 z-10 flex justify-center py-1">
                   <span className="rounded-full bg-background/80 px-3 py-1 text-[11px] font-medium text-muted-foreground ring-1 ring-foreground/10 backdrop-blur">
                     {bucket.label}
@@ -175,7 +175,7 @@ export function ChatArea({
                     !prev || prev.senderId !== m.senderId || !isSameDay(prev.createdAt, m.createdAt);
                   return (
                     <MessageBubble
-                      key={m.id}
+                      key={`${bucketIdx}-${idx}-${m.id}`}
                       message={m}
                       isOwn={m.senderId === currentUserId}
                       showSender={showSender}

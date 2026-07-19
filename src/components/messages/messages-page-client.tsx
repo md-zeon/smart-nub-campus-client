@@ -284,7 +284,7 @@ export function MessagesPageClient({
   const sendText = useCallback(
     async (text: string) => {
       if (!activeConversationId) return;
-      const tempId = `temp-${Date.now()}`;
+      const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const optimistic: Message = {
         id: tempId,
         conversationId: activeConversationId,
@@ -314,7 +314,7 @@ export function MessagesPageClient({
     async (file: File) => {
       if (!activeConversationId) return;
       const isImage = file.type.startsWith("image/");
-      const tempId = `temp-${Date.now()}`;
+      const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const optimistic: Message = {
         id: tempId,
         conversationId: activeConversationId,
