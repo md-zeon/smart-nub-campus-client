@@ -1,5 +1,17 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { discussionService } from "@/services/discussion.service";
+
+export const metadata: Metadata = {
+  title: "Discussions | Smart NUB Campus",
+  description:
+    "Join academic discussions, share ideas and collaborate with fellow NSU students.",
+  openGraph: {
+    title: "Discussions | Smart NUB Campus",
+    description: "Academic discussions at North South University.",
+    type: "website",
+  },
+};
 import { DiscussionsClient } from "@/components/discussions/discussions-client";
 import { PageLayout } from "@/components/layout/page-layout";
 import type {

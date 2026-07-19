@@ -83,7 +83,7 @@ export function TopNav({ userName, userImage }: TopNavProps) {
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/60">
       <div className="mx-auto flex h-16 items-center gap-4 px-4 sm:px-6">
         {/* ── Logo / Brand ─────────────────────────────────────────────── */}
-        <Link href={ROUTES.HOME} className="flex shrink-0 items-center gap-2">
+        <Link href={ROUTES.HOME} className="flex shrink-0 items-center gap-2" aria-label="Smart NUB Campus — Go to home page">
           <div className="flex items-center gap-1.5 sm:gap-2">
             <AcademicCapIcon className="text-brand" size={32} />
             <div className="-space-y-0.5 sm:-space-y-1">
@@ -96,7 +96,7 @@ export function TopNav({ userName, userImage }: TopNavProps) {
         </Link>
 
         {/* ── Desktop navigation links ─────────────────────────────────── */}
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="hidden items-center gap-1 md:flex" role="navigation" aria-label="Main navigation">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive =
@@ -154,7 +154,7 @@ export function TopNav({ userName, userImage }: TopNavProps) {
           </Button>
 
           {/* ── Notifications ───────────────────────────────────────────── */}
-          <Link href={ROUTES.NOTIFICATIONS}>
+          <Link href={ROUTES.NOTIFICATIONS} aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}>
             <Button variant="ghost" size="icon" className="relative size-8">
               <Bell className="size-4" />
               {unreadCount > 0 && (
@@ -254,7 +254,7 @@ export function TopNav({ userName, userImage }: TopNavProps) {
           </div>
 
           {/* ── Mobile nav links ───────────────────────────────────────── */}
-          <nav className="space-y-1 px-2 py-2">
+          <nav className="space-y-1 px-2 py-2" role="navigation" aria-label="Mobile navigation">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive =

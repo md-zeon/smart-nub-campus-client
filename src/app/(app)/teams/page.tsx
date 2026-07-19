@@ -1,5 +1,17 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { listTeamRequests } from "@/actions/team.actions";
+
+export const metadata: Metadata = {
+  title: "Teams | Smart NUB Campus",
+  description:
+    "Find teammates, join projects and collaborate on academic work at North South University.",
+  openGraph: {
+    title: "Teams | Smart NUB Campus",
+    description: "Find teammates and collaborate at NSU.",
+    type: "website",
+  },
+};
 import { TeamsClient } from "@/components/teams/teams-client";
 import { PageLayout } from "@/components/layout/page-layout";
 import type {

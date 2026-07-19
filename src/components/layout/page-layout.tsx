@@ -55,7 +55,7 @@ export function PageLayout({
       >
         {/* ── Left sidebar ──────────────────────────────────────────── */}
         {hasLeft && (
-          <aside className="hidden lg:block">
+          <aside className="hidden lg:block" role="complementary" aria-label="Page sidebar">
             <div className="sticky top-20">{leftSidebar}</div>
           </aside>
         )}
@@ -65,7 +65,7 @@ export function PageLayout({
 
         {/* ── Right sidebar ─────────────────────────────────────────── */}
         {hasRight && (
-          <aside className="hidden lg:block">
+          <aside className="hidden lg:block" role="complementary" aria-label="Page information">
             <div className="sticky top-20">{rightSidebar}</div>
           </aside>
         )}

@@ -1,5 +1,17 @@
+import type { Metadata } from "next";
 import { ConnectionsClient } from "@/components/connections/connections-client";
 import { Suspense } from "react";
+
+export const metadata: Metadata = {
+  title: "Connections | Smart NUB Campus",
+  description:
+    "Build your academic network — find classmates, form study groups and connect with peers at NSU.",
+  openGraph: {
+    title: "Connections | Smart NUB Campus",
+    description: "Build your academic network at North South University.",
+    type: "website",
+  },
+};
 import {
   getOverviewAction,
   getSuggestionsAction,

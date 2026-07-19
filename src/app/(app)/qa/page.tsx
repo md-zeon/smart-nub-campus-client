@@ -1,5 +1,17 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { qaService } from "@/services/qa.service";
+
+export const metadata: Metadata = {
+  title: "Q&A | Smart NUB Campus",
+  description:
+    "Ask questions, find answers and help fellow students at North South University.",
+  openGraph: {
+    title: "Q&A | Smart NUB Campus",
+    description: "Academic Q&A at North South University.",
+    type: "website",
+  },
+};
 import { QAClient } from "@/components/qa/qa-client";
 import { PageLayout } from "@/components/layout/page-layout";
 import type { Question, QuestionCategory } from "@/types/qa.types";

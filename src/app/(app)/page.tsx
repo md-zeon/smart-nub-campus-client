@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { HeroBanner } from "@/components/home/hero-banner";
 import { QuickAccess } from "@/components/home/quick-access";
 import { TrendingResources } from "@/components/home/trending-resources";
@@ -6,6 +7,18 @@ import { TopContributors } from "@/components/home/top-contributors";
 import { resourceService } from "@/services/resource.service";
 import { gamificationService } from "@/services/gamification.service";
 import { eventService } from "@/services/event.service";
+
+export const metadata: Metadata = {
+  title: "Home | Smart NUB Campus",
+  description:
+    "Smart NUB Campus dashboard — collaborate, learn, share resources and grow together at North South University.",
+  openGraph: {
+    title: "Smart NUB Campus",
+    description:
+      "The exclusive academic platform for North South University students.",
+    type: "website",
+  },
+};
 
 /**
  * Home page — the first thing users see after login.

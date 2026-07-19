@@ -1,5 +1,17 @@
+import type { Metadata } from "next";
 /* TODO(AI-PAGE): Known issues to revisit - Phase 18 AI Assistant page. 1) New-chat URL uses /ai?chat=<id> via createNewSession; confirm desired route (some wanted /ai/<uuid> path segment). 2) Chat history title updates from server on first message - verify promptness. 3) Verify send retry-on-not-found + clean URL across refresh/back-forward. 4) Re-check right sidebar (AI Tools removed per request). */
 import { Suspense } from "react";
+
+export const metadata: Metadata = {
+  title: "AI Assistant | Smart NUB Campus",
+  description:
+    "AI-powered study tools — PDF summarizer, quiz generator, flashcards and more for NSU students.",
+  openGraph: {
+    title: "AI Assistant | Smart NUB Campus",
+    description: "AI-powered study tools for NSU students.",
+    type: "website",
+  },
+};
 import { aiService } from "@/services/ai.service";
 import { PageLayout } from "@/components/layout/page-layout";
 import { AISidebar } from "@/components/ai/ai-sidebar";

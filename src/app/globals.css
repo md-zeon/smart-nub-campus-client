@@ -301,4 +301,12 @@
   html {
     @apply font-sans;
   }
+  /* Focus-visible styles for keyboard navigation */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+  /* Remove outline for mouse users */
+  :focus:not(:focus-visible) {
+    @apply outline-none;
+  }
 }
