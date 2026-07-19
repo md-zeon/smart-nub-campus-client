@@ -9,6 +9,18 @@ import type {
   AdminVerificationDetail,
   ListAuditLogsParams,
   ListAuditLogsResponse,
+  ListAdminResourcesParams,
+  ListAdminResourcesResponse,
+  ListAdminCoursesResponse,
+  CreateCourseInput,
+  AdminCourse,
+  ListAdminCategoriesResponse,
+  AdminResourceCategory,
+  AdminDiscussionCategory,
+  AdminQuestionCategory,
+  ListAdminEventsResponse,
+  AdminEvent,
+  CreateEventInput,
 } from "@/types/admin.types";
 
 /**
@@ -142,5 +154,246 @@ export const adminService = {
       data: ListAuditLogsResponse;
     }>(`/admin/audit-log?${searchParams.toString()}`);
     return response.data!.data;
+  },
+
+  // ── Resource Management ──────────────────────────────────────────────────
+
+  async listResources(
+    params: ListAdminResourcesParams,
+  ): Promise<ListAdminResourcesResponse> {
+    const searchParams = new URLSearchParams();
+    searchParams.set("page", String(params.page));
+    searchParams.set("limit", String(params.limit));
+    if (params.search) searchParams.set("search", params.search);
+    if (params.courseId) searchParams.set("courseId", params.courseId);
+    if (params.categoryId) searchParams.set("categoryId", params.categoryId);
+    if (params.isVerified !== undefined)
+      searchParams.set("isVerified", String(params.isVerified));
+
+    const response = await apiClient.get<{
+      success: boolean;
+      message: string;
+      data: ListAdminResourcesResponse;
+    }>(`/admin/resources?${searchParams.toString()}`);
+    return response.data!.data;
+  },
+
+  async verifyResource(
+    id: string,
+    isVerified: boolean,
+  ): Promise<{ id: string; isVerified: boolean }> {
+    const response = await apiClient.patch<{
+      success: boolean;
+      message: string;
+      data: { id: string; isVerified: boolean };
+    }>(`/admin/resources/${id}/verify`, { isVerified });
+    return response.data!.data;
+  },
+
+  async deleteResource(id: string): Promise<void> {
+    await apiClient.del(`/admin/resources/${id}`);
+  },
+
+  // ── Course Management ───────────────────────────────────────────────────
+
+  async listCourses(
+    page = 1,
+    limit = 20,
+  ): Promise<ListAdminCoursesResponse> {
+    const searchParams = new URLSearchParams();
+    searchParams.set("page", String(page));
+    searchParams.set("limit", String(limit));
+
+    const response = await apiClient.get<{
+      success: boolean;
+      message: string;
+      data: ListAdminCoursesResponse;
+    }>(`/admin/courses?${searchParams.toString()}`);
+    return response.data!.data;
+  },
+
+  async getCourseById(id: string): Promise<AdminCourse> {
+    const response = await apiClient.get<{
+      success: boolean;
+      message: string;
+      data: AdminCourse;
+    }>(`/admin/courses/${id}`);
+    return response.data!.data;
+  },
+
+  async createCourse(data: CreateCourseInput): Promise<AdminCourse> {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+      data: AdminCourse;
+    }>("/admin/courses", data);
+    return response.data!.data;
+  },
+
+  async updateCourse(
+    id: string,
+    data: Partial<CreateCourseInput>,
+  ): Promise<AdminCourse> {
+    const response = await apiClient.patch<{
+      success: boolean;
+      message: string;
+      data: AdminCourse;
+    }>(`/admin/courses/${id}`, data);
+    return response.data!.data;
+  },
+
+  async deleteCourse(id: string): Promise<void> {
+    await apiClient.del(`/admin/courses/${id}`);
+  },
+
+  // ── Category Management ─────────────────────────────────────────────────
+
+  async listResourceCategories(
+    page = 1,
+    limit = 50,
+  ): Promise<ListAdminCategoriesResponse<AdminResourceCategory>> {
+    const searchParams = new URLSearchParams();
+    searchParams.set("page", String(page));
+    searchParams.set("limit", String(limit));
+
+    const response = await apiClient.get<{
+      success: boolean;
+      message: string;
+      data: ListAdminCategoriesResponse<AdminResourceCategory>;
+    }>(`/admin/resource-categories?${searchParams.toString()}`);
+    return response.data!.data;
+  },
+
+  async createResourceCategory(data: {
+    name: string;
+    icon?: string;
+    description?: string;
+  }): Promise<AdminResourceCategory> {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+      data: AdminResourceCategory;
+    }>("/admin/resource-categories", data);
+    return response.data!.data;
+  },
+
+  async deleteResourceCategory(id: string): Promise<void> {
+    await apiClient.del(`/admin/resource-categories/${id}`);
+  },
+
+  async listDiscussionCategories(
+    page = 1,
+    limit = 50,
+  ): Promise<ListAdminCategoriesResponse<AdminDiscussionCategory>> {
+    const searchParams = new URLSearchParams();
+    searchParams.set("page", String(page));
+    searchParams.set("limit", String(limit));
+
+    const response = await apiClient.get<{
+      success: boolean;
+      message: string;
+      data: ListAdminCategoriesResponse<AdminDiscussionCategory>;
+    }>(`/admin/discussion-categories?${searchParams.toString()}`);
+    return response.data!.data;
+  },
+
+  async createDiscussionCategory(data: {
+    name: string;
+    icon?: string;
+  }): Promise<AdminDiscussionCategory> {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+      data: AdminDiscussionCategory;
+    }>("/admin/discussion-categories", data);
+    return response.data!.data;
+  },
+
+  async deleteDiscussionCategory(id: string): Promise<void> {
+    await apiClient.del(`/admin/discussion-categories/${id}`);
+  },
+
+  async listQuestionCategories(
+    page = 1,
+    limit = 50,
+  ): Promise<ListAdminCategoriesResponse<AdminQuestionCategory>> {
+    const searchParams = new URLSearchParams();
+    searchParams.set("page", String(page));
+    searchParams.set("limit", String(limit));
+
+    const response = await apiClient.get<{
+      success: boolean;
+      message: string;
+      data: ListAdminCategoriesResponse<AdminQuestionCategory>;
+    }>(`/admin/question-categories?${searchParams.toString()}`);
+    return response.data!.data;
+  },
+
+  async createQuestionCategory(data: {
+    name: string;
+    icon?: string;
+  }): Promise<AdminQuestionCategory> {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+      data: AdminQuestionCategory;
+    }>("/admin/question-categories", data);
+    return response.data!.data;
+  },
+
+  async deleteQuestionCategory(id: string): Promise<void> {
+    await apiClient.del(`/admin/question-categories/${id}`);
+  },
+
+  // ── Event Management ────────────────────────────────────────────────────
+
+  async listEvents(
+    page = 1,
+    limit = 20,
+  ): Promise<ListAdminEventsResponse> {
+    const searchParams = new URLSearchParams();
+    searchParams.set("page", String(page));
+    searchParams.set("limit", String(limit));
+
+    const response = await apiClient.get<{
+      success: boolean;
+      message: string;
+      data: ListAdminEventsResponse;
+    }>(`/admin/events?${searchParams.toString()}`);
+    return response.data!.data;
+  },
+
+  async getEventById(id: string): Promise<AdminEvent> {
+    const response = await apiClient.get<{
+      success: boolean;
+      message: string;
+      data: AdminEvent;
+    }>(`/admin/events/${id}`);
+    return response.data!.data;
+  },
+
+  async createEvent(data: CreateEventInput): Promise<AdminEvent> {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+      data: AdminEvent;
+    }>("/admin/events", data);
+    return response.data!.data;
+  },
+
+  async updateEvent(
+    id: string,
+    data: Partial<CreateEventInput>,
+  ): Promise<AdminEvent> {
+    const response = await apiClient.patch<{
+      success: boolean;
+      message: string;
+      data: AdminEvent;
+    }>(`/admin/events/${id}`, data);
+    return response.data!.data;
+  },
+
+  async deleteEvent(id: string): Promise<void> {
+    await apiClient.del(`/admin/events/${id}`);
   },
 };

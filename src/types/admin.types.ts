@@ -154,3 +154,164 @@ export interface ListAuditLogsResponse {
     totalPages: number;
   };
 }
+
+// ── Resource Management ─────────────────────────────────────────────────────
+
+export interface AdminResource {
+  id: string;
+  title: string;
+  description: string | null;
+  fileUrl: string;
+  filePublicId: string | null;
+  fileType: string;
+  fileSize: number;
+  courseId: string;
+  categoryId: string;
+  uploaderId: string;
+  upvoteCount: number;
+  downvoteCount: number;
+  downloadCount: number;
+  viewCount: number;
+  reportCount: number;
+  isVerified: boolean;
+  isDeleted: boolean;
+  deletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  course: { id: string; code: string; name: string };
+  category: { id: string; name: string; slug: string };
+  uploader: { id: string; name: string; email: string };
+}
+
+export interface ListAdminResourcesParams {
+  page: number;
+  limit: number;
+  search?: string;
+  courseId?: string;
+  categoryId?: string;
+  isVerified?: boolean;
+}
+
+export interface ListAdminResourcesResponse {
+  data: AdminResource[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+// ── Course Management ───────────────────────────────────────────────────────
+
+export interface AdminCourse {
+  id: string;
+  code: string;
+  name: string;
+  department: string;
+  semester: number | null;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count: { resources: number; discussions: number };
+}
+
+export interface ListAdminCoursesResponse {
+  data: AdminCourse[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface CreateCourseInput {
+  code: string;
+  name: string;
+  department: string;
+  semester?: number;
+  description?: string;
+}
+
+// ── Category Management ─────────────────────────────────────────────────────
+
+export interface AdminResourceCategory {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string | null;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count: { resources: number };
+}
+
+export interface AdminDiscussionCategory {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count: { discussions: number };
+}
+
+export interface AdminQuestionCategory {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count: { questions: number };
+}
+
+export interface ListAdminCategoriesResponse<T> {
+  data: T[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+// ── Event Management ────────────────────────────────────────────────────────
+
+export interface AdminEvent {
+  id: string;
+  title: string;
+  description: string | null;
+  eventDate: string;
+  location: string | null;
+  imageUrl: string | null;
+  organizerId: string | null;
+  status: "UPCOMING" | "ONGOING" | "COMPLETED" | "CANCELLED";
+  isFeatured: boolean;
+  createdAt: string;
+  updatedAt: string;
+  organizer: { id: string; name: string; email: string } | null;
+  _count: { rsvps: number };
+}
+
+export interface ListAdminEventsResponse {
+  data: AdminEvent[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface CreateEventInput {
+  title: string;
+  description?: string;
+  eventDate: string;
+  location?: string;
+  imageUrl?: string;
+  organizerId?: string;
+  status?: "UPCOMING" | "ONGOING" | "COMPLETED" | "CANCELLED";
+  isFeatured?: boolean;
+}
