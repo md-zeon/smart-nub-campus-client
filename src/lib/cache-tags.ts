@@ -48,6 +48,12 @@ export const TAGS = {
 
   /** Top/trending questions sidebar. */
   QA_TRENDING: "qa-trending",
+
+  /** Connections list + suggestions + overview. */
+  CONNECTIONS: "connections",
+
+  /** Connection requests (pending/sent). */
+  CONNECTION_REQUESTS: "connection-requests",
 } as const;
 
 /** All tags that should be invalidated when any resource is created/updated/deleted. */
@@ -61,3 +67,6 @@ export const DISCUSSION_MUTATION_TAGS = [TAGS.DISCUSSIONS, TAGS.DISCUSSION_DETAI
 
 /** All tags that should be invalidated when a question/answer is created/updated/deleted. */
 export const QA_MUTATION_TAGS = [TAGS.QA, TAGS.QA_DETAIL, TAGS.QA_TRENDING] as const;
+
+/** All tags that should be invalidated when a connection is created/updated/deleted. */
+export const CONNECTION_MUTATION_TAGS = [TAGS.CONNECTIONS, TAGS.CONNECTION_REQUESTS] as const;

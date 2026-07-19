@@ -1,123 +1,191 @@
 import serverApi from "@/lib/server-api";
+import { CONNECTION_MUTATION_TAGS, TAGS } from "@/lib/cache-tags";
 import type {
-  ConnectionRequest,
-  ConnectionListResponse,
-} from "@/types/connection.types";
+  ConnectionWithUser,
+  ConnectionOtherUser,
+  SuggestedPerson,
+  SearchPeopleResponse,
+  ConnectionOverview,
+  PaginationMeta,
+} from "@/types";
 
+function buildQueryString(params: object): string {
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null) {
+      if (Array.isArray(value)) {
+        searchParams.set(key, value.join(","));
+      } else {
+        searchParams.set(key, String(value));
+      }
+    }
+  }
+  const qs = searchParams.toString();
+  return qs ? `?${qs}` : "";
+}
+
+/**
+ * Connection module service — wraps all `/connections` endpoints.
+ * Mirrors the server connection module (Phase 5).
+ */
 export const connectionService = {
-  async listConnections(
-    params: { filter?: string; page?: number; limit?: number } = {},
-  ): Promise<ConnectionListResponse> {
-    const searchParams = new URLSearchParams();
-    if (params.filter) searchParams.set("filter", params.filter);
-    if (params.page) searchParams.set("page", String(params.page));
-    if (params.limit) searchParams.set("limit", String(params.limit));
-    const qs = searchParams.toString();
-    const response = await serverApi.get<ConnectionListResponse>(
-      `/connections${qs ? `?${qs}` : ""}`,
-      { tags: ["connections-list"] },
-    );
-    return response.data!;
-  },
-
-  async sendRequest(receiverId: string): Promise<ConnectionRequest> {
-    const response = await serverApi.post<ConnectionRequest>(
-      "/connections/request",
-      { receiverId },
-    );
-    return response.data!;
-  },
-
-  async acceptRequest(connectionId: string): Promise<unknown> {
-    const response = await serverApi.put<unknown>(
-      `/connections/${connectionId}/accept`,
-      {},
-    );
-    return response.data!;
-  },
-
-  async rejectRequest(connectionId: string): Promise<unknown> {
-    const response = await serverApi.put<unknown>(
-      `/connections/${connectionId}/reject`,
-      {},
-    );
-    return response.data!;
-  },
-
-  async removeConnection(connectionId: string): Promise<void> {
-    await serverApi.del(`/connections/${connectionId}`);
-  },
-
-  async blockUser(userId: string): Promise<void> {
-    await serverApi.post("/connections/block", { userId });
-  },
-
-  async unblockUser(blockedId: string): Promise<void> {
-    await serverApi.del(`/connections/block/${blockedId}`);
-  },
-
-  async toggleFavorite(connectionId: string): Promise<unknown> {
-    const response = await serverApi.put<unknown>(
-      `/connections/${connectionId}/favorite`,
-      {},
-    );
-    return response.data!;
-  },
-
-  async getPendingRequests(): Promise<ConnectionRequest[]> {
-    const response = await serverApi.get<ConnectionRequest[]>(
-      "/connections/pending",
-    );
-    return response.data!;
-  },
-
-  async getSentRequests(): Promise<ConnectionRequest[]> {
-    const response = await serverApi.get<ConnectionRequest[]>(
-      "/connections/sent",
-    );
-    return response.data!;
-  },
-
-  async getSuggestedPeople(): Promise<unknown[]> {
-    const response = await serverApi.get<unknown[]>(
-      "/connections/suggestions",
-    );
-    return response.data!;
-  },
-
+  /** Search discoverable people with optional filters. */
   async searchPeople(params: {
     query?: string;
     department?: string;
     semester?: string;
-    skills?: string;
+    skills?: string[];
     page?: number;
     limit?: number;
-  }): Promise<unknown> {
-    const searchParams = new URLSearchParams();
-    for (const [key, value] of Object.entries(params)) {
-      if (value !== undefined && value !== null) {
-        searchParams.set(key, String(value));
-      }
-    }
-    const response = await serverApi.get<unknown>(
-      `/connections/search?${searchParams.toString()}`,
+  }): Promise<SearchPeopleResponse> {
+    const query = buildQueryString({
+      query: params.query,
+      department: params.department,
+      semester: params.semester,
+      skills: params.skills,
+      page: params.page,
+      limit: params.limit,
+    });
+    const response = await serverApi.get<SearchPeopleResponse>(
+      `/connections/search${query}`,
+      { tags: [TAGS.CONNECTIONS] },
     );
     return response.data!;
   },
 
-  async addSkill(name: string): Promise<unknown> {
-    const response = await serverApi.post<unknown>("/connections/skills", { name });
-    return response.data!;
+  /** People You May Know suggestions. */
+  async getSuggestions(): Promise<SuggestedPerson[]> {
+    const response = await serverApi.get<SuggestedPerson[]>(
+      "/connections/suggestions",
+      { tags: [TAGS.CONNECTIONS] },
+    );
+    return response.data ?? [];
   },
 
-  async removeSkill(skillId: string): Promise<void> {
-    await serverApi.del(`/connections/skills/${skillId}`);
+  /** Incoming pending connection requests (received). */
+  async getPendingRequests(): Promise<ConnectionWithUser[]> {
+    const response = await serverApi.get<ConnectionWithUser[]>(
+      "/connections/pending",
+      { tags: [TAGS.CONNECTION_REQUESTS] },
+    );
+    return response.data ?? [];
   },
 
-  async getUserSkills(userId: string): Promise<unknown> {
-    const response = await serverApi.get<unknown>(
-      `/connections/skills/${userId}`,
+  /** Users the current user has blocked. */
+  async getBlockedUsers(): Promise<ConnectionOtherUser[]> {
+    const response = await serverApi.get<ConnectionOtherUser[]>(
+      "/connections/blocked",
+      { tags: [TAGS.CONNECTIONS] },
+    );
+    return response.data ?? [];
+  },
+
+  /** Outgoing pending connection requests (sent). */
+  async getSentRequests(): Promise<ConnectionWithUser[]> {
+    const response = await serverApi.get<ConnectionWithUser[]>(
+      "/connections/sent",
+      { tags: [TAGS.CONNECTION_REQUESTS] },
+    );
+    return response.data ?? [];
+  },
+
+  /** Established connections with semester-based filters. */
+  async getMyConnections(
+    filter: "ALL" | "SENIORS" | "JUNIORS" | "SAME_SEMESTER" | "FAVORITES" = "ALL",
+    page = 1,
+    limit = 12,
+  ): Promise<{ data: ConnectionWithUser[]; meta: PaginationMeta }> {
+    const query = buildQueryString({ filter, page, limit });
+    const response = await serverApi.get<{ data: ConnectionWithUser[]; meta: PaginationMeta }>(
+      `/connections${query}`,
+      { tags: [TAGS.CONNECTIONS] },
     );
     return response.data!;
+  },
+
+  /** Aggregate counts for the overview card. */
+  async getOverview(): Promise<ConnectionOverview> {
+    const [connections, pending, sent] = await Promise.all([
+      this.getMyConnections("ALL", 1, 1),
+      this.getPendingRequests(),
+      this.getSentRequests(),
+    ]);
+
+    const favorites = await this.getMyConnections("FAVORITES", 1, 1);
+    const blockedUsers = await this.getBlockedUsers();
+
+    return {
+      totalConnections: connections.meta.total,
+      pending: pending.length,
+      sent: sent.length,
+      favorites: favorites.meta.total,
+      blocked: blockedUsers.length,
+    };
+  },
+
+  /** Send a connection request to a user. */
+  async sendRequest(receiverId: string, note?: string): Promise<void> {
+    await serverApi.post(
+      "/connections/request",
+      { receiverId, note: note ?? undefined },
+      { invalidatesTags: [...CONNECTION_MUTATION_TAGS] },
+    );
+  },
+
+  /** Accept an incoming connection request. */
+  async acceptRequest(connectionId: string): Promise<void> {
+    await serverApi.put(
+      `/connections/${connectionId}/accept`,
+      {},
+      { invalidatesTags: [...CONNECTION_MUTATION_TAGS] },
+    );
+  },
+
+  /** Reject an incoming connection request. */
+  async rejectRequest(connectionId: string): Promise<void> {
+    await serverApi.put(
+      `/connections/${connectionId}/reject`,
+      {},
+      { invalidatesTags: [...CONNECTION_MUTATION_TAGS] },
+    );
+  },
+
+  /** Cancel an outgoing (sent) connection request. */
+  async cancelRequest(connectionId: string): Promise<void> {
+    await serverApi.del(`/connections/${connectionId}`, {
+      invalidatesTags: [...CONNECTION_MUTATION_TAGS],
+    });
+  },
+
+  /** Toggle favorite flag on a connection. */
+  async toggleFavorite(connectionId: string): Promise<void> {
+    await serverApi.put(
+      `/connections/${connectionId}/favorite`,
+      {},
+      { invalidatesTags: [...CONNECTION_MUTATION_TAGS] },
+    );
+  },
+
+  /** Remove an established connection. */
+  async removeConnection(connectionId: string): Promise<void> {
+    await serverApi.del(`/connections/${connectionId}`, {
+      invalidatesTags: [...CONNECTION_MUTATION_TAGS],
+    });
+  },
+
+  /** Block a user. */
+  async blockUser(blockedId: string): Promise<void> {
+    await serverApi.post(
+      "/connections/block",
+      { blockedId },
+      { invalidatesTags: [...CONNECTION_MUTATION_TAGS] },
+    );
+  },
+
+  /** Unblock a previously blocked user. */
+  async unblockUser(blockedId: string): Promise<void> {
+    await serverApi.del(`/connections/block/${blockedId}`, {
+      invalidatesTags: [...CONNECTION_MUTATION_TAGS],
+    });
   },
 };
