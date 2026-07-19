@@ -151,6 +151,12 @@ export function MessagesPageClient({
         }
         return dedupe(prev.concat(incoming));
       });
+
+      // If the incoming message is from the other party and we're viewing the
+      // conversation, mark it read so the sender gets a ✓✓ receipt.
+      if (!isOwn) {
+        emitRead(msg.conversationId);
+      }
     }
   });
 
@@ -252,6 +258,22 @@ export function MessagesPageClient({
     [],
   );
 
+  // ── Read receipts ──────────────────────────────────────────────────────────
+  // When the recipient opens / views a conversation we tell the server which
+  // messages we've seen. The server persists isRead/readAt on the message rows
+  // and broadcasts a receipt per message so the sender's ✓✓ tick appears (and
+  // survives a reload because the state lives in the DB).
+  const emitRead = useCallback(
+    (conversationId: string) => {
+      if (!socket) return;
+      const lastId =
+        messages.filter((m) => m.conversationId === conversationId).at(-1)?.id ??
+        "";
+      socket.emit("messaging:read", { conversationId, messageId: lastId });
+    },
+    [socket, messages],
+  );
+
   const selectConversation = useCallback(
     (id: string) => {
       setActiveConversationId(id);
@@ -262,9 +284,9 @@ export function MessagesPageClient({
       const params = new URLSearchParams(Array.from(searchParams.entries()));
       params.set("c", id);
       router.replace(`?${params.toString()}`, { scroll: false });
-      void loadMessages(id);
+      void loadMessages(id).then(() => emitRead(id));
     },
-    [loadMessages, router, searchParams],
+    [loadMessages, router, searchParams, emitRead],
   );
 
   // Open the conversation referenced by ?c= on first mount (deep link / reload).
@@ -277,7 +299,7 @@ export function MessagesPageClient({
     setMessages([]);
     setHasMore(false);
     setMessagesPage(1);
-    void loadMessages(c);
+    void loadMessages(c).then(() => emitRead(c));
     if (!conversations.some((x) => x.id === c)) {
       void refreshConversations();
     }
