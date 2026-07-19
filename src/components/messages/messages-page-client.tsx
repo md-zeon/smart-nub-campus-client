@@ -87,7 +87,7 @@ export function MessagesPageClient({
     // Only handle messages for the active conversation in the thread;
     // conversation list previews update for all conversations.
     const incoming: Message = {
-      id: msg.id,
+      id: msg.id ?? `srv-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       conversationId: msg.conversationId,
       senderId: msg.senderId,
       content: msg.content,
@@ -133,7 +133,7 @@ export function MessagesPageClient({
         if (isOwn) {
           // Replace the optimistic temp (matched by content) with the real one.
           const idx = prev.findIndex(
-            (m) => m.id.startsWith("temp-") && m.content === msg.content,
+            (m) => typeof m.id === "string" && m.id.startsWith("temp-") && m.content === msg.content,
           );
           if (idx !== -1) {
             const next = [...prev];
@@ -525,9 +525,10 @@ function dedupe(list: Message[]): Message[] {
   const seen = new Set<string>();
   const out: Message[] = [];
   for (const m of list) {
-    if (seen.has(m.id)) continue;
-    seen.add(m.id);
-    out.push(m);
+    const id = m.id ?? `gen-${Math.random().toString(36).slice(2, 9)}`;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(m.id === id ? m : { ...m, id });
   }
   return out.sort(
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
