@@ -64,8 +64,7 @@ export function NewMessageModal({
   const handleStart = async (person: SearchPerson) => {
     try {
       const conversation = await messageService.createConversation({
-        type: "DIRECT",
-        participantIds: [person.id],
+        participantId: person.id,
       });
       toast.success(`Conversation started with ${person.name}`);
       onOpenChange(false);

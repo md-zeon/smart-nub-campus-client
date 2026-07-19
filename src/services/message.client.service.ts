@@ -36,7 +36,12 @@ export const messageClientService = {
     const res = await apiClient.get<ConversationListResponse>(
       `/messages/conversations${query}`,
     );
-    return unwrap<ConversationListResponse>(res.data);
+    const payload = unwrap<{ data?: Conversation[]; conversations?: Conversation[]; meta?: ConversationListResponse["meta"] }>(res.data);
+    // Server returns { data, meta }; normalize to the client { conversations, meta } shape.
+    return {
+      conversations: payload.conversations ?? payload.data ?? [],
+      meta: payload.meta ?? { page: 1, limit: 20, total: 0, totalPages: 0 },
+    };
   },
 
   async getConversationById(id: string): Promise<Conversation> {
@@ -45,12 +50,44 @@ export const messageClientService = {
   },
 
   async createConversation(data: {
-    participantIds: string[];
-    type?: "DIRECT" | "GROUP";
-    name?: string;
+    participantId: string;
   }): Promise<Conversation> {
     const res = await apiClient.post<Conversation>("/messages/conversations", data);
-    return unwrap<Conversation>(res.data);
+    // Server returns a ConversationWithDetails shape (otherUser / lastMessage /
+    // unreadCount) without `conversationParticipants`. Normalize it into the
+    // client `Conversation` shape so the UI can render it consistently.
+    const raw = unwrap<Record<string, unknown>>(res.data);
+    const otherUser = raw.otherUser as
+      | { id: string; name: string; image?: string | null }
+      | null
+      | undefined;
+    const normalized: Conversation = {
+      id: raw.id as string,
+      type: (raw.type as Conversation["type"]) ?? "DIRECT",
+      name: (raw.name as string | null) ?? null,
+      description: (raw.description as string | null) ?? null,
+      groupImage: (raw.groupImage as string | null) ?? null,
+      creatorId: (raw.creatorId as string | null) ?? null,
+      lastMessageAt: (raw.lastMessageAt as string | null) ?? null,
+      createdAt: raw.createdAt as string,
+      updatedAt: raw.updatedAt as string,
+      conversationParticipants: otherUser
+        ? [
+            {
+              id: `p-${otherUser.id}`,
+              conversationId: raw.id as string,
+              userId: otherUser.id,
+              user: { id: otherUser.id, name: otherUser.name, image: otherUser.image },
+              isAdmin: false,
+              isMuted: false,
+              joinedAt: raw.createdAt as string,
+            },
+          ]
+        : [],
+      lastMessage: (raw.lastMessage as Conversation["lastMessage"]) ?? null,
+      unreadCount: (raw.unreadCount as number) ?? 0,
+    };
+    return normalized;
   },
 
   async listMessages(params: ListMessagesParams): Promise<MessageListResponse> {
@@ -59,7 +96,12 @@ export const messageClientService = {
     const res = await apiClient.get<MessageListResponse>(
       `/messages/conversations/${conversationId}/messages${query}`,
     );
-    return unwrap<MessageListResponse>(res.data);
+    const payload = unwrap<{ data?: Message[]; messages?: Message[]; meta?: MessageListResponse["meta"] }>(res.data);
+    // Server returns { data, meta }; normalize to the client { messages, meta } shape.
+    return {
+      messages: payload.messages ?? payload.data ?? [],
+      meta: payload.meta ?? { page: 1, limit: 20, total: 0, totalPages: 0 },
+    };
   },
 
   async sendMessage(
