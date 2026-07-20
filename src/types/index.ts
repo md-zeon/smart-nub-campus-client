@@ -166,3 +166,18 @@ export type {
   ListAuditLogsParams,
   ListAuditLogsResponse,
 } from "./admin.types";
+
+// ── Settings / Account ──────────────────────────────────────────────────────
+export type {
+  ProfileVisibilityLevel,
+  ConnectionRequestPolicy,
+  MessagingPolicy,
+  UserSettings,
+  UserNotificationSettings,
+  ActiveSession,
+  LoginHistoryEntry,
+  PaginatedLoginHistory,
+  ExportType,
+  ExportJob,
+  DeletionInfo,
+} from "./settings.types";
