@@ -239,7 +239,7 @@ export function OnboardingFlow({
                 </p>
               </div>
               <Button>
-                <Link href={ROUTES.HOME}>Go to Home</Link>
+                <Link href={ROUTES.LOGIN}>Go to Login</Link>
               </Button>
             </div>
           )}

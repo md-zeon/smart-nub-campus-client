@@ -28,9 +28,9 @@ export const metadata: Metadata = {
  */
 export default async function HomePage() {
   const [trendingResult, leaderboardResult, eventsResult] = await Promise.all([
-    resourceService.listResources({ sort: "popular", limit: 3 }),
-    gamificationService.getLeaderboard(1, 3),
-    eventService.listEvents({ status: "UPCOMING", limit: 3 }),
+    resourceService.listResources({ sort: "popular", limit: 3 }).catch(() => ({ data: [] })),
+    gamificationService.getLeaderboard(1, 3).catch(() => ({ data: [] })),
+    eventService.listEvents({ status: "UPCOMING", limit: 3 }).catch(() => ({ data: [] })),
   ]);
 
   const trendingResources = trendingResult.data ?? [];
