@@ -39,6 +39,15 @@ export const TAGS = {
 
   /** Trending discussions sidebar. */
   DISCUSSIONS_TRENDING: "discussions-trending",
+
+  /** Q&A list + categories + tags. */
+  QA: "qa",
+
+  /** Single question detail page. */
+  QA_DETAIL: "qa-detail",
+
+  /** Top/trending questions sidebar. */
+  QA_TRENDING: "qa-trending",
 } as const;
 
 /** All tags that should be invalidated when any resource is created/updated/deleted. */
@@ -49,3 +58,6 @@ export const TEAM_MUTATION_TAGS = [TAGS.TEAMS_LIST, TAGS.TEAM_DETAIL] as const;
 
 /** All tags that should be invalidated when a discussion is created/updated/deleted. */
 export const DISCUSSION_MUTATION_TAGS = [TAGS.DISCUSSIONS, TAGS.DISCUSSION_DETAIL, TAGS.DISCUSSIONS_TRENDING] as const;
+
+/** All tags that should be invalidated when a question/answer is created/updated/deleted. */
+export const QA_MUTATION_TAGS = [TAGS.QA, TAGS.QA_DETAIL, TAGS.QA_TRENDING] as const;

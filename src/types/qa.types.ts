@@ -12,6 +12,7 @@ export interface QuestionAuthor {
   name: string;
   email: string;
   image?: string | null;
+  reputation?: number;
 }
 
 // ── Core models ──────────────────────────────────────────────────────────────
@@ -21,8 +22,8 @@ export interface QuestionCategory {
   name: string;
   slug: string;
   icon?: string | null;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Question {
@@ -34,6 +35,7 @@ export interface Question {
   authorId: string;
   author?: QuestionAuthor;
   courseId?: string | null;
+  course?: { id: string; code: string; name: string } | null;
   upvoteCount: number;
   answerCount: number;
   viewCount: number;
@@ -41,6 +43,8 @@ export interface Question {
   isClosed: boolean;
   questionTags?: QuestionTag[];
   answers?: Answer[];
+  userVote?: "UP" | "DOWN" | null;
+  isBookmarked?: boolean;
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
@@ -55,6 +59,7 @@ export interface Answer {
   upvoteCount: number;
   isAccepted: boolean;
   answerVotes?: AnswerVote[];
+  userVote?: "UP" | "DOWN" | null;
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
@@ -64,7 +69,7 @@ export interface QuestionVote {
   id: string;
   questionId: string;
   userId: string;
-  type: import("./resource.types").VoteType;
+  type: "UP" | "DOWN";
   createdAt: string;
 }
 
@@ -72,7 +77,7 @@ export interface AnswerVote {
   id: string;
   answerId: string;
   userId: string;
-  type: import("./resource.types").VoteType;
+  type: "UP" | "DOWN";
   createdAt: string;
 }
 
@@ -93,19 +98,20 @@ export interface QuestionBookmark {
 
 // ── API query / list types ───────────────────────────────────────────────────
 
+export type QASort = "latest" | "trending" | "most_answered" | "unanswered";
+
 export interface ListQuestionsParams {
   page?: number;
   limit?: number;
-  categoryId?: string;
-  courseId?: string;
-  search?: string;
-  isAnswered?: boolean;
-  sortBy?: "createdAt" | "upvoteCount" | "answerCount" | "viewCount";
-  sortOrder?: "asc" | "desc";
+  category?: string;
   tag?: string;
+  search?: string;
+  answered?: "true" | "false" | null;
+  /** Maps to server `answered` + `sort`. */
+  sort?: QASort;
 }
 
 export interface QuestionListResponse {
-  questions: Question[];
+  data: Question[];
   meta: import("./resource.types").PaginationMeta;
 }

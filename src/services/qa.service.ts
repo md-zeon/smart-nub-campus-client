@@ -1,15 +1,17 @@
 import serverApi from "@/lib/server-api";
+import { TAGS, QA_MUTATION_TAGS } from "@/lib/cache-tags";
 import type {
   Question,
+  QuestionCategory,
   Answer,
   ListQuestionsParams,
   QuestionListResponse,
 } from "@/types/qa.types";
 
-function buildQueryString(params: object): string {
+function buildQueryString(params: Record<string, unknown>): string {
   const searchParams = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null) {
+    if (value !== undefined && value !== null && value !== "") {
       searchParams.set(key, String(value));
     }
   }
@@ -17,89 +19,149 @@ function buildQueryString(params: object): string {
   return qs ? `?${qs}` : "";
 }
 
+/**
+ * Maps the client-facing sort aliases to the server's accepted `sort`
+ * parameter and the `answered` filter.
+ */
+function mapSort(sort?: ListQuestionsParams["sort"]): {
+  sort: string;
+  answered?: string;
+} {
+  switch (sort) {
+    case "trending":
+      return { sort: "popular" };
+    case "most_answered":
+      return { sort: "popular", answered: "true" };
+    case "unanswered":
+      return { sort: "unanswered" };
+    case "latest":
+    default:
+      return { sort: "latest" };
+  }
+}
+
 export const qaService = {
   async createQuestion(data: {
     title: string;
     content: string;
-    tags?: string[];
+    categoryId: string;
+    courseId?: string;
+    tagIds?: string[];
   }): Promise<Question> {
-    const response = await serverApi.post<Question>("/qa", data);
+    const response = await serverApi.post<Question>("/qa", data, {
+      invalidatesTags: [...QA_MUTATION_TAGS],
+    });
+    return response.data!;
+  },
+
+  async listCategories(): Promise<
+    (QuestionCategory & { _count: { questions: number } })[]
+  > {
+    const response = await serverApi.get<
+      (QuestionCategory & { _count: { questions: number } })[]
+    >("/qa/categories", { tags: [TAGS.QA] });
+    return response.data!;
+  },
+
+  async listTags(): Promise<
+    { id: string; name: string; slug: string; _count: { questionTags: number } }[]
+  > {
+    const response = await serverApi.get<
+      { id: string; name: string; slug: string; _count: { questionTags: number } }[]
+    >("/qa/tags", { tags: [TAGS.QA] });
+    return response.data!;
+  },
+
+  async getTopContributors(
+    limit = 5,
+  ): Promise<{ rank: number; name: string; image?: string | null; questionCount: number }[]> {
+    const response = await serverApi.get<
+      { rank: number; name: string; image?: string | null; questionCount: number }[]
+    >(`/qa/contributors?limit=${limit}`, { tags: [TAGS.QA] });
+    return response.data!;
+  },
+
+  async getTrending(limit = 5): Promise<Question[]> {
+    const response = await serverApi.get<Question[]>(
+      `/qa/trending?limit=${limit}`,
+      { tags: [TAGS.QA_TRENDING] },
+    );
     return response.data!;
   },
 
   async listQuestions(
     params: ListQuestionsParams = {},
   ): Promise<QuestionListResponse> {
-    const query = buildQueryString(params);
-    const response = await serverApi.get<QuestionListResponse>(
-      `/qa${query}`,
-      { tags: ["questions-list"] },
-    );
+    const { sort, answered } = mapSort(params.sort);
+    const query = buildQueryString({
+      page: params.page,
+      limit: params.limit,
+      category: params.category,
+      tag: params.tag,
+      search: params.search,
+      answered,
+      sort,
+    });
+    const response = await serverApi.get<QuestionListResponse>(`/qa${query}`, {
+      tags: [TAGS.QA],
+    });
     return response.data!;
   },
 
   async getQuestionById(id: string): Promise<Question> {
     const response = await serverApi.get<Question>(`/qa/${id}`, {
-      tags: ["question-detail"],
+      tags: [TAGS.QA_DETAIL],
     });
     return response.data!;
   },
 
-  async updateQuestion(
-    id: string,
-    data: { title?: string; content?: string; tags?: string[] },
-  ): Promise<Question> {
-    const response = await serverApi.put<Question>(`/qa/${id}`, data);
+  async listAnswers(questionId: string): Promise<Answer[]> {
+    const response = await serverApi.get<Answer[]>(`/qa/${questionId}/answers`, {
+      tags: [TAGS.QA_DETAIL],
+    });
     return response.data!;
   },
 
-  async deleteQuestion(id: string): Promise<void> {
-    await serverApi.del(`/qa/${id}`);
+  async listBookmarks(
+    page = 1,
+    limit = 12,
+  ): Promise<QuestionListResponse> {
+    const response = await serverApi.get<QuestionListResponse>(
+      `/qa/bookmarks?page=${page}&limit=${limit}`,
+      { tags: [TAGS.QA] },
+    );
+    return response.data!;
   },
 
   async voteQuestion(
     questionId: string,
     type: "UP" | "DOWN",
-  ): Promise<{ action: string; upvoteCount: number; downvoteCount: number }> {
-    const response = await serverApi.post<{ action: string; upvoteCount: number; downvoteCount: number }>(
+  ): Promise<{ action: string; upvoteCount: number }> {
+    const response = await serverApi.post<{ action: string; upvoteCount: number }>(
       `/qa/${questionId}/vote`,
       { type },
+      { invalidatesTags: [...QA_MUTATION_TAGS] },
     );
     return response.data!;
   },
 
-  async toggleBookmark(questionId: string): Promise<{ action: string }> {
+  async bookmarkQuestion(questionId: string): Promise<{ action: string }> {
     const response = await serverApi.post<{ action: string }>(
       `/qa/${questionId}/bookmark`,
       {},
+      { invalidatesTags: [...QA_MUTATION_TAGS] },
     );
     return response.data!;
   },
 
-  async listBookmarks(): Promise<Question[]> {
-    const response = await serverApi.get<Question[]>("/qa/bookmarks");
-    return response.data!;
-  },
-
-  async postAnswer(
+  async createAnswer(
     questionId: string,
-    data: { content: string; isDraft?: boolean },
+    data: { content: string },
   ): Promise<Answer> {
     const response = await serverApi.post<Answer>(
       `/qa/${questionId}/answers`,
       data,
-    );
-    return response.data!;
-  },
-
-  async deleteAnswer(questionId: string, answerId: string): Promise<void> {
-    await serverApi.del(`/qa/${questionId}/answers/${answerId}`);
-  },
-
-  async acceptAnswer(questionId: string, answerId: string): Promise<Answer> {
-    const response = await serverApi.put<Answer>(
-      `/qa/${questionId}/answers/${answerId}/accept`,
-      {},
+      { invalidatesTags: [...QA_MUTATION_TAGS] },
     );
     return response.data!;
   },
@@ -107,10 +169,23 @@ export const qaService = {
   async voteAnswer(
     answerId: string,
     type: "UP" | "DOWN",
-  ): Promise<{ action: string; upvoteCount: number; downvoteCount: number }> {
-    const response = await serverApi.post<{ action: string; upvoteCount: number; downvoteCount: number }>(
+  ): Promise<{ action: string; upvoteCount: number }> {
+    const response = await serverApi.post<{ action: string; upvoteCount: number }>(
       `/qa/answers/${answerId}/vote`,
       { type },
+      { invalidatesTags: [...QA_MUTATION_TAGS] },
+    );
+    return response.data!;
+  },
+
+  async acceptAnswer(
+    questionId: string,
+    answerId: string,
+  ): Promise<{ isAccepted: boolean; isAnswered: boolean }> {
+    const response = await serverApi.put<{ isAccepted: boolean; isAnswered: boolean }>(
+      `/qa/${questionId}/answers/${answerId}/accept`,
+      {},
+      { invalidatesTags: [...QA_MUTATION_TAGS] },
     );
     return response.data!;
   },
