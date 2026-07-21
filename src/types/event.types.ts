@@ -52,6 +52,6 @@ export interface ListEventsParams {
 }
 
 export interface EventListResponse {
-  events: Event[];
+  data: Event[];
   meta: import("./resource.types").PaginationMeta;
 }

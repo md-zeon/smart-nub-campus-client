@@ -29,8 +29,8 @@ export interface ResourceCategory {
   slug: string;
   icon?: string | null;
   description?: string | null;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Resource {
@@ -57,6 +57,8 @@ export interface Resource {
   deletedAt?: string | null;
   resourceTags?: ResourceTag[];
   comments?: Comment[];
+  userVote?: VoteType | null;
+  isBookmarked?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -73,7 +75,7 @@ export interface Tag {
   id: string;
   name: string;
   slug: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 export interface ResourceVote {
@@ -147,13 +149,12 @@ export interface ListResourcesParams {
   courseId?: string;
   categoryId?: string;
   search?: string;
-  sortBy?: "createdAt" | "upvoteCount" | "downloadCount" | "viewCount";
-  sortOrder?: "asc" | "desc";
-  tag?: string;
+  sort?: "newest" | "popular" | "downloads";
+  tag?: string | string[];
 }
 
 export interface ResourceListResponse {
-  resources: Resource[];
+  data: Resource[];
   meta: PaginationMeta;
 }
 
