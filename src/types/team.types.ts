@@ -38,6 +38,8 @@ export interface TeamRequest {
   teamRequestSkills?: TeamRequestSkill[];
   teamApplications?: TeamApplication[];
   teamMembers?: TeamMember[];
+  /** Application count for this request (included by list endpoint). */
+  _count?: { teamApplications: number; teamMembers: number };
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
@@ -86,13 +88,16 @@ export interface ListTeamRequestsParams {
   page?: number;
   limit?: number;
   status?: TeamRequestStatus;
-  search?: string;
   category?: string;
-  sortBy?: "createdAt" | "lookingForCount";
-  sortOrder?: "asc" | "desc";
+  /** Skill tag slug. */
+  skill?: string;
+  search?: string;
+  sort?: "newest" | "oldest" | "popular";
+  /** When true, excludes the current user's own requests. */
+  excludeOwn?: boolean;
 }
 
 export interface TeamRequestListResponse {
-  teamRequests: TeamRequest[];
+  data: TeamRequest[];
   meta: import("./resource.types").PaginationMeta;
 }
