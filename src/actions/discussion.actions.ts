@@ -4,6 +4,25 @@ import { discussionService } from "@/services/discussion.service";
 import type { ApiResponse } from "@/types";
 import type { ListDiscussionsParams } from "@/types/discussion.types";
 
+/** Create a new discussion. */
+export async function createDiscussion(data: {
+  title: string;
+  content: string;
+  categoryId: string;
+  courseId?: string;
+  visibility?: "PUBLIC" | "DEPARTMENT" | "BATCH";
+  tagIds?: string[];
+}): Promise<ApiResponse> {
+  try {
+    const result = await discussionService.createDiscussion(data);
+    return { success: true, message: "Discussion created.", data: result };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to create discussion.";
+    return { success: false, message };
+  }
+}
+
 /** List discussions with pagination and filtering. */
 export async function listDiscussions(
   params: ListDiscussionsParams = {},
@@ -59,6 +78,18 @@ export async function bookmarkDiscussion(
   }
 }
 
+/** List bookmarked discussions for the current user. */
+export async function listBookmarks(): Promise<ApiResponse> {
+  try {
+    const data = await discussionService.listBookmarks();
+    return { success: true, message: "Bookmarks fetched.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch bookmarks.";
+    return { success: false, message };
+  }
+}
+
 /** Post a reply to a discussion. */
 export async function postDiscussionReply(
   discussionId: string,
@@ -70,6 +101,106 @@ export async function postDiscussionReply(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to post reply.";
+    return { success: false, message };
+  }
+}
+
+/** Upvote or downvote a reply. */
+export async function voteReply(
+  replyId: string,
+  type: "UP" | "DOWN",
+): Promise<ApiResponse> {
+  try {
+    const data = await discussionService.voteReply(replyId, type);
+    return { success: true, message: "Vote recorded.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to record vote.";
+    return { success: false, message };
+  }
+}
+
+/** List the current user's discussions. */
+export async function myDiscussions(
+  page = 1,
+  limit = 12,
+): Promise<ApiResponse> {
+  try {
+    const data = await discussionService.myDiscussions(page, limit);
+    return { success: true, message: "Discussions fetched.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch discussions.";
+    return { success: false, message };
+  }
+}
+
+/** List discussions the current user has replied to. */
+export async function myReplies(
+  page = 1,
+  limit = 12,
+): Promise<ApiResponse> {
+  try {
+    const data = await discussionService.myReplies(page, limit);
+    return { success: true, message: "Discussions fetched.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch discussions.";
+    return { success: false, message };
+  }
+}
+
+/** List replies for a discussion. */
+export async function listReplies(
+  discussionId: string,
+  page = 1,
+  limit = 100,
+): Promise<ApiResponse> {
+  try {
+    const data = await discussionService.listReplies(discussionId, page, limit);
+    return { success: true, message: "Replies fetched.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch replies.";
+    return { success: false, message };
+  }
+}
+
+/** Toggle pin status (admin). */
+export async function togglePin(id: string): Promise<ApiResponse> {
+  try {
+    const data = await discussionService.togglePin(id);
+    return { success: true, message: "Pin toggled.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to toggle pin.";
+    return { success: false, message };
+  }
+}
+
+/** Toggle lock status (admin). */
+export async function toggleLock(id: string): Promise<ApiResponse> {
+  try {
+    const data = await discussionService.toggleLock(id);
+    return { success: true, message: "Lock toggled.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to toggle lock.";
+    return { success: false, message };
+  }
+}
+
+/** Mark/unmark solved (author). */
+export async function markSolved(
+  id: string,
+  replyId: string,
+): Promise<ApiResponse> {
+  try {
+    const data = await discussionService.markSolved(id, replyId);
+    return { success: true, message: "Solved status toggled.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to toggle solved.";
     return { success: false, message };
   }
 }

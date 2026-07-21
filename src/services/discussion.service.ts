@@ -1,6 +1,8 @@
 import serverApi from "@/lib/server-api";
+import { TAGS, DISCUSSION_MUTATION_TAGS } from "@/lib/cache-tags";
 import type {
   Discussion,
+  DiscussionCategory,
   DiscussionReply,
   ListDiscussionsParams,
   DiscussionListResponse,
@@ -21,9 +23,49 @@ export const discussionService = {
   async createDiscussion(data: {
     title: string;
     content: string;
-    tags?: string[];
+    categoryId: string;
+    courseId?: string;
+    tagIds?: string[];
+    visibility?: "PUBLIC" | "DEPARTMENT" | "BATCH";
   }): Promise<Discussion> {
-    const response = await serverApi.post<Discussion>("/discussions", data);
+    const response = await serverApi.post<Discussion>("/discussions", data, {
+      invalidatesTags: [...DISCUSSION_MUTATION_TAGS],
+    });
+    return response.data!;
+  },
+
+  async listCategories(): Promise<
+    (DiscussionCategory & { _count: { discussions: number } })[]
+  > {
+    const response = await serverApi.get<
+      (DiscussionCategory & { _count: { discussions: number } })[]
+    >("/discussions/categories", { tags: [TAGS.DISCUSSIONS] });
+    return response.data!;
+  },
+
+  async listTags(): Promise<
+    { id: string; name: string; slug: string; _count: { discussionTags: number } }[]
+  > {
+    const response = await serverApi.get<
+      { id: string; name: string; slug: string; _count: { discussionTags: number } }[]
+    >("/discussions/tags", { tags: [TAGS.DISCUSSIONS] });
+    return response.data!;
+  },
+
+  async getTrending(limit = 3): Promise<Discussion[]> {
+    const response = await serverApi.get<Discussion[]>(
+      `/discussions/trending?limit=${limit}`,
+      { tags: [TAGS.DISCUSSIONS_TRENDING] },
+    );
+    return response.data!;
+  },
+
+  async getTopContributors(
+    limit = 5,
+  ): Promise<{ rank: number; name: string; image?: string | null; discussionCount: number }[]> {
+    const response = await serverApi.get<
+      { rank: number; name: string; image?: string | null; discussionCount: number }[]
+    >(`/discussions/contributors?limit=${limit}`, { tags: [TAGS.DISCUSSIONS] });
     return response.data!;
   },
 
@@ -33,14 +75,14 @@ export const discussionService = {
     const query = buildQueryString(params);
     const response = await serverApi.get<DiscussionListResponse>(
       `/discussions${query}`,
-      { tags: ["discussions-list"] },
+      { tags: [TAGS.DISCUSSIONS] },
     );
     return response.data!;
   },
 
   async getDiscussionById(id: string): Promise<Discussion> {
     const response = await serverApi.get<Discussion>(`/discussions/${id}`, {
-      tags: ["discussion-detail"],
+      tags: [TAGS.DISCUSSION_DETAIL],
     });
     return response.data!;
   },
@@ -64,6 +106,7 @@ export const discussionService = {
     const response = await serverApi.post<{ action: string; upvoteCount: number; downvoteCount: number }>(
       `/discussions/${discussionId}/vote`,
       { type },
+      { invalidatesTags: [...DISCUSSION_MUTATION_TAGS] },
     );
     return response.data!;
   },
@@ -72,27 +115,50 @@ export const discussionService = {
     const response = await serverApi.post<{ action: string }>(
       `/discussions/${discussionId}/bookmark`,
       {},
+      { invalidatesTags: [...DISCUSSION_MUTATION_TAGS] },
     );
     return response.data!;
   },
 
   async listBookmarks(): Promise<Discussion[]> {
-    const response = await serverApi.get<Discussion[]>("/discussions/bookmarks");
+    const response = await serverApi.get<Discussion[]>("/discussions/bookmarks", {
+      tags: [TAGS.DISCUSSIONS],
+    });
+    return response.data!;
+  },
+
+  async myDiscussions(
+    page = 1,
+    limit = 12,
+  ): Promise<DiscussionListResponse> {
+    const response = await serverApi.get<DiscussionListResponse>(
+      `/discussions/me?page=${page}&limit=${limit}`,
+    );
+    return response.data!;
+  },
+
+  async myReplies(
+    page = 1,
+    limit = 12,
+  ): Promise<DiscussionListResponse> {
+    const response = await serverApi.get<DiscussionListResponse>(
+      `/discussions/replies/mine?page=${page}&limit=${limit}`,
+    );
     return response.data!;
   },
 
   async togglePin(id: string): Promise<{ pinned: boolean }> {
-    const response = await serverApi.put<{ pinned: boolean }>(`/discussions/${id}/pin`, {});
+    const response = await serverApi.put<{ pinned: boolean }>(`/discussions/${id}/pin`, {}, { invalidatesTags: [...DISCUSSION_MUTATION_TAGS] });
     return response.data!;
   },
 
   async toggleLock(id: string): Promise<{ locked: boolean }> {
-    const response = await serverApi.put<{ locked: boolean }>(`/discussions/${id}/lock`, {});
+    const response = await serverApi.put<{ locked: boolean }>(`/discussions/${id}/lock`, {}, { invalidatesTags: [...DISCUSSION_MUTATION_TAGS] });
     return response.data!;
   },
 
   async markSolved(id: string, commentId: string): Promise<{ solved: boolean; solvedCommentId: string }> {
-    const response = await serverApi.put<{ solved: boolean; solvedCommentId: string }>(`/discussions/${id}/solved`, { commentId });
+    const response = await serverApi.put<{ solved: boolean; solvedCommentId: string }>(`/discussions/${id}/solved`, { commentId }, { invalidatesTags: [...DISCUSSION_MUTATION_TAGS] });
     return response.data!;
   },
 
@@ -103,6 +169,7 @@ export const discussionService = {
     const response = await serverApi.post<DiscussionReply>(
       `/discussions/${discussionId}/replies`,
       data,
+      { invalidatesTags: [...DISCUSSION_MUTATION_TAGS] },
     );
     return response.data!;
   },
@@ -119,7 +186,7 @@ export const discussionService = {
   },
 
   async deleteReply(discussionId: string, replyId: string): Promise<void> {
-    await serverApi.del(`/discussions/${discussionId}/replies/${replyId}`);
+    await serverApi.del(`/discussions/${discussionId}/replies/${replyId}`, { invalidatesTags: [...DISCUSSION_MUTATION_TAGS] });
   },
 
   async voteReply(
@@ -129,6 +196,7 @@ export const discussionService = {
     const response = await serverApi.post<{ action: string; upvoteCount: number; downvoteCount: number }>(
       `/discussions/replies/${replyId}/vote`,
       { type },
+      { invalidatesTags: [...DISCUSSION_MUTATION_TAGS] },
     );
     return response.data!;
   },

@@ -34,6 +34,7 @@ export interface Discussion {
   authorId: string;
   author?: DiscussionAuthor;
   courseId?: string | null;
+  course?: { id: string; code: string; name: string } | null;
   replyCount: number;
   viewCount: number;
   upvoteCount: number;
@@ -44,6 +45,8 @@ export interface Discussion {
   discussionTags?: DiscussionTag[];
   discussionReplies?: DiscussionReply[];
   isDeleted: boolean;
+  userVote?: "UP" | "DOWN" | null;
+  isBookmarked?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -57,6 +60,7 @@ export interface DiscussionReply {
   parentId?: string | null;
   replies?: DiscussionReply[];
   upvoteCount: number;
+  userVote?: "UP" | "DOWN" | null;
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
@@ -103,12 +107,17 @@ export interface ListDiscussionsParams {
   page?: number;
   limit?: number;
   categoryId?: string;
+  /** Category slug (used by the client list filtering). */
+  category?: string;
   courseId?: string;
   search?: string;
   visibility?: DiscussionVisibility;
   sortBy?: "createdAt" | "upvoteCount" | "replyCount" | "viewCount";
   sortOrder?: "asc" | "desc";
+  /** Tag slug (used by the client list filtering). */
   tag?: string;
+  /** Client-side sort alias accepted by the list endpoint. */
+  sort?: "latest" | "popular" | "unanswered";
 }
 
 export interface DiscussionListResponse {
