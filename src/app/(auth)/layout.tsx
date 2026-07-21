@@ -5,6 +5,7 @@ import { AcademicCapIcon } from "@/components/ui/icons/academic-cap";
 import { CircleQuestionMark } from "lucide-react";
 import { ModeToggle } from "@/components/theme/mode-toggle";
 import { Hyperlink } from "@/components/ui/hyperlink";
+import ROUTES from "@/constants/routes";
 
 export default function AuthLayout({
   children,
@@ -26,7 +27,7 @@ export default function AuthLayout({
         <div className="flex items-center gap-2 sm:gap-4">
           <ModeToggle />
           <Link
-            href="/about"
+            href={ROUTES.ABOUT}
             className="text-sm font-medium text-muted-foreground hover:text-foreground items-center gap-2 hidden sm:flex"
           >
             <InformationCircleIcon />
@@ -51,11 +52,11 @@ export default function AuthLayout({
           rights reserved.
         </p>
         <div className="flex gap-4">
-          <Hyperlink href="/privacy" className="text-brand">
+          <Hyperlink href={ROUTES.PRIVACY} className="text-brand">
             Privacy Policy
           </Hyperlink>
           <span>•</span>
-          <Hyperlink href="/terms" className="text-brand">
+          <Hyperlink href={ROUTES.TERMS} className="text-brand">
             Terms of Use
           </Hyperlink>
         </div>

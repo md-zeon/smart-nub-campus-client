@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { notificationService } from "@/services/notification.service";
+import { useState, useCallback, useEffect } from "react";
+import { apiClient } from "@/lib/api-client";
+import type { UnreadCountResponse } from "@/types/notification.types";
 
 interface UseUnreadCountOptions {
   /** Whether to automatically fetch the count on mount. Defaults to true. */
@@ -23,7 +24,8 @@ interface UseUnreadCountReturn {
 
 /**
  * Tracks the global unread notification count.
- * Call `refresh()` from a useEffect with appropriate deps in the consuming component.
+ * Uses the browser-side apiClient to avoid pulling server-only modules
+ * (serverApi / next/headers) into the client bundle.
  */
 export function useUnreadCount({
   autoFetch = true,
@@ -34,14 +36,40 @@ export function useUnreadCount({
   const refresh = useCallback(async () => {
     try {
       setIsLoading(true);
-      const result = await notificationService.getUnreadCount();
-      setCount(result.count);
+      const result = await apiClient.get<UnreadCountResponse>(
+        "/notifications/unread-count",
+      );
+      setCount(result.data?.count ?? 0);
     } catch {
       // Swallow — callers can handle errors externally
     } finally {
       setIsLoading(false);
     }
   }, []);
+
+  // Auto-fetch on mount when enabled
+  useEffect(() => {
+    if (!autoFetch) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const result = await apiClient.get<UnreadCountResponse>(
+          "/notifications/unread-count",
+        );
+        if (!cancelled) {
+          setCount(result.data?.count ?? 0);
+        }
+      } catch {
+        // Swallow — callers can handle errors externally
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [autoFetch]);
 
   const decrement = useCallback((amount = 1) => {
     setCount((prev) => Math.max(0, prev - amount));

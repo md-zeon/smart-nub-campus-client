@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useUnreadCount } from "@/hooks/use-unread-count";
+import ROUTES from "@/constants/routes";
 
 // ── Navigation items ─────────────────────────────────────────────────────────
 
@@ -44,14 +45,14 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "Home", href: "/", icon: Home },
-  { label: "Resources", href: "/resources", icon: BookOpen },
-  { label: "Teams", href: "/teams", icon: Users },
-  { label: "Discussions", href: "/discussions", icon: MessageSquare },
-  { label: "Q&A", href: "/qa", icon: HelpCircle },
-  { label: "AI Assistant", href: "/ai", icon: Sparkles },
-  { label: "Connections", href: "/connections", icon: UserPlus },
-  { label: "Messages", href: "/messages", icon: MessageCircle },
+  { label: "Home", href: ROUTES.HOME, icon: Home },
+  { label: "Resources", href: ROUTES.RESOURCES, icon: BookOpen },
+  { label: "Teams", href: ROUTES.TEAMS, icon: Users },
+  { label: "Discussions", href: ROUTES.DISCUSSIONS, icon: MessageSquare },
+  { label: "Q&A", href: ROUTES.QA, icon: HelpCircle },
+  { label: "AI Assistant", href: ROUTES.AI, icon: Sparkles },
+  { label: "Connections", href: ROUTES.CONNECTIONS, icon: UserPlus },
+  { label: "Messages", href: ROUTES.MESSAGES, icon: MessageCircle },
 ];
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -76,7 +77,7 @@ export function TopNav({ userName, userImage }: TopNavProps) {
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-14 max-w-screen-xl items-center gap-4 px-4 sm:px-6">
         {/* ── Logo / Brand ─────────────────────────────────────────────── */}
-        <Link href="/" className="flex shrink-0 items-center gap-2">
+        <Link href={ROUTES.HOME} className="flex shrink-0 items-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
             N
           </div>
@@ -142,7 +143,7 @@ export function TopNav({ userName, userImage }: TopNavProps) {
           </Button>
 
           {/* ── Notifications ───────────────────────────────────────────── */}
-          <Link href="/notifications">
+          <Link href={ROUTES.NOTIFICATIONS}>
             <Button variant="ghost" size="icon" className="relative size-8">
               <Bell className="size-4" />
               {unreadCount > 0 && (
@@ -156,8 +157,7 @@ export function TopNav({ userName, userImage }: TopNavProps) {
           {/* ── User avatar / dropdown (desktop) ────────────────────────── */}
           <div className="hidden md:block">
             <DropdownMenu>
-              <DropdownMenuTrigger>
-                <Button variant="ghost" size="icon" className="size-8 rounded-full">
+              <DropdownMenuTrigger className="flex size-8 items-center justify-center rounded-full hover:bg-muted transition-colors outline-none">
                   {userImage ? (
                     <img
                       src={userImage}
@@ -169,7 +169,6 @@ export function TopNav({ userName, userImage }: TopNavProps) {
                       {userName?.charAt(0)?.toUpperCase() ?? "U"}
                     </div>
                   )}
-                </Button>
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end" className="w-48">
@@ -188,7 +187,7 @@ export function TopNav({ userName, userImage }: TopNavProps) {
 
                 <DropdownMenuItem>
                   <Link
-                    href="/settings"
+                    href={ROUTES.SETTINGS}
                     className="flex items-center gap-2 cursor-pointer"
                   >
                     <Settings className="size-4" />
@@ -286,7 +285,7 @@ export function TopNav({ userName, userImage }: TopNavProps) {
                 <div>
                   <p className="text-sm font-medium">{userName ?? "User"}</p>
                   <Link
-                    href="/settings"
+                    href={ROUTES.SETTINGS}
                     className="text-xs text-muted-foreground hover:text-foreground"
                     onClick={() => setMobileMenuOpen(false)}
                   >

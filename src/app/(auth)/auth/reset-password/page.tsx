@@ -17,6 +17,7 @@ import {
   resetPasswordSchema,
   type ResetPasswordFormValues,
 } from "@/schemas/auth/reset-password.schema";
+import ROUTES from "@/constants/routes";
 
 function ResetPasswordFormContent() {
   const [isPending, setIsPending] = useState(false);
@@ -50,7 +51,7 @@ function ResetPasswordFormContent() {
       await resetPasswordByIdentifier(data.identifier, data.otp, data.password);
 
       setState({ success: true, error: null });
-      router.push("/auth/login?passwordReset=true");
+      router.push(`${ROUTES.LOGIN}?passwordReset=true`);
     } catch (error) {
       setState({
         success: false,
@@ -145,7 +146,7 @@ function ResetPasswordFormContent() {
 
               <div className="text-center text-sm">
                 <Link
-                  href="/auth/forgot-password"
+                  href={ROUTES.FORGOT_PASSWORD}
                   className="text-brand hover:underline"
                 >
                   Back to Forgot Password

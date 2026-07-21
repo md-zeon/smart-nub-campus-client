@@ -16,6 +16,7 @@ import isStudentId from "@/lib/isStudentId";
 import { authClient } from "@/lib/auth-client";
 import { getEmailByStudentId } from "@/actions/auth.action";
 import { loginSchema, type LoginFormValues } from "@/schemas/auth/login.schema";
+import ROUTES from "@/constants/routes";
 
 function LoginFormContent() {
   const [isPending, setIsPending] = useState(false);
@@ -34,7 +35,7 @@ function LoginFormContent() {
 
   useEffect(() => {
     if (isVerified) {
-      router.replace("/auth/login");
+      router.replace(ROUTES.LOGIN);
     }
   }, [isVerified, router]);
 
@@ -87,7 +88,7 @@ function LoginFormContent() {
       }
 
       setState({ success: true, error: null });
-      router.push("/");
+      router.push(ROUTES.HOME);
     } catch (error) {
       setState({
         success: false,
@@ -161,7 +162,7 @@ function LoginFormContent() {
                         "pending_verification_source",
                         "login",
                       );
-                      router.push("/auth/verify-email");
+                      router.push(ROUTES.VERIFY_EMAIL);
                     }}
                   >
                     Verify Email Now
@@ -197,7 +198,7 @@ function LoginFormContent() {
 
               <div className="text-center text-sm">
                 <Link
-                  href="/auth/forgot-password"
+                  href={ROUTES.FORGOT_PASSWORD}
                   className="text-brand hover:underline"
                 >
                   Forgot your password?
