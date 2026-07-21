@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -72,6 +72,10 @@ export function TopNav({ userName, userImage }: TopNavProps) {
   const { count: unreadCount } = useUnreadCount();
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // Guard against SSR/client theme mismatch — next-themes only knows the
+  // resolved theme on the client, so defer theme-dependent UI until mount.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const isDark = theme === "dark";
 
@@ -140,7 +144,13 @@ export function TopNav({ userName, userImage }: TopNavProps) {
             aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
             className="size-8"
           >
-            {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            {!mounted ? (
+              <Moon className="size-4" />
+            ) : isDark ? (
+              <Sun className="size-4" />
+            ) : (
+              <Moon className="size-4" />
+            )}
           </Button>
 
           {/* ── Notifications ───────────────────────────────────────────── */}

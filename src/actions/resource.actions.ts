@@ -167,3 +167,14 @@ export async function recordResourceDownload(
     return { success: false, message };
   }
 }
+
+export async function listTagsAction(): Promise<ApiResponse> {
+  try {
+    const data = await resourceService.listTags();
+    return { success: true, message: "Tags fetched.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch tags.";
+    return { success: false, message };
+  }
+}

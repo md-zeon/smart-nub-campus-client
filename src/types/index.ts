@@ -83,7 +83,13 @@ export type {
   Connection,
   ConnectionRequest,
   ConnectionStatus,
+  ConnectionOtherUser,
+  ConnectionWithUser,
   UserSkill,
+  SuggestedPerson,
+  SearchPerson,
+  SearchPeopleResponse,
+  ConnectionOverview,
   ListConnectionsParams,
   ConnectionListResponse,
 } from "./connection.types";

@@ -2,14 +2,82 @@
 
 import { connectionService } from "@/services/connection.service";
 import type { ApiResponse } from "@/types";
-import type { ListConnectionsParams } from "@/types/connection.types";
 
-/** List connections with pagination and filtering. */
-export async function listConnections(
-  params: ListConnectionsParams = {},
+/**
+ * Server Actions wrapping the connection service. Each action returns an
+ * `ApiResponse` envelope so client components can check `success` and show
+ * toasts consistently. Mutations invalidate the CONNECTIONS cache tags.
+ */
+
+export async function searchPeopleAction(params: {
+  query?: string;
+  department?: string;
+  semester?: string;
+  skills?: string[];
+  page?: number;
+  limit?: number;
+}): Promise<ApiResponse> {
+  try {
+    const data = await connectionService.searchPeople(params);
+    return { success: true, message: "People fetched.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch people.";
+    return { success: false, message };
+  }
+}
+
+export async function getSuggestionsAction(): Promise<ApiResponse> {
+  try {
+    const data = await connectionService.getSuggestions();
+    return { success: true, message: "Suggestions fetched.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch suggestions.";
+    return { success: false, message };
+  }
+}
+
+export async function getPendingRequestsAction(): Promise<ApiResponse> {
+  try {
+    const data = await connectionService.getPendingRequests();
+    return { success: true, message: "Pending requests fetched.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch pending requests.";
+    return { success: false, message };
+  }
+}
+
+export async function getSentRequestsAction(): Promise<ApiResponse> {
+  try {
+    const data = await connectionService.getSentRequests();
+    return { success: true, message: "Sent requests fetched.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch sent requests.";
+    return { success: false, message };
+  }
+}
+
+export async function getBlockedUsersAction(): Promise<ApiResponse> {
+  try {
+    const data = await connectionService.getBlockedUsers();
+    return { success: true, message: "Blocked users fetched.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch blocked users.";
+    return { success: false, message };
+  }
+}
+
+export async function getMyConnectionsAction(
+  filter: "ALL" | "SENIORS" | "JUNIORS" | "SAME_SEMESTER" | "FAVORITES" = "ALL",
+  page = 1,
+  limit = 12,
 ): Promise<ApiResponse> {
   try {
-    const data = await connectionService.listConnections(params);
+    const data = await connectionService.getMyConnections(filter, page, limit);
     return { success: true, message: "Connections fetched.", data };
   } catch (error) {
     const message =
@@ -18,17 +86,24 @@ export async function listConnections(
   }
 }
 
-/** Send a connection request. */
-export async function sendConnectionRequest(
+export async function getOverviewAction(): Promise<ApiResponse> {
+  try {
+    const data = await connectionService.getOverview();
+    return { success: true, message: "Overview fetched.", data };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch overview.";
+    return { success: false, message };
+  }
+}
+
+export async function sendConnectionRequestAction(
   receiverId: string,
+  note?: string,
 ): Promise<ApiResponse> {
   try {
-    const connection = await connectionService.sendRequest(receiverId);
-    return {
-      success: true,
-      message: "Connection request sent.",
-      data: connection,
-    };
+    await connectionService.sendRequest(receiverId, note);
+    return { success: true, message: "Connection request sent." };
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to send request.";
@@ -36,8 +111,7 @@ export async function sendConnectionRequest(
   }
 }
 
-/** Accept a connection request. */
-export async function acceptConnection(
+export async function acceptConnectionAction(
   connectionId: string,
 ): Promise<ApiResponse> {
   try {
@@ -45,13 +119,12 @@ export async function acceptConnection(
     return { success: true, message: "Connection accepted." };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to accept connection.";
+      error instanceof Error ? error.message : "Failed to accept request.";
     return { success: false, message };
   }
 }
 
-/** Reject a connection request. */
-export async function rejectConnection(
+export async function rejectConnectionAction(
   connectionId: string,
 ): Promise<ApiResponse> {
   try {
@@ -59,13 +132,38 @@ export async function rejectConnection(
     return { success: true, message: "Connection rejected." };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to reject connection.";
+      error instanceof Error ? error.message : "Failed to reject request.";
     return { success: false, message };
   }
 }
 
-/** Remove a connection. */
-export async function removeConnection(
+export async function cancelConnectionAction(
+  connectionId: string,
+): Promise<ApiResponse> {
+  try {
+    await connectionService.cancelRequest(connectionId);
+    return { success: true, message: "Request cancelled." };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to cancel request.";
+    return { success: false, message };
+  }
+}
+
+export async function toggleFavoriteAction(
+  connectionId: string,
+): Promise<ApiResponse> {
+  try {
+    await connectionService.toggleFavorite(connectionId);
+    return { success: true, message: "Favorite updated." };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to update favorite.";
+    return { success: false, message };
+  }
+}
+
+export async function removeConnectionAction(
   connectionId: string,
 ): Promise<ApiResponse> {
   try {
@@ -78,16 +176,26 @@ export async function removeConnection(
   }
 }
 
-/** Toggle favorite on a connection. */
-export async function toggleFavorite(
-  connectionId: string,
-): Promise<ApiResponse> {
+export async function blockUserAction(blockedId: string): Promise<ApiResponse> {
   try {
-    await connectionService.toggleFavorite(connectionId);
-    return { success: true, message: "Favorite toggled." };
+    await connectionService.blockUser(blockedId);
+    return { success: true, message: "User blocked." };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to toggle favorite.";
+      error instanceof Error ? error.message : "Failed to block user.";
+    return { success: false, message };
+  }
+}
+
+export async function unblockUserAction(
+  blockedId: string,
+): Promise<ApiResponse> {
+  try {
+    await connectionService.unblockUser(blockedId);
+    return { success: true, message: "User unblocked." };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to unblock user.";
     return { success: false, message };
   }
 }
