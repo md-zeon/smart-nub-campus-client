@@ -149,3 +149,20 @@ export type {
   NotificationListResponse,
   UnreadCountResponse,
 } from "./notification.types";
+
+// ── Admin ────────────────────────────────────────────────────────────────────
+export type {
+  AdminDashboardStats,
+  AdminUser,
+  AdminUserDetail,
+  AdminUserStudent,
+  AdminUserAdmin,
+  ListAdminUsersParams,
+  ListAdminUsersResponse,
+  AdminVerificationDetail,
+  ListAdminVerificationsParams,
+  ListAdminVerificationsResponse,
+  AuditLogEntry,
+  ListAuditLogsParams,
+  ListAuditLogsResponse,
+} from "./admin.types";

@@ -88,7 +88,11 @@ function LoginFormContent() {
       }
 
       setState({ success: true, error: null });
-      router.push(ROUTES.HOME);
+
+      // Respect the ?redirect= param set by proxy, or go to home.
+      // If no redirect param, the proxy will redirect ADMIN users to /admin.
+      const redirectParam = params.get("redirect");
+      router.push(redirectParam || ROUTES.HOME);
     } catch (error) {
       setState({
         success: false,
