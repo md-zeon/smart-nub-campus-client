@@ -1,5 +1,17 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { resourceService } from "@/services/resource.service";
+
+export const metadata: Metadata = {
+  title: "Resources | Smart NUB Campus",
+  description:
+    "Browse and share study resources — notes, slides, assignments and more at North South University.",
+  openGraph: {
+    title: "Resources | Smart NUB Campus",
+    description: "Browse and share study resources at NSU.",
+    type: "website",
+  },
+};
 import { gamificationService } from "@/services/gamification.service";
 import { ResourcesClient } from "@/components/resources/resources-client";
 import { PageLayout } from "@/components/layout/page-layout";

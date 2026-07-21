@@ -1,5 +1,17 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { serverApi } from "@/lib/server-api";
+
+export const metadata: Metadata = {
+  title: "Messages | Smart NUB Campus",
+  description:
+    "Chat with peers, send direct messages and coordinate with your teams at North South University.",
+  openGraph: {
+    title: "Messages | Smart NUB Campus",
+    description: "Chat with peers at North South University.",
+    type: "website",
+  },
+};
 import { MessagesPageClient } from "@/components/messages/messages-page-client";
 import { messageService } from "@/services/message.service";
 import type { Conversation } from "@/types/message.types";
