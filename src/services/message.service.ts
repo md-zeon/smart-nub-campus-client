@@ -1,8 +1,3 @@
-/**
- * Message API service module.
- * Uses serverApi for server-side calls (proxied through Next.js).
- */
-
 import serverApi from "@/lib/server-api";
 import type {
   Conversation,
@@ -25,7 +20,13 @@ function buildQueryString(params: object): string {
 }
 
 export const messageService = {
-  /** List conversations with pagination. */
+  async getUnreadCount(): Promise<{ unreadCount: number }> {
+    const response = await serverApi.get<{ unreadCount: number }>(
+      "/messages/unread",
+    );
+    return response.data!;
+  },
+
   async listConversations(
     params: ListConversationsParams = {},
   ): Promise<ConversationListResponse> {
@@ -37,7 +38,6 @@ export const messageService = {
     return response.data!;
   },
 
-  /** Get a conversation by ID. */
   async getConversationById(id: string): Promise<Conversation> {
     const response = await serverApi.get<Conversation>(
       `/messages/conversations/${id}`,
@@ -45,11 +45,10 @@ export const messageService = {
     return response.data!;
   },
 
-  /** Create a new conversation. */
   async createConversation(data: {
+    participantIds: string[];
     type?: "DIRECT" | "GROUP";
     name?: string;
-    participantIds: string[];
   }): Promise<Conversation> {
     const response = await serverApi.post<Conversation>(
       "/messages/conversations",
@@ -58,7 +57,47 @@ export const messageService = {
     return response.data!;
   },
 
-  /** List messages in a conversation. */
+  async createGroup(data: {
+    name: string;
+    participantIds: string[];
+  }): Promise<Conversation> {
+    const response = await serverApi.post<Conversation>(
+      "/messages/groups",
+      data,
+    );
+    return response.data!;
+  },
+
+  async updateGroup(id: string, data: { name?: string }): Promise<Conversation> {
+    const response = await serverApi.put<Conversation>(
+      `/messages/groups/${id}`,
+      data,
+    );
+    return response.data!;
+  },
+
+  async addGroupMember(
+    groupId: string,
+    userId: string,
+  ): Promise<Conversation> {
+    const response = await serverApi.post<Conversation>(
+      `/messages/groups/${groupId}/members`,
+      { userId },
+    );
+    return response.data!;
+  },
+
+  async removeGroupMember(
+    groupId: string,
+    memberId: string,
+  ): Promise<void> {
+    await serverApi.del(`/messages/groups/${groupId}/members/${memberId}`);
+  },
+
+  async leaveGroup(groupId: string): Promise<void> {
+    await serverApi.post(`/messages/groups/${groupId}/leave`, {});
+  },
+
   async listMessages(
     params: ListMessagesParams,
   ): Promise<MessageListResponse> {
@@ -70,7 +109,6 @@ export const messageService = {
     return response.data!;
   },
 
-  /** Send a message in a conversation. */
   async sendMessage(
     conversationId: string,
     data: { content: string; type?: string; replyToId?: string },
@@ -82,11 +120,19 @@ export const messageService = {
     return response.data!;
   },
 
-  /** Mark messages as read in a conversation. */
   async markAsRead(conversationId: string): Promise<void> {
-    await serverApi.post(
+    await serverApi.put(
       `/messages/conversations/${conversationId}/read`,
       {},
     );
+  },
+
+  async getConversationUnread(
+    conversationId: string,
+  ): Promise<{ unreadCount: number }> {
+    const response = await serverApi.get<{ unreadCount: number }>(
+      `/messages/conversations/${conversationId}/unread`,
+    );
+    return response.data!;
   },
 };

@@ -1,8 +1,3 @@
-/**
- * Team API service module.
- * Uses serverApi for server-side calls (proxied through Next.js).
- */
-
 import serverApi from "@/lib/server-api";
 import type {
   TeamRequest,
@@ -24,7 +19,17 @@ function buildQueryString(params: object): string {
 }
 
 export const teamService = {
-  /** List team requests with pagination and filtering. */
+  async createTeamRequest(data: {
+    title: string;
+    description: string;
+    category: string;
+    skills?: string[];
+    lookingFor?: string;
+  }): Promise<TeamRequest> {
+    const response = await serverApi.post<TeamRequest>("/teams", data);
+    return response.data!;
+  },
+
   async listTeamRequests(
     params: ListTeamRequestsParams = {},
   ): Promise<TeamRequestListResponse> {
@@ -36,7 +41,6 @@ export const teamService = {
     return response.data!;
   },
 
-  /** Get a single team request by ID. */
   async getTeamRequestById(id: string): Promise<TeamRequest> {
     const response = await serverApi.get<TeamRequest>(`/teams/${id}`, {
       tags: ["team-detail"],
@@ -44,49 +48,64 @@ export const teamService = {
     return response.data!;
   },
 
-  /** Apply to a team request. */
+  async updateTeamRequest(
+    id: string,
+    data: {
+      title?: string;
+      description?: string;
+      category?: string;
+      skills?: string[];
+      lookingFor?: string;
+      status?: TeamRequestStatus;
+    },
+  ): Promise<TeamRequest> {
+    const response = await serverApi.put<TeamRequest>(`/teams/${id}`, data);
+    return response.data!;
+  },
+
+  async deleteTeamRequest(id: string): Promise<void> {
+    await serverApi.del(`/teams/${id}`);
+  },
+
   async applyToTeam(
     teamRequestId: string,
     data: { message?: string },
   ): Promise<TeamApplication> {
     const response = await serverApi.post<TeamApplication>(
-      `/teams/${teamRequestId}/applications`,
+      `/teams/${teamRequestId}/apply`,
       data,
     );
     return response.data!;
   },
 
-  /** Review (accept/reject) a team application. */
   async reviewApplication(
     teamRequestId: string,
     applicationId: string,
     data: { status: "ACCEPTED" | "REJECTED" },
   ): Promise<TeamApplication> {
-    const response = await serverApi.patch<TeamApplication>(
+    const response = await serverApi.put<TeamApplication>(
       `/teams/${teamRequestId}/applications/${applicationId}`,
       data,
     );
     return response.data!;
   },
 
-  /** Withdraw an application. */
-  async withdrawApplication(
-    teamRequestId: string,
-    applicationId: string,
-  ): Promise<void> {
-    await serverApi.del(`/teams/${teamRequestId}/applications/${applicationId}`);
+  async withdrawApplication(teamRequestId: string): Promise<void> {
+    await serverApi.del(`/teams/${teamRequestId}/applications/withdraw`);
   },
 
-  /** Leave a team. */
+  async getTeamMembers(teamRequestId: string): Promise<unknown[]> {
+    const response = await serverApi.get<unknown[]>(
+      `/teams/${teamRequestId}/members`,
+    );
+    return response.data!;
+  },
+
   async leaveTeam(teamRequestId: string): Promise<void> {
-    await serverApi.del(`/teams/${teamRequestId}/leave`);
+    await serverApi.post(`/teams/${teamRequestId}/leave`, {});
   },
 
-  /** Update team request status. */
-  async updateTeamStatus(
-    teamRequestId: string,
-    status: TeamRequestStatus,
-  ): Promise<void> {
-    await serverApi.patch(`/teams/${teamRequestId}`, { status });
+  async removeMember(teamRequestId: string, memberId: string): Promise<void> {
+    await serverApi.del(`/teams/${teamRequestId}/members/${memberId}`);
   },
 };

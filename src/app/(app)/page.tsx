@@ -1,19 +1,35 @@
-import { PageLayout } from "@/components/layout/page-layout";
+import { HeroBanner } from "@/components/home/hero-banner";
+import { QuickAccess } from "@/components/home/quick-access";
+import { TrendingResources } from "@/components/home/trending-resources";
+import { UpcomingEvents } from "@/components/home/upcoming-events";
+import { TopContributors } from "@/components/home/top-contributors";
 
 /**
- * Authenticated home page — placeholder for Phase 13 (Home Page).
- * Renders inside the (app) layout which provides TopNav + user context.
+ * Home page — the first thing users see after login.
+ * Full-width layout with no PageLayout sidebar wrapper.
  */
 export default function HomePage() {
   return (
-    <PageLayout>
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <h1 className="text-3xl font-bold tracking-tight">Welcome back!</h1>
-        <p className="mt-3 max-w-md text-muted-foreground">
-          This is your Smart NUB Campus home feed. Content will be built in
-          Phase 13.
-        </p>
-      </div>
-    </PageLayout>
+    <div className="min-h-screen">
+      {/* ── Hero Banner ─────────────────────────────────────────── */}
+      <HeroBanner />
+
+      {/* ── Quick Access Icons ───────────────────────────────────── */}
+      <QuickAccess />
+
+      {/* ── Two-Column Content Area ──────────────────────────────── */}
+      <section className="mx-auto max-w-360 px-4 pb-16 sm:px-6">
+        <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+          {/* ── Left column: Trending Resources ───────────────────── */}
+          <TrendingResources />
+
+          {/* ── Right column: Events + Contributors ───────────────── */}
+          <div className="space-y-8">
+            <UpcomingEvents />
+            <TopContributors />
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }

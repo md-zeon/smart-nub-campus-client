@@ -35,6 +35,8 @@ import {
 import { useTheme } from "next-themes";
 import { useUnreadCount } from "@/hooks/use-unread-count";
 import ROUTES from "@/constants/routes";
+import { AcademicCapIcon } from "../ui/icons/academic-cap";
+import Image from "next/image";
 
 // ── Navigation items ─────────────────────────────────────────────────────────
 
@@ -74,16 +76,19 @@ export function TopNav({ userName, userImage }: TopNavProps) {
   const isDark = theme === "dark";
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-14 max-w-screen-xl items-center gap-4 px-4 sm:px-6">
+    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/60">
+      <div className="mx-auto flex h-16 items-center gap-4 px-4 sm:px-6">
         {/* ── Logo / Brand ─────────────────────────────────────────────── */}
         <Link href={ROUTES.HOME} className="flex shrink-0 items-center gap-2">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
-            N
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <AcademicCapIcon className="text-brand" size={32} />
+            <div className="-space-y-0.5 sm:-space-y-1">
+              <h1 className="font-bold text-base sm:text-xl text-foreground">
+                Smart NUB
+              </h1>
+              <p className="text-brand text-xs sm:text-sm font-bold">Campus</p>
+            </div>
           </div>
-          <span className="hidden text-sm font-semibold sm:inline-block">
-            Smart NUB
-          </span>
         </Link>
 
         {/* ── Desktop navigation links ─────────────────────────────────── */}
@@ -135,11 +140,7 @@ export function TopNav({ userName, userImage }: TopNavProps) {
             aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
             className="size-8"
           >
-            {isDark ? (
-              <Sun className="size-4" />
-            ) : (
-              <Moon className="size-4" />
-            )}
+            {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </Button>
 
           {/* ── Notifications ───────────────────────────────────────────── */}
@@ -158,17 +159,20 @@ export function TopNav({ userName, userImage }: TopNavProps) {
           <div className="hidden md:block">
             <DropdownMenu>
               <DropdownMenuTrigger className="flex size-8 items-center justify-center rounded-full hover:bg-muted transition-colors outline-none">
-                  {userImage ? (
-                    <img
-                      src={userImage}
-                      alt={userName ?? "User"}
-                      className="size-7 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                      {userName?.charAt(0)?.toUpperCase() ?? "U"}
-                    </div>
-                  )}
+                {userImage ? (
+                  <Image
+                    src={userImage}
+                    alt={userName ?? "User"}
+                    width={28}
+                    height={28}
+                    unoptimized
+                    className="size-7 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                    {userName?.charAt(0)?.toUpperCase() ?? "U"}
+                  </div>
+                )}
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end" className="w-48">
@@ -272,9 +276,12 @@ export function TopNav({ userName, userImage }: TopNavProps) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {userImage ? (
-                  <img
+                  <Image
                     src={userImage}
                     alt={userName ?? "User"}
+                    width={32}
+                    height={32}
+                    unoptimized
                     className="size-8 rounded-full object-cover"
                   />
                 ) : (
@@ -293,7 +300,11 @@ export function TopNav({ userName, userImage }: TopNavProps) {
                   </Link>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" className="size-8 text-destructive">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 text-destructive"
+              >
                 <LogOut className="size-4" />
               </Button>
             </div>

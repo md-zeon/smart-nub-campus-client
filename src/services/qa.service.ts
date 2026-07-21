@@ -1,12 +1,6 @@
-/**
- * Q&A API service module.
- * Uses serverApi for server-side calls (proxied through Next.js).
- */
-
 import serverApi from "@/lib/server-api";
 import type {
   Question,
-  QuestionCategory,
   Answer,
   ListQuestionsParams,
   QuestionListResponse,
@@ -24,7 +18,15 @@ function buildQueryString(params: object): string {
 }
 
 export const qaService = {
-  /** List questions with pagination, filtering, and sorting. */
+  async createQuestion(data: {
+    title: string;
+    content: string;
+    tags?: string[];
+  }): Promise<Question> {
+    const response = await serverApi.post<Question>("/qa", data);
+    return response.data!;
+  },
+
   async listQuestions(
     params: ListQuestionsParams = {},
   ): Promise<QuestionListResponse> {
@@ -36,7 +38,6 @@ export const qaService = {
     return response.data!;
   },
 
-  /** Get a single question by ID. */
   async getQuestionById(id: string): Promise<Question> {
     const response = await serverApi.get<Question>(`/qa/${id}`, {
       tags: ["question-detail"],
@@ -44,34 +45,45 @@ export const qaService = {
     return response.data!;
   },
 
-  /** List question categories. */
-  async listCategories(): Promise<QuestionCategory[]> {
-    const response = await serverApi.get<QuestionCategory[]>(
-      "/qa/categories",
-      { tags: ["question-categories"] },
+  async updateQuestion(
+    id: string,
+    data: { title?: string; content?: string; tags?: string[] },
+  ): Promise<Question> {
+    const response = await serverApi.put<Question>(`/qa/${id}`, data);
+    return response.data!;
+  },
+
+  async deleteQuestion(id: string): Promise<void> {
+    await serverApi.del(`/qa/${id}`);
+  },
+
+  async voteQuestion(
+    questionId: string,
+    type: "UP" | "DOWN",
+  ): Promise<{ action: string; upvoteCount: number; downvoteCount: number }> {
+    const response = await serverApi.post<{ action: string; upvoteCount: number; downvoteCount: number }>(
+      `/qa/${questionId}/vote`,
+      { type },
     );
     return response.data!;
   },
 
-  /** Upvote a question. */
-  async upvoteQuestion(questionId: string): Promise<void> {
-    await serverApi.post(`/qa/${questionId}/vote`, { type: "UP" });
+  async toggleBookmark(questionId: string): Promise<{ action: string }> {
+    const response = await serverApi.post<{ action: string }>(
+      `/qa/${questionId}/bookmark`,
+      {},
+    );
+    return response.data!;
   },
 
-  /** Downvote a question. */
-  async downvoteQuestion(questionId: string): Promise<void> {
-    await serverApi.post(`/qa/${questionId}/vote`, { type: "DOWN" });
+  async listBookmarks(): Promise<Question[]> {
+    const response = await serverApi.get<Question[]>("/qa/bookmarks");
+    return response.data!;
   },
 
-  /** Toggle bookmark on a question. */
-  async toggleBookmark(questionId: string): Promise<void> {
-    await serverApi.post(`/qa/${questionId}/bookmark`, {});
-  },
-
-  /** Post an answer to a question. */
   async postAnswer(
     questionId: string,
-    data: { content: string },
+    data: { content: string; isDraft?: boolean },
   ): Promise<Answer> {
     const response = await serverApi.post<Answer>(
       `/qa/${questionId}/answers`,
@@ -80,15 +92,26 @@ export const qaService = {
     return response.data!;
   },
 
-  /** Accept an answer. */
-  async acceptAnswer(questionId: string, answerId: string): Promise<void> {
-    await serverApi.patch(`/qa/${questionId}/answers/${answerId}/accept`, {});
+  async deleteAnswer(questionId: string, answerId: string): Promise<void> {
+    await serverApi.del(`/qa/${questionId}/answers/${answerId}`);
   },
 
-  /** Upvote an answer. */
-  async upvoteAnswer(questionId: string, answerId: string): Promise<void> {
-    await serverApi.post(`/qa/${questionId}/answers/${answerId}/vote`, {
-      type: "UP",
-    });
+  async acceptAnswer(questionId: string, answerId: string): Promise<Answer> {
+    const response = await serverApi.put<Answer>(
+      `/qa/${questionId}/answers/${answerId}/accept`,
+      {},
+    );
+    return response.data!;
+  },
+
+  async voteAnswer(
+    answerId: string,
+    type: "UP" | "DOWN",
+  ): Promise<{ action: string; upvoteCount: number; downvoteCount: number }> {
+    const response = await serverApi.post<{ action: string; upvoteCount: number; downvoteCount: number }>(
+      `/qa/answers/${answerId}/vote`,
+      { type },
+    );
+    return response.data!;
   },
 };

@@ -1,12 +1,6 @@
-/**
- * Discussion API service module.
- * Uses serverApi for server-side calls (proxied through Next.js).
- */
-
 import serverApi from "@/lib/server-api";
 import type {
   Discussion,
-  DiscussionCategory,
   DiscussionReply,
   ListDiscussionsParams,
   DiscussionListResponse,
@@ -24,7 +18,15 @@ function buildQueryString(params: object): string {
 }
 
 export const discussionService = {
-  /** List discussions with pagination, filtering, and sorting. */
+  async createDiscussion(data: {
+    title: string;
+    content: string;
+    tags?: string[];
+  }): Promise<Discussion> {
+    const response = await serverApi.post<Discussion>("/discussions", data);
+    return response.data!;
+  },
+
   async listDiscussions(
     params: ListDiscussionsParams = {},
   ): Promise<DiscussionListResponse> {
@@ -36,7 +38,6 @@ export const discussionService = {
     return response.data!;
   },
 
-  /** Get a single discussion by ID. */
   async getDiscussionById(id: string): Promise<Discussion> {
     const response = await serverApi.get<Discussion>(`/discussions/${id}`, {
       tags: ["discussion-detail"],
@@ -44,31 +45,57 @@ export const discussionService = {
     return response.data!;
   },
 
-  /** List discussion categories. */
-  async listCategories(): Promise<DiscussionCategory[]> {
-    const response = await serverApi.get<DiscussionCategory[]>(
-      "/discussions/categories",
-      { tags: ["discussion-categories"] },
+  async updateDiscussion(
+    id: string,
+    data: { title?: string; content?: string; tags?: string[] },
+  ): Promise<Discussion> {
+    const response = await serverApi.put<Discussion>(`/discussions/${id}`, data);
+    return response.data!;
+  },
+
+  async deleteDiscussion(id: string): Promise<void> {
+    await serverApi.del(`/discussions/${id}`);
+  },
+
+  async voteDiscussion(
+    discussionId: string,
+    type: "UP" | "DOWN",
+  ): Promise<{ action: string; upvoteCount: number; downvoteCount: number }> {
+    const response = await serverApi.post<{ action: string; upvoteCount: number; downvoteCount: number }>(
+      `/discussions/${discussionId}/vote`,
+      { type },
     );
     return response.data!;
   },
 
-  /** Upvote a discussion. */
-  async upvoteDiscussion(discussionId: string): Promise<void> {
-    await serverApi.post(`/discussions/${discussionId}/vote`, { type: "UP" });
+  async toggleBookmark(discussionId: string): Promise<{ action: string }> {
+    const response = await serverApi.post<{ action: string }>(
+      `/discussions/${discussionId}/bookmark`,
+      {},
+    );
+    return response.data!;
   },
 
-  /** Downvote a discussion. */
-  async downvoteDiscussion(discussionId: string): Promise<void> {
-    await serverApi.post(`/discussions/${discussionId}/vote`, { type: "DOWN" });
+  async listBookmarks(): Promise<Discussion[]> {
+    const response = await serverApi.get<Discussion[]>("/discussions/bookmarks");
+    return response.data!;
   },
 
-  /** Toggle bookmark on a discussion. */
-  async toggleBookmark(discussionId: string): Promise<void> {
-    await serverApi.post(`/discussions/${discussionId}/bookmark`, {});
+  async togglePin(id: string): Promise<{ pinned: boolean }> {
+    const response = await serverApi.put<{ pinned: boolean }>(`/discussions/${id}/pin`, {});
+    return response.data!;
   },
 
-  /** Post a reply to a discussion. */
+  async toggleLock(id: string): Promise<{ locked: boolean }> {
+    const response = await serverApi.put<{ locked: boolean }>(`/discussions/${id}/lock`, {});
+    return response.data!;
+  },
+
+  async markSolved(id: string, commentId: string): Promise<{ solved: boolean; solvedCommentId: string }> {
+    const response = await serverApi.put<{ solved: boolean; solvedCommentId: string }>(`/discussions/${id}/solved`, { commentId });
+    return response.data!;
+  },
+
   async postReply(
     discussionId: string,
     data: { content: string; parentId?: string },
@@ -80,7 +107,6 @@ export const discussionService = {
     return response.data!;
   },
 
-  /** List replies for a discussion. */
   async listReplies(
     discussionId: string,
     page = 1,
@@ -88,6 +114,21 @@ export const discussionService = {
   ): Promise<{ replies: DiscussionReply[]; meta: { total: number; page: number; limit: number; totalPages: number } }> {
     const response = await serverApi.get<{ replies: DiscussionReply[]; meta: { total: number; page: number; limit: number; totalPages: number } }>(
       `/discussions/${discussionId}/replies?page=${page}&limit=${limit}`,
+    );
+    return response.data!;
+  },
+
+  async deleteReply(discussionId: string, replyId: string): Promise<void> {
+    await serverApi.del(`/discussions/${discussionId}/replies/${replyId}`);
+  },
+
+  async voteReply(
+    replyId: string,
+    type: "UP" | "DOWN",
+  ): Promise<{ action: string; upvoteCount: number; downvoteCount: number }> {
+    const response = await serverApi.post<{ action: string; upvoteCount: number; downvoteCount: number }>(
+      `/discussions/replies/${replyId}/vote`,
+      { type },
     );
     return response.data!;
   },

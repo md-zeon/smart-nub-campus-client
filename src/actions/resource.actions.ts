@@ -4,7 +4,6 @@ import { resourceService } from "@/services/resource.service";
 import type { ApiResponse } from "@/types";
 import type { ListResourcesParams } from "@/types/resource.types";
 
-/** List resources with pagination and filtering. */
 export async function listResources(
   params: ListResourcesParams = {},
 ): Promise<ApiResponse> {
@@ -18,7 +17,6 @@ export async function listResources(
   }
 }
 
-/** Get a single resource by ID. */
 export async function getResource(id: string): Promise<ApiResponse> {
   try {
     const data = await resourceService.getResourceById(id);
@@ -30,18 +28,56 @@ export async function getResource(id: string): Promise<ApiResponse> {
   }
 }
 
-/** Upvote or downvote a resource. */
-export async function voteResource(
-  resourceId: string,
-  type: "UP" | "DOWN",
+export async function createResource(data: {
+  title: string;
+  description?: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize: number;
+  courseId: string;
+  tags?: string[];
+}): Promise<ApiResponse> {
+  try {
+    const resource = await resourceService.createResource(data);
+    return { success: true, message: "Resource created.", data: resource };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to create resource.";
+    return { success: false, message };
+  }
+}
+
+export async function updateResource(
+  id: string,
+  data: Partial<{ title: string; description: string; tags: string[] }>,
 ): Promise<ApiResponse> {
   try {
-    if (type === "UP") {
-      await resourceService.upvoteResource(resourceId);
-    } else {
-      await resourceService.downvoteResource(resourceId);
-    }
-    return { success: true, message: "Vote recorded." };
+    const resource = await resourceService.updateResource(id, data);
+    return { success: true, message: "Resource updated.", data: resource };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to update resource.";
+    return { success: false, message };
+  }
+}
+
+export async function deleteResource(id: string): Promise<ApiResponse> {
+  try {
+    await resourceService.deleteResource(id);
+    return { success: true, message: "Resource deleted." };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to delete resource.";
+    return { success: false, message };
+  }
+}
+
+export async function voteResource(
+  resourceId: string,
+): Promise<ApiResponse> {
+  try {
+    const data = await resourceService.toggleVote(resourceId);
+    return { success: true, message: "Vote toggled.", data };
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to record vote.";
@@ -49,13 +85,12 @@ export async function voteResource(
   }
 }
 
-/** Toggle bookmark on a resource. */
 export async function bookmarkResource(
   resourceId: string,
 ): Promise<ApiResponse> {
   try {
-    await resourceService.toggleBookmark(resourceId);
-    return { success: true, message: "Bookmark toggled." };
+    const data = await resourceService.toggleBookmark(resourceId);
+    return { success: true, message: "Bookmark toggled.", data };
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to toggle bookmark.";
@@ -63,7 +98,6 @@ export async function bookmarkResource(
   }
 }
 
-/** Add a comment to a resource. */
 export async function addResourceComment(
   resourceId: string,
   data: { content: string; parentId?: string },
@@ -78,7 +112,6 @@ export async function addResourceComment(
   }
 }
 
-/** Report a resource. */
 export async function reportResource(
   resourceId: string,
   data: { reason: string; description?: string },
