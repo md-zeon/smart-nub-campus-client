@@ -32,6 +32,7 @@ export async function createResource(data: {
   title: string;
   description?: string;
   fileUrl: string;
+  filePublicId?: string;
   fileType: string;
   fileSize: number;
   courseId: string;

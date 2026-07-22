@@ -11,6 +11,7 @@ import { uploadService } from "@/services/upload.service";
 import type { ResourceCourse, ResourceCategory } from "@/types/resource.types";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { formatFileSize } from "@/components/resources/file-type-utils";
 
 /** Accepted file types for resource upload. */
 const ACCEPTED_TYPES = [
@@ -148,6 +149,7 @@ export function ResourceUploadForm({
         title: title.trim(),
         description: description.trim() || undefined,
         fileUrl: uploadResult.url,
+        filePublicId: uploadResult.publicId,
         fileType: file.type || "application/octet-stream",
         fileSize: file.size,
         courseId,
@@ -185,15 +187,6 @@ export function ResourceUploadForm({
     setUploadProgress(0);
   }
 
-  /** Formats bytes to human-readable size. */
-  function formatSize(bytes: number): string {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
-  }
-
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       {/* ── File Drop Zone ────────────────────────────────────────── */}
@@ -229,7 +222,7 @@ export function ResourceUploadForm({
             <div className="text-left">
               <p className="text-sm font-medium text-foreground">{file.name}</p>
               <p className="text-xs text-muted-foreground">
-                {formatSize(file.size)} • {file.type.split("/").pop()?.toUpperCase() ?? "FILE"}
+                {formatFileSize(file.size)} • {file.type.split("/").pop()?.toUpperCase() ?? "FILE"}
               </p>
             </div>
             <button

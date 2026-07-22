@@ -5,6 +5,7 @@ import { ChevronUp, MessageCircle, Trash2 } from "lucide-react";
 import type { Comment } from "@/types/resource.types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { formatRelativeTime } from "@/components/resources/file-type-utils";
 
 interface CommentItemProps {
   /** The comment data to display. */
@@ -33,22 +34,6 @@ export function CommentItem({
   const [upvoted, setUpvoted] = useState(false);
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyContent, setReplyContent] = useState("");
-
-  /** Formats a date string into relative time. */
-  function formatRelativeTime(dateStr: string): string {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffSec = Math.floor(diffMs / 1000);
-    const diffMin = Math.floor(diffSec / 60);
-    const diffHr = Math.floor(diffMin / 60);
-    const diffDay = Math.floor(diffHr / 24);
-
-    if (diffDay > 0) return `${diffDay}d ago`;
-    if (diffHr > 0) return `${diffHr}h ago`;
-    if (diffMin > 0) return `${diffMin}m ago`;
-    return "just now";
-  }
 
   return (
     <div className={cn("group/comment", depth > 0 && "ml-8 border-l-2 border-border/50 pl-4")}>

@@ -28,6 +28,7 @@ export const resourceService = {
     title: string;
     description?: string;
     fileUrl: string;
+    filePublicId?: string;
     fileType: string;
     fileSize: number;
     courseId: string;
