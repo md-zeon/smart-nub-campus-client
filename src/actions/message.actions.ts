@@ -22,7 +22,7 @@ export async function listConversations(
 export async function createConversation(data: {
   type?: "DIRECT" | "GROUP";
   name?: string;
-  participantIds: string[];
+  participantId: string;
 }): Promise<ApiResponse> {
   try {
     const conversation = await messageService.createConversation(data);
@@ -55,7 +55,15 @@ export async function listMessages(
 /** Send a message in a conversation. */
 export async function sendMessage(
   conversationId: string,
-  data: { content: string; type?: string; replyToId?: string },
+  data: {
+    content: string;
+    type?: string;
+    replyToId?: string;
+    fileUrl?: string;
+    filePublicId?: string;
+    fileName?: string;
+    fileSize?: number;
+  },
 ): Promise<ApiResponse> {
   try {
     const message = await messageService.sendMessage(conversationId, data);

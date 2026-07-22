@@ -35,7 +35,15 @@ export const messageService = {
       `/messages/conversations${query}`,
       { tags: ["conversations-list"] },
     );
-    return response.data!;
+    const payload = response.data! as unknown as {
+      data?: Conversation[];
+      conversations?: Conversation[];
+      meta?: ConversationListResponse["meta"];
+    };
+    return {
+      conversations: payload.conversations ?? payload.data ?? [],
+      meta: payload.meta ?? { page: 1, limit: 20, total: 0, totalPages: 0 },
+    };
   },
 
   async getConversationById(id: string): Promise<Conversation> {
@@ -46,7 +54,7 @@ export const messageService = {
   },
 
   async createConversation(data: {
-    participantIds: string[];
+    participantId: string;
     type?: "DIRECT" | "GROUP";
     name?: string;
   }): Promise<Conversation> {
@@ -82,7 +90,7 @@ export const messageService = {
   ): Promise<Conversation> {
     const response = await serverApi.post<Conversation>(
       `/messages/groups/${groupId}/members`,
-      { userId },
+      { participantIds: [userId] },
     );
     return response.data!;
   },
@@ -106,12 +114,28 @@ export const messageService = {
     const response = await serverApi.get<MessageListResponse>(
       `/messages/conversations/${conversationId}/messages${query}`,
     );
-    return response.data!;
+    const payload = response.data! as unknown as {
+      data?: Message[];
+      messages?: Message[];
+      meta?: MessageListResponse["meta"];
+    };
+    return {
+      messages: payload.messages ?? payload.data ?? [],
+      meta: payload.meta ?? { page: 1, limit: 20, total: 0, totalPages: 0 },
+    };
   },
 
   async sendMessage(
     conversationId: string,
-    data: { content: string; type?: string; replyToId?: string },
+    data: {
+      content: string;
+      type?: string;
+      replyToId?: string;
+      fileUrl?: string;
+      filePublicId?: string;
+      fileName?: string;
+      fileSize?: number;
+    },
   ): Promise<Message> {
     const response = await serverApi.post<Message>(
       `/messages/conversations/${conversationId}/messages`,
@@ -121,7 +145,7 @@ export const messageService = {
   },
 
   async markAsRead(conversationId: string): Promise<void> {
-    await serverApi.put(
+    await serverApi.post(
       `/messages/conversations/${conversationId}/read`,
       {},
     );

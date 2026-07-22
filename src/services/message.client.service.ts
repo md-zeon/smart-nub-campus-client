@@ -106,7 +106,15 @@ export const messageClientService = {
 
   async sendMessage(
     conversationId: string,
-    data: { content: string; type?: string; replyToId?: string },
+    data: {
+      content: string;
+      type?: string;
+      replyToId?: string;
+      fileUrl?: string;
+      filePublicId?: string;
+      fileName?: string;
+      fileSize?: number;
+    },
   ): Promise<Message> {
     const res = await apiClient.post<Message>(
       `/messages/conversations/${conversationId}/messages`,

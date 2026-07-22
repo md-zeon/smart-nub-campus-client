@@ -376,6 +376,10 @@ export function MessagesPageClient({
         const saved = await messageService.sendMessage(activeConversationId, {
           content: file.name,
           type: isImage ? "IMAGE" : "FILE",
+          fileUrl: uploaded.url,
+          filePublicId: uploaded.publicId,
+          fileName: file.name,
+          fileSize: file.size,
         });
         // Reflect the real server id; file url comes from upload.
         setMessages((prev) =>
