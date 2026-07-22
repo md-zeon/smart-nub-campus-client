@@ -72,9 +72,12 @@ export function OnboardingFlow({
   useEffect(() => {
     if (currentStep !== OnboardingStepValue.ADMIN_REVIEW) return;
 
+    let consecutiveErrors = 0;
+
     const pollStatus = async () => {
       try {
         const data = await getCurrentStep();
+        consecutiveErrors = 0;
 
         // Update verification request data if available (backend now always includes it)
         if (data.verificationRequest) {
@@ -86,7 +89,12 @@ export function OnboardingFlow({
           setCurrentStep(OnboardingStepValue.ACCOUNT_CREATION);
         }
       } catch {
-        // Continue polling on network errors
+        consecutiveErrors += 1;
+        if (consecutiveErrors >= 5) {
+          setError(
+            "Unable to check review status. Please check your connection and refresh the page.",
+          );
+        }
       }
     };
 

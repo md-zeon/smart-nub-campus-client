@@ -5,7 +5,6 @@ export type { PaginationMeta } from "./resource.types";
 // ── Auth / Onboarding ────────────────────────────────────────────────────────
 export type { OnboardingStateResponse } from "./onboarding.types";
 export type { CreateAccountResponse } from "./account.types";
-export type { SignInResponse } from "./auth.types";
 
 export type {
   VerificationRequestData,

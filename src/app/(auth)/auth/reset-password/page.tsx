@@ -3,7 +3,7 @@
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { KeyRound } from "lucide-react";
+import { KeyRound, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -51,7 +51,9 @@ function ResetPasswordFormContent() {
       await resetPasswordByIdentifier(data.identifier, data.otp, data.password);
 
       setState({ success: true, error: null });
-      router.push(`${ROUTES.LOGIN}?passwordReset=true`);
+      setTimeout(() => {
+        router.push(`${ROUTES.LOGIN}?passwordReset=true`);
+      }, 1500);
     } catch (error) {
       setState({
         success: false,
@@ -141,13 +143,20 @@ function ResetPasswordFormContent() {
               </div>
 
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isPending ? "Resetting..." : "Reset Password"}
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Resetting...
+                  </>
+                ) : (
+                  "Reset Password"
+                )}
               </Button>
 
               <div className="text-center text-sm">
                 <Link
                   href={ROUTES.FORGOT_PASSWORD}
-                  className="text-brand hover:underline"
+                  className="text-brand hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
                 >
                   Back to Forgot Password
                 </Link>

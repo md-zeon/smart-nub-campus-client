@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, Loader2 } from "lucide-react";
 import AuthInfo from "../_components/AuthInfo";
@@ -75,6 +76,15 @@ export default function VerifyEmailPage() {
                 isEmbedded={false}
                 onSuccess={handleSuccess}
               />
+            </div>
+
+            <div className="mt-6 text-center text-sm">
+              <Link
+                href={ROUTES.LOGIN}
+                className="text-brand hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
+              >
+                Back to Login
+              </Link>
             </div>
           </div>
         </section>
