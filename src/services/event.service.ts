@@ -39,8 +39,8 @@ export const eventService = {
     return response.data!;
   },
 
-  async toggleRsvp(eventId: string): Promise<{ rsvpStatus: string | null }> {
-    const response = await serverApi.post<{ rsvpStatus: string | null }>(
+  async toggleRsvp(eventId: string): Promise<{ action: "added" | "removed" }> {
+    const response = await serverApi.post<{ action: "added" | "removed" }>(
       `/events/${eventId}/rsvp`,
       {},
     );
@@ -49,12 +49,12 @@ export const eventService = {
 
   async createEvent(data: {
     title: string;
-    description: string;
-    date: string;
-    location: string;
-    type?: string;
-    coverImage?: string;
-    maxParticipants?: number;
+    description?: string;
+    eventDate: string;
+    location?: string;
+    imageUrl?: string;
+    status?: "UPCOMING" | "ONGOING" | "COMPLETED" | "CANCELLED";
+    isFeatured?: boolean;
   }): Promise<Event> {
     const response = await serverApi.post<Event>("/events", data);
     return response.data!;
@@ -65,11 +65,11 @@ export const eventService = {
     data: Partial<{
       title: string;
       description: string;
-      date: string;
+      eventDate: string;
       location: string;
-      type: string;
-      coverImage: string;
-      maxParticipants: number;
+      imageUrl: string;
+      status: "UPCOMING" | "ONGOING" | "COMPLETED" | "CANCELLED";
+      isFeatured: boolean;
     }>,
   ): Promise<Event> {
     const response = await serverApi.patch<Event>(`/events/${id}`, data);

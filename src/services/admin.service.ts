@@ -359,7 +359,7 @@ export const adminService = {
       success: boolean;
       message: string;
       data: ListAdminEventsResponse;
-    }>(`/admin/events?${searchParams.toString()}`);
+    }>(`/events?${searchParams.toString()}`);
     return response.data!.data;
   },
 
@@ -368,7 +368,7 @@ export const adminService = {
       success: boolean;
       message: string;
       data: AdminEvent;
-    }>(`/admin/events/${id}`);
+    }>(`/events/${id}`);
     return response.data!.data;
   },
 
@@ -377,7 +377,7 @@ export const adminService = {
       success: boolean;
       message: string;
       data: AdminEvent;
-    }>("/admin/events", data);
+    }>("/events", data);
     return response.data!.data;
   },
 
@@ -389,11 +389,11 @@ export const adminService = {
       success: boolean;
       message: string;
       data: AdminEvent;
-    }>(`/admin/events/${id}`, data);
+    }>(`/events/${id}`, data);
     return response.data!.data;
   },
 
   async deleteEvent(id: string): Promise<void> {
-    await apiClient.del(`/admin/events/${id}`);
+    await apiClient.del(`/events/${id}`);
   },
 };

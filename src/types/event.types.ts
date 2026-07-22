@@ -3,6 +3,8 @@
  * Keep in sync with server schema: prisma/schema/event.prisma
  */
 
+import type { PaginationMeta } from "./resource.types";
+
 // ── Shared references ────────────────────────────────────────────────────────
 
 export interface EventOrganizer {
@@ -24,8 +26,8 @@ export interface Event {
   organizer?: EventOrganizer;
   status: EventStatus;
   isFeatured: boolean;
-  rsvpCount?: number;
-  isRsvped?: boolean;
+  _count: { rsvps: number };
+  isRsvpd: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -53,5 +55,5 @@ export interface ListEventsParams {
 
 export interface EventListResponse {
   data: Event[];
-  meta: import("./resource.types").PaginationMeta;
+  meta: PaginationMeta;
 }
