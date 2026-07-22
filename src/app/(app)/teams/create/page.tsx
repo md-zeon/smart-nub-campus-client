@@ -1,4 +1,3 @@
-import { listTeamRequests } from "@/actions/team.actions";
 import { teamService } from "@/services/team.service";
 import { TeamCreateForm } from "@/components/teams/team-create-form";
 import type { Tag } from "@/types/resource.types";
@@ -11,11 +10,8 @@ export default async function CreateTeamPage() {
   let tags: Tag[] = [];
 
   try {
-    const result = await listTeamRequests({ page: 1, limit: 1 });
-    // Tags are shared with resources; fetch via the team service helper.
     const fetched = await teamService.listTags();
     tags = fetched ?? [];
-    void result;
   } catch {
     tags = [];
   }

@@ -116,7 +116,7 @@ export function TeamCard({ team, isAuthor, isMember, onApply }: TeamCardProps) {
         <div className="flex shrink-0 items-center gap-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Users className="size-3.5" />
-            {team.currentMemberCount}/{team.lookingForCount + team.currentMemberCount}
+            {team.currentMemberCount}/{team.lookingForCount}
           </span>
           <span className="flex items-center gap-1">
             <CalendarClock className="size-3.5" />

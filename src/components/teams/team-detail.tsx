@@ -8,7 +8,6 @@ import {
   CalendarClock,
   FolderKanban,
   UserRoundPlus,
-  Pencil,
   XCircle,
   Check,
   X,
@@ -180,13 +179,6 @@ export function TeamDetail({ team: initialTeam, currentUserId }: TeamDetailProps
           )}
           {isAuthor && (
             <>
-              <Link
-                href={`/teams/${team.id}/edit`}
-                className="inline-flex h-8 items-center gap-1 rounded-[min(var(--radius-md),10px)] border-success bg-success/2 px-2.5 text-sm font-medium text-success/90 transition-colors hover:bg-success/5"
-              >
-                <Pencil className="size-4" />
-                Edit
-              </Link>
               {team.status === "OPEN" && (
                 <Button
                   size="sm"
@@ -252,7 +244,7 @@ export function TeamDetail({ team: initialTeam, currentUserId }: TeamDetailProps
             Members
           </h3>
           <p className="text-sm font-medium text-foreground">
-            {team.currentMemberCount}/{team.lookingForCount + team.currentMemberCount}
+            {team.currentMemberCount}/{team.lookingForCount}
           </p>
         </div>
       </div>

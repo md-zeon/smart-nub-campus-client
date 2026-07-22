@@ -154,7 +154,7 @@ export function TeamsTrending({
                     {team.title}
                   </p>
                   <p className="mt-0.5 line-clamp-1 text-[10px] text-muted-foreground">
-                    {team.projectName ?? "No project"} • {team.lookingForCount} needed
+                    {team.projectName ?? "No project"} • {team.lookingForCount - team.currentMemberCount} slots left
                   </p>
                 </div>
               </Link>

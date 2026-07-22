@@ -1,13 +1,14 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import type { Metadata } from "next";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import { TeamDetail } from "@/components/teams/team-detail";
 import { getTeamRequest } from "@/actions/team.actions";
-import { authClient } from "@/lib/auth-client";
+import { TeamDetailWrapper } from "@/components/teams/team-detail-wrapper";
 import type { TeamRequest } from "@/types/team.types";
+
+export const metadata: Metadata = {
+  title: "Team Details | Smart NUB Campus",
+  description: "View team details and apply to join at Smart NUB Campus.",
+};
 
 /** Loading skeleton for the team detail page. */
 function TeamDetailSkeleton() {
@@ -32,52 +33,29 @@ function TeamDetailSkeleton() {
 }
 
 /**
- * Team detail page — full-width layout (no PageLayout sidebars).
- * Loads the team request by ID and renders the full TeamDetail view.
+ * Team detail page — Server Component.
+ * Fetches team data server-side and passes to client wrapper for interactivity.
  */
-export default function TeamDetailPage() {
-  const params = useParams();
-  const teamId = params.id as string;
-  const { data: session } = authClient.useSession();
-  const currentUserId = session?.user?.id ?? null;
+export default async function TeamDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
 
-  const [team, setTeam] = useState<TeamRequest | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  let team: TeamRequest | null = null;
+  let error: string | null = null;
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchTeam() {
-      try {
-        const result = await getTeamRequest(teamId);
-        if (!cancelled) {
-          if (result.success && result.data) {
-            const data = result.data as { data?: TeamRequest } | TeamRequest;
-            const teamData =
-              "data" in data && data.data ? data.data : (data as TeamRequest);
-            setTeam(teamData);
-          } else {
-            setError(result.message || "Team request not found.");
-          }
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load team.");
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+  try {
+    const result = await getTeamRequest(id);
+    if (result.success && result.data) {
+      const data = result.data as { data?: TeamRequest } | TeamRequest;
+      team = "data" in data && data.data ? data.data : (data as TeamRequest);
+    } else {
+      error = result.message || "Team request not found.";
     }
-
-    fetchTeam();
-    return () => {
-      cancelled = true;
-    };
-  }, [teamId]);
-
-  if (loading) {
-    return <TeamDetailSkeleton />;
+  } catch (err) {
+    error = err instanceof Error ? err.message : "Failed to load team.";
   }
 
   if (error || !team) {
@@ -98,5 +76,5 @@ export default function TeamDetailPage() {
     );
   }
 
-  return <TeamDetail team={team} currentUserId={currentUserId} />;
+  return <TeamDetailWrapper team={team} />;
 }

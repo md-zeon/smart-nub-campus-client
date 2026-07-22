@@ -175,11 +175,11 @@ export function TeamCreateForm({ tags }: TeamCreateFormProps) {
         />
       </div>
 
-      {/* Members Needed + Deadline */}
+      {/* Max Team Size + Deadline */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="membersNeeded">
-            Members Needed <span className="text-destructive">*</span>
+            Max Team Size <span className="text-destructive">*</span>
           </Label>
           <Input
             id="membersNeeded"
