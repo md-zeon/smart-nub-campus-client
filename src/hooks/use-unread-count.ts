@@ -24,8 +24,20 @@ interface UseUnreadCountReturn {
 
 /**
  * Tracks the global unread notification count.
- * Uses the browser-side apiClient to avoid pulling server-only modules
- * (serverApi / next/headers) into the client bundle.
+ *
+ * ARCHITECTURAL NOTE (ISSUE-073):
+ * This hook uses `apiClient` (browser-direct fetch) instead of `serverApi`
+ * because it runs in client components. Using `serverApi` would pull in
+ * server-only modules (next/headers, cookie) into the client bundle.
+ *
+ * The server-side `notificationService.getUnreadCount()` uses `serverApi`
+ * with the `"unread-count"` cache tag — that path is only used in
+ * Server Components and server actions. Both paths call the same
+ * `GET /notifications/unread-count` endpoint and return the same
+ * `UnreadCountResponse` shape.
+ *
+ * This trade-off is intentional and correct: browser-direct fetch for
+ * client-side real-time hooks; serverApi with cache tags for SSR.
  */
 export function useUnreadCount({
   autoFetch = true,

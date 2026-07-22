@@ -43,7 +43,7 @@ export type NotificationType =
 export interface ListNotificationsParams {
   page?: number;
   limit?: number;
-  isRead?: boolean;
+  unreadOnly?: boolean;
   type?: NotificationType;
 }
 
