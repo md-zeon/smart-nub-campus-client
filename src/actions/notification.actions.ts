@@ -57,17 +57,3 @@ export async function markAllNotificationsAsRead(): Promise<ApiResponse> {
     return { success: false, message };
   }
 }
-
-/** Delete a notification. */
-export async function deleteNotification(
-  notificationId: string,
-): Promise<ApiResponse> {
-  try {
-    await notificationService.deleteNotification(notificationId);
-    return { success: true, message: "Notification deleted." };
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to delete notification.";
-    return { success: false, message };
-  }
-}
