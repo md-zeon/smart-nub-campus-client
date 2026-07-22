@@ -98,7 +98,7 @@ export default async function DiscussionsPage({ searchParams }: PageProps) {
         tag: tagSlug,
         sort,
       });
-      initialDiscussions = listResult.discussions ?? [];
+      initialDiscussions = listResult.data ?? [];
       initialMeta = listResult.meta ?? null;
     }
   } catch {

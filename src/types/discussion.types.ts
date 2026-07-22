@@ -121,6 +121,6 @@ export interface ListDiscussionsParams {
 }
 
 export interface DiscussionListResponse {
-  discussions: Discussion[];
+  data: Discussion[];
   meta: import("./resource.types").PaginationMeta;
 }

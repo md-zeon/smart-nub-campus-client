@@ -193,10 +193,9 @@ export async function toggleLock(id: string): Promise<ApiResponse> {
 /** Mark/unmark solved (author). */
 export async function markSolved(
   id: string,
-  replyId: string,
 ): Promise<ApiResponse> {
   try {
-    const data = await discussionService.markSolved(id, replyId);
+    const data = await discussionService.markSolved(id);
     return { success: true, message: "Solved status toggled.", data };
   } catch (error) {
     const message =

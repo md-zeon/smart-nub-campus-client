@@ -89,7 +89,7 @@ export const discussionService = {
 
   async updateDiscussion(
     id: string,
-    data: { title?: string; content?: string; tags?: string[] },
+    data: { title?: string; content?: string; tagIds?: string[] },
   ): Promise<Discussion> {
     const response = await serverApi.put<Discussion>(`/discussions/${id}`, data);
     return response.data!;
@@ -102,8 +102,8 @@ export const discussionService = {
   async voteDiscussion(
     discussionId: string,
     type: "UP" | "DOWN",
-  ): Promise<{ action: string; upvoteCount: number; downvoteCount: number }> {
-    const response = await serverApi.post<{ action: string; upvoteCount: number; downvoteCount: number }>(
+  ): Promise<{ action: string; upvoteCount: number }> {
+    const response = await serverApi.post<{ action: string; upvoteCount: number }>(
       `/discussions/${discussionId}/vote`,
       { type },
       { invalidatesTags: [...DISCUSSION_MUTATION_TAGS] },
@@ -120,8 +120,8 @@ export const discussionService = {
     return response.data!;
   },
 
-  async listBookmarks(): Promise<Discussion[]> {
-    const response = await serverApi.get<Discussion[]>("/discussions/bookmarks", {
+  async listBookmarks(): Promise<DiscussionListResponse> {
+    const response = await serverApi.get<DiscussionListResponse>("/discussions/bookmarks", {
       tags: [TAGS.DISCUSSIONS],
     });
     return response.data!;
@@ -147,18 +147,18 @@ export const discussionService = {
     return response.data!;
   },
 
-  async togglePin(id: string): Promise<{ pinned: boolean }> {
-    const response = await serverApi.put<{ pinned: boolean }>(`/discussions/${id}/pin`, {}, { invalidatesTags: [...DISCUSSION_MUTATION_TAGS] });
+  async togglePin(id: string): Promise<{ isPinned: boolean }> {
+    const response = await serverApi.put<{ isPinned: boolean }>(`/discussions/${id}/pin`, {}, { invalidatesTags: [...DISCUSSION_MUTATION_TAGS] });
     return response.data!;
   },
 
-  async toggleLock(id: string): Promise<{ locked: boolean }> {
-    const response = await serverApi.put<{ locked: boolean }>(`/discussions/${id}/lock`, {}, { invalidatesTags: [...DISCUSSION_MUTATION_TAGS] });
+  async toggleLock(id: string): Promise<{ isLocked: boolean }> {
+    const response = await serverApi.put<{ isLocked: boolean }>(`/discussions/${id}/lock`, {}, { invalidatesTags: [...DISCUSSION_MUTATION_TAGS] });
     return response.data!;
   },
 
-  async markSolved(id: string, commentId: string): Promise<{ solved: boolean; solvedCommentId: string }> {
-    const response = await serverApi.put<{ solved: boolean; solvedCommentId: string }>(`/discussions/${id}/solved`, { commentId }, { invalidatesTags: [...DISCUSSION_MUTATION_TAGS] });
+  async markSolved(id: string): Promise<{ isSolved: boolean }> {
+    const response = await serverApi.put<{ isSolved: boolean }>(`/discussions/${id}/solved`, {}, { invalidatesTags: [...DISCUSSION_MUTATION_TAGS] });
     return response.data!;
   },
 
@@ -192,8 +192,8 @@ export const discussionService = {
   async voteReply(
     replyId: string,
     type: "UP" | "DOWN",
-  ): Promise<{ action: string; upvoteCount: number; downvoteCount: number }> {
-    const response = await serverApi.post<{ action: string; upvoteCount: number; downvoteCount: number }>(
+  ): Promise<{ action: string; upvoteCount: number }> {
+    const response = await serverApi.post<{ action: string; upvoteCount: number }>(
       `/discussions/replies/${replyId}/vote`,
       { type },
       { invalidatesTags: [...DISCUSSION_MUTATION_TAGS] },

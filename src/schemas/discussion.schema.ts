@@ -13,7 +13,7 @@ export const createDiscussionSchema = z
     categoryId: z.string().uuid("Invalid category ID"),
     courseId: z.string().uuid("Invalid course ID").optional(),
     visibility: z.enum(["PUBLIC", "DEPARTMENT", "BATCH"]).optional(),
-    tags: z.array(z.string().trim().min(1)).min(1).optional(),
+    tagIds: z.array(z.string().uuid("Invalid tag ID")).min(1).optional(),
   })
   .strict();
 
@@ -33,9 +33,7 @@ export const updateDiscussionSchema = z
     categoryId: z.string().uuid("Invalid category ID").optional(),
     courseId: z.string().uuid("Invalid course ID").optional(),
     visibility: z.enum(["PUBLIC", "DEPARTMENT", "BATCH"]).optional(),
-    isPinned: z.boolean().optional(),
-    isLocked: z.boolean().optional(),
-    tags: z.array(z.string().trim().min(1)).min(1).optional(),
+    tagIds: z.array(z.string().uuid("Invalid tag ID")).min(1).optional(),
   })
   .strict();
 
