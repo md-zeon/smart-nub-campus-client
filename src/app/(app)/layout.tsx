@@ -11,6 +11,22 @@ interface IdentityMeResponse {
   };
   student: Record<string, unknown> | null;
   admin: Record<string, unknown> | null;
+  profile: {
+    id: string;
+    userId: string;
+    bio: string | null;
+    coverImage: string | null;
+    githubUrl: string | null;
+    linkedinUrl: string | null;
+    portfolioUrl: string | null;
+    websiteUrl: string | null;
+    location: string | null;
+    phoneNumber: string | null;
+    currentSemester: number | null;
+    batchYear: number | null;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
 }
 
 /**
@@ -28,6 +44,7 @@ export default async function AppGroupLayout({
 }) {
   let userName: string | undefined;
   let userImage: string | undefined;
+  let userId: string | undefined;
 
   try {
     const result = await serverApi.get<IdentityMeResponse>("/identity/me", {
@@ -35,12 +52,13 @@ export default async function AppGroupLayout({
     });
     userName = result.data?.user?.name;
     userImage = result.data?.user?.image ?? undefined;
+    userId = result.data?.user?.id;
   } catch {
     // Proxy handles auth redirect; this is a safety fallback.
   }
 
   return (
-    <AppLayout userName={userName} userImage={userImage}>
+    <AppLayout userName={userName} userImage={userImage} userId={userId}>
       {children}
     </AppLayout>
   );

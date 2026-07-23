@@ -166,6 +166,13 @@ export type {
   ListAuditLogsResponse,
 } from "./admin.types";
 
+// ── Profile ────────────────────────────────────────────────────────────────
+export type {
+  UserProfile,
+  ProfileUser,
+  UpdateProfilePayload,
+} from "./profile.types";
+
 // ── Settings / Account ──────────────────────────────────────────────────────
 export type {
   ProfileVisibilityLevel,

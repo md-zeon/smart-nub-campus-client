@@ -64,9 +64,11 @@ interface TopNavProps {
   userName?: string;
   /** Current user's avatar URL. */
   userImage?: string;
+  /** Current user's ID for profile link. */
+  userId?: string;
 }
 
-export function TopNav({ userName, userImage }: TopNavProps) {
+export function TopNav({ userName, userImage, userId }: TopNavProps) {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const { count: unreadCount } = useUnreadCount();
@@ -191,9 +193,14 @@ export function TopNav({ userName, userImage }: TopNavProps) {
                     <span className="text-sm font-medium">
                       {userName ?? "User"}
                     </span>
-                    <span className="text-xs text-muted-foreground">
-                      View profile
-                    </span>
+                    {userId && (
+                      <Link
+                        href={ROUTES.USER_PROFILE(userId)}
+                        className="text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        View profile
+                      </Link>
+                    )}
                   </div>
                 </DropdownMenuLabel>
 

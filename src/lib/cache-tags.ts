@@ -54,6 +54,9 @@ export const TAGS = {
 
   /** Connection requests (pending/sent). */
   CONNECTION_REQUESTS: "connection-requests",
+
+  /** User profile detail. */
+  PROFILE: "user-profile",
 } as const;
 
 /** All tags that should be invalidated when any resource is created/updated/deleted. */
