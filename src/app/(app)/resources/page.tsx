@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 import { gamificationService } from "@/services/gamification.service";
 import { ResourcesClient } from "@/components/resources/resources-client";
 import { PageLayout } from "@/components/layout/page-layout";
+import { PageLayoutSkeleton } from "@/components/skeletons/page-layout-skeleton";
 import type {
   Resource,
   ResourceCategory,
@@ -34,34 +35,6 @@ interface LeaderboardEntry {
   name: string;
   image?: string | null;
   totalPoints: number;
-}
-
-/** Page loading skeleton. */
-function PageSkeleton() {
-  return (
-    <PageLayout>
-      <div className="space-y-4">
-        <div className="h-8 w-48 animate-pulse rounded bg-muted" />
-        <div className="h-4 w-72 animate-pulse rounded bg-muted" />
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
-            <div
-              key={i}
-              className="animate-pulse rounded-xl border bg-card p-4 ring-1 ring-foreground/10"
-            >
-              <div className="flex items-start gap-3">
-                <div className="size-10 rounded-lg bg-muted" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 w-3/4 rounded bg-muted" />
-                  <div className="h-3 w-1/2 rounded bg-muted" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </PageLayout>
-  );
 }
 
 /**
@@ -139,7 +112,7 @@ export default async function ResourcesPage({
   }
 
   return (
-    <Suspense fallback={<PageSkeleton />}>
+    <Suspense fallback={<PageLayoutSkeleton />}>
       <ResourcesClient
         initialResources={initialResources}
         initialMeta={initialMeta}

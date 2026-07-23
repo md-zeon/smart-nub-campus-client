@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { eventService } from "@/services/event.service";
 import { PageLayout } from "@/components/layout/page-layout";
+import { PageLayoutSkeleton } from "@/components/skeletons/page-layout-skeleton";
 import { EventsListClient } from "@/components/events/events-list-client";
 import type { Event } from "@/types/event.types";
 import type { PaginationMeta } from "@/types/resource.types";
@@ -16,29 +17,6 @@ export const metadata: Metadata = {
     type: "website",
   },
 };
-
-function PageSkeleton() {
-  return (
-    <PageLayout>
-      <div className="space-y-4">
-        <div className="h-8 w-48 animate-pulse rounded bg-muted" />
-        <div className="h-4 w-72 animate-pulse rounded bg-muted" />
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="animate-pulse rounded-xl border bg-card p-4 ring-1 ring-foreground/10"
-            >
-              <div className="h-4 w-3/4 rounded bg-muted" />
-              <div className="mt-2 h-3 w-1/2 rounded bg-muted" />
-              <div className="mt-2 h-3 w-2/3 rounded bg-muted" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </PageLayout>
-  );
-}
 
 export default async function EventsPage({
   searchParams,
@@ -67,7 +45,7 @@ export default async function EventsPage({
   }
 
   return (
-    <Suspense fallback={<PageSkeleton />}>
+    <Suspense fallback={<PageLayoutSkeleton />}>
       <EventsListClient
         initialEvents={events}
         initialMeta={meta}

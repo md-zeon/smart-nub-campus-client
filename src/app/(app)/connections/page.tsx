@@ -16,6 +16,7 @@ import {
   getOverviewAction,
   getSuggestionsAction,
 } from "@/actions/connection.actions";
+import { PageLayoutSkeleton } from "@/components/skeletons/page-layout-skeleton";
 import type {
   ConnectionOverview,
   SuggestedPerson,
@@ -62,7 +63,7 @@ export default async function ConnectionsPage() {
   }
 
   return (
-    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading…</div>}>
+    <Suspense fallback={<PageLayoutSkeleton />}>
       <ConnectionsClient
         initialOverview={overview}
         initialSuggestions={suggestions}

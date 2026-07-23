@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 };
 import { DiscussionsClient } from "@/components/discussions/discussions-client";
 import { PageLayout } from "@/components/layout/page-layout";
+import { PageLayoutSkeleton } from "@/components/skeletons/page-layout-skeleton";
 import type {
   Discussion,
   DiscussionCategory,
@@ -23,26 +24,6 @@ import type { TopContributor } from "@/components/discussions/discussions-trendi
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
-
-/** Page loading skeleton. */
-function PageSkeleton() {
-  return (
-    <PageLayout>
-      <div className="space-y-4">
-        <div className="h-8 w-40 animate-pulse rounded bg-muted" />
-        <div className="h-9 w-full animate-pulse rounded bg-muted" />
-        <div className="space-y-3">
-          {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="h-32 animate-pulse rounded-xl border bg-card p-4 ring-1 ring-foreground/10"
-            />
-          ))}
-        </div>
-      </div>
-    </PageLayout>
-  );
 }
 
 /**
@@ -106,7 +87,7 @@ export default async function DiscussionsPage({ searchParams }: PageProps) {
   }
 
   return (
-    <Suspense fallback={<PageSkeleton />}>
+    <Suspense fallback={<PageLayoutSkeleton />}>
       <DiscussionsClient
         initialDiscussions={initialDiscussions}
         initialMeta={initialMeta}

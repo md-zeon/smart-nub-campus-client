@@ -14,31 +14,12 @@ export const metadata: Metadata = {
 };
 import { TeamsClient } from "@/components/teams/teams-client";
 import { PageLayout } from "@/components/layout/page-layout";
+import { PageLayoutSkeleton } from "@/components/skeletons/page-layout-skeleton";
 import type {
   TeamRequest,
   TeamRequestListResponse,
 } from "@/types/team.types";
 import type { PaginationMeta } from "@/types/resource.types";
-
-/** Loading skeleton for the Teams page. */
-function PageSkeleton() {
-  return (
-    <PageLayout>
-      <div className="space-y-4">
-        <div className="h-8 w-32 animate-pulse rounded bg-muted" />
-        <div className="h-9 w-full animate-pulse rounded bg-muted" />
-        <div className="space-y-3">
-          {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="h-40 animate-pulse rounded-xl border bg-card p-4 ring-1 ring-foreground/10"
-            />
-          ))}
-        </div>
-      </div>
-    </PageLayout>
-  );
-}
 
 /**
  * Teams list page — Server Component.
@@ -70,7 +51,7 @@ export default async function TeamsPage() {
   }
 
   return (
-    <Suspense fallback={<PageSkeleton />}>
+    <Suspense fallback={<PageLayoutSkeleton />}>
       <TeamsClient
         initialTeams={initialTeams}
         initialMeta={initialMeta}

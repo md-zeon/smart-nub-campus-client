@@ -14,32 +14,13 @@ export const metadata: Metadata = {
 };
 import { QAClient } from "@/components/qa/qa-client";
 import { PageLayout } from "@/components/layout/page-layout";
+import { PageLayoutSkeleton } from "@/components/skeletons/page-layout-skeleton";
 import type { Question, QuestionCategory } from "@/types/qa.types";
 import type { PaginationMeta } from "@/types/resource.types";
 import type { TopContributor } from "@/components/qa/qa-trending";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
-
-/** Page loading skeleton. */
-function PageSkeleton() {
-  return (
-    <PageLayout>
-      <div className="space-y-4">
-        <div className="h-8 w-40 animate-pulse rounded bg-muted" />
-        <div className="h-9 w-full animate-pulse rounded bg-muted" />
-        <div className="space-y-3">
-          {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="h-28 animate-pulse rounded-xl border bg-card p-4 ring-1 ring-foreground/10"
-            />
-          ))}
-        </div>
-      </div>
-    </PageLayout>
-  );
 }
 
 /**
@@ -104,7 +85,7 @@ export default async function QAPage({ searchParams }: PageProps) {
   }
 
   return (
-    <Suspense fallback={<PageSkeleton />}>
+    <Suspense fallback={<PageLayoutSkeleton />}>
       <QAClient
         initialQuestions={initialQuestions}
         initialMeta={initialMeta}

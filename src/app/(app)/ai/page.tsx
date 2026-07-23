@@ -14,23 +14,11 @@ export const metadata: Metadata = {
 };
 import { aiService } from "@/services/ai.service";
 import { PageLayout } from "@/components/layout/page-layout";
+import { PageLayoutSkeleton } from "@/components/skeletons/page-layout-skeleton";
 import { AISidebar } from "@/components/ai/ai-sidebar";
 import { AIRightPanel } from "@/components/ai/ai-right-panel";
 import { AIClient } from "@/components/ai/ai-client";
 import type { AIChatSession, AIMessage, AIStudyStats } from "@/types/ai.types";
-
-/** Page loading skeleton. */
-function PageSkeleton() {
-  return (
-    <PageLayout>
-      <div className="space-y-4">
-        <div className="h-8 w-64 animate-pulse rounded bg-muted" />
-        <div className="h-4 w-80 animate-pulse rounded bg-muted" />
-        <div className="h-64 animate-pulse rounded-xl bg-muted" />
-      </div>
-    </PageLayout>
-  );
-}
 
 /**
  * AI Assistant page — Server Component.
@@ -88,7 +76,7 @@ export default async function AIPage({
   const initialMessages: AIMessage[] = activeSession?.aiMessages ?? [];
 
   return (
-    <Suspense fallback={<PageSkeleton />}>
+    <Suspense fallback={<PageLayoutSkeleton />}>
       <PageLayout
         leftSidebar={
           <AISidebar
