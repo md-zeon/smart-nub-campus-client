@@ -1,12 +1,14 @@
 import Link from "next/link";
+import { AlertTriangle } from "lucide-react";
 import type { Leaderboard } from "@/types/gamification.types";
 
 interface TopContributorsProps {
   contributors: Leaderboard[];
+  error?: boolean;
 }
 
 /** Top contributors section — renders top users by reputation (server-fetched). */
-export function TopContributors({ contributors }: TopContributorsProps) {
+export function TopContributors({ contributors, error }: TopContributorsProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -21,15 +23,23 @@ export function TopContributors({ contributors }: TopContributorsProps) {
         </Link>
       </div>
 
+      {/* ── Error state ───────────────────────────────────────────── */}
+      {error && (
+        <div className="flex items-center gap-2 rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+          <AlertTriangle className="size-4 shrink-0" />
+          <span>Failed to load contributors.</span>
+        </div>
+      )}
+
       {/* ── Empty state ───────────────────────────────────────────── */}
-      {contributors.length === 0 && (
+      {!error && contributors.length === 0 && (
         <p className="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground ring-1 ring-foreground/10">
           No contributors yet.
         </p>
       )}
 
       {/* ── Contributor cards ─────────────────────────────────────── */}
-      {contributors.length > 0 && (
+      {!error && contributors.length > 0 && (
         <div className="space-y-2">
           {contributors.map((contributor) => (
             <div

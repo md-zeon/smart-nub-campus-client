@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, FileImage, Presentation, File } from "lucide-react";
+import { FileText, FileImage, Presentation, File, AlertTriangle } from "lucide-react";
 import type { Resource } from "@/types/resource.types";
 
 /** Returns a lucide icon based on file type extension. */
@@ -14,10 +14,11 @@ function getFileIcon(fileType: string) {
 
 interface TrendingResourcesProps {
   resources: Resource[];
+  error?: boolean;
 }
 
 /** Trending resources section — renders top resources by upvote count (server-fetched). */
-export function TrendingResources({ resources }: TrendingResourcesProps) {
+export function TrendingResources({ resources, error }: TrendingResourcesProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -32,15 +33,23 @@ export function TrendingResources({ resources }: TrendingResourcesProps) {
         </Link>
       </div>
 
+      {/* ── Error state ───────────────────────────────────────────── */}
+      {error && (
+        <div className="flex items-center gap-2 rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+          <AlertTriangle className="size-4 shrink-0" />
+          <span>Failed to load trending resources.</span>
+        </div>
+      )}
+
       {/* ── Empty state ───────────────────────────────────────────── */}
-      {resources.length === 0 && (
+      {!error && resources.length === 0 && (
         <p className="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground ring-1 ring-foreground/10">
           No resources yet. Be the first to upload!
         </p>
       )}
 
       {/* ── Resource cards ────────────────────────────────────────── */}
-      {resources.length > 0 && (
+      {!error && resources.length > 0 && (
         <div className="space-y-3">
           {resources.map((resource) => {
             const FileIcon = getFileIcon(resource.fileType);

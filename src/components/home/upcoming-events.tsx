@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, AlertTriangle } from "lucide-react";
 import type { Event } from "@/types/event.types";
 
 interface UpcomingEventsProps {
   events: Event[];
+  error?: boolean;
 }
 
 /** Format a date string to a readable short format. */
@@ -16,7 +17,7 @@ function formatDate(dateStr: string) {
 }
 
 /** Upcoming events section — renders next upcoming events (server-fetched). */
-export function UpcomingEvents({ events }: UpcomingEventsProps) {
+export function UpcomingEvents({ events, error }: UpcomingEventsProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -31,15 +32,23 @@ export function UpcomingEvents({ events }: UpcomingEventsProps) {
         </Link>
       </div>
 
+      {/* ── Error state ───────────────────────────────────────────── */}
+      {error && (
+        <div className="flex items-center gap-2 rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+          <AlertTriangle className="size-4 shrink-0" />
+          <span>Failed to load upcoming events.</span>
+        </div>
+      )}
+
       {/* ── Empty state ───────────────────────────────────────────── */}
-      {events.length === 0 && (
+      {!error && events.length === 0 && (
         <p className="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground ring-1 ring-foreground/10">
           No upcoming events.
         </p>
       )}
 
       {/* ── Event cards ───────────────────────────────────────────── */}
-      {events.length > 0 && (
+      {!error && events.length > 0 && (
         <div className="space-y-2">
           {events.map((event) => (
             <Link

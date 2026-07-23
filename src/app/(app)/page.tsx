@@ -27,15 +27,22 @@ export const metadata: Metadata = {
  * down to presentational components (no client-side fetching).
  */
 export default async function HomePage() {
-  const [trendingResult, leaderboardResult, eventsResult] = await Promise.all([
-    resourceService.listResources({ sort: "popular", limit: 3 }).catch(() => ({ data: [] })),
-    gamificationService.getLeaderboard(1, 3).catch(() => ({ data: [] })),
-    eventService.listEvents({ status: "UPCOMING", limit: 3 }).catch(() => ({ data: [] })),
+  const [trendingResult, leaderboardResult, eventsResult] = await Promise.allSettled([
+    resourceService.listResources({ sort: "popular", limit: 3 }),
+    gamificationService.getLeaderboard(1, 3),
+    eventService.listEvents({ status: "UPCOMING", limit: 3 }),
   ]);
 
-  const trendingResources = trendingResult.data ?? [];
-  const topContributors = leaderboardResult.data ?? [];
-  const upcomingEvents = eventsResult.data ?? [];
+  const trendingResources =
+    trendingResult.status === "fulfilled" ? (trendingResult.value.data ?? []) : [];
+  const topContributors =
+    leaderboardResult.status === "fulfilled" ? (leaderboardResult.value.data ?? []) : [];
+  const upcomingEvents =
+    eventsResult.status === "fulfilled" ? (eventsResult.value.data ?? []) : [];
+
+  const trendingError = trendingResult.status === "rejected";
+  const contributorsError = leaderboardResult.status === "rejected";
+  const eventsError = eventsResult.status === "rejected";
 
   return (
     <div className="min-h-screen">
@@ -49,12 +56,12 @@ export default async function HomePage() {
       <section className="mx-auto max-w-360 px-4 pb-16 sm:px-6">
         <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
           {/* ── Left column: Trending Resources ───────────────────── */}
-          <TrendingResources resources={trendingResources} />
+          <TrendingResources resources={trendingResources} error={trendingError} />
 
           {/* ── Right column: Events + Contributors ───────────────── */}
           <div className="space-y-8">
-            <UpcomingEvents events={upcomingEvents} />
-            <TopContributors contributors={topContributors} />
+            <UpcomingEvents events={upcomingEvents} error={eventsError} />
+            <TopContributors contributors={topContributors} error={contributorsError} />
           </div>
         </div>
       </section>
