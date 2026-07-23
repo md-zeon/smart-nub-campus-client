@@ -5,7 +5,10 @@ import type {
   SendAIMessageResponse,
   ListAISessionsParams,
   AISessionListResponse,
+  AIMessage,
+  AIStudyStats,
 } from "@/types/ai.types";
+import type { PaginationMeta } from "@/types/resource.types";
 
 function buildQueryString(params: object): string {
   const searchParams = new URLSearchParams();
@@ -45,8 +48,8 @@ export const aiService = {
     return response.data!;
   },
 
-  async getMessages(sessionId: string): Promise<unknown> {
-    const response = await serverApi.get<unknown>(
+  async getMessages(sessionId: string): Promise<{ data: AIMessage[]; meta: PaginationMeta }> {
+    const response = await serverApi.get<{ data: AIMessage[]; meta: PaginationMeta }>(
       `/ai/sessions/${sessionId}/messages`,
     );
     return response.data!;
@@ -73,13 +76,13 @@ export const aiService = {
     });
   },
 
-  async getStudyStats(): Promise<unknown> {
-    const response = await serverApi.get<unknown>("/ai/stats");
+  async getStudyStats(): Promise<AIStudyStats> {
+    const response = await serverApi.get<AIStudyStats>("/ai/stats");
     return response.data!;
   },
 
-  async getStudyStatsHistory(): Promise<unknown> {
-    const response = await serverApi.get<unknown>("/ai/stats/history");
+  async getStudyStatsHistory(): Promise<AIStudyStats[]> {
+    const response = await serverApi.get<AIStudyStats[]>("/ai/stats/history");
     return response.data!;
   },
 
@@ -92,8 +95,8 @@ export const aiService = {
   },
 
   async generateQuiz(data: {
-    topic: string;
-    count?: number;
+    content: string;
+    numQuestions?: number;
   }): Promise<unknown> {
     const response = await serverApi.post<unknown>(
       "/ai/tools/generate-quiz",
@@ -103,8 +106,8 @@ export const aiService = {
   },
 
   async generateFlashcards(data: {
-    topic: string;
-    count?: number;
+    content: string;
+    numCards?: number;
   }): Promise<unknown> {
     const response = await serverApi.post<unknown>(
       "/ai/tools/generate-flashcards",

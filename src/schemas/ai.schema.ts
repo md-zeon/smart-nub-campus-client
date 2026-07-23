@@ -4,7 +4,6 @@ import { z } from "zod";
 
 export const sendAIMessageSchema = z
   .object({
-    sessionId: z.string().uuid("Invalid session ID").optional(),
     content: z.string().trim().min(1, "Message content is required"),
   })
   .strict();
