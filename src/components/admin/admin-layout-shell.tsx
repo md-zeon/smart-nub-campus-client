@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { apiClient } from "@/lib/api-client";
 
 interface IdentityMeResponse {
   user: {
@@ -32,15 +33,15 @@ export function AdminLayoutShell({
   useEffect(() => {
     async function fetchUserInfo() {
       try {
-        const result = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") || "http://localhost:5000"}/api/v1/identity/me`,
-          { credentials: "include" },
-        );
+        const response = await apiClient.get<{
+          success: boolean;
+          message: string;
+          data: IdentityMeResponse;
+        }>("/identity/me");
 
-        if (result.ok) {
-          const data: IdentityMeResponse = await result.json();
-          setUserName(data.user.name);
-          setUserImage(data.user.image ?? undefined);
+        if (response.data?.data) {
+          setUserName(response.data.data.user.name);
+          setUserImage(response.data.data.user.image ?? undefined);
         }
       } catch {
         // Proxy already guarantees only authenticated admins reach this layout.
