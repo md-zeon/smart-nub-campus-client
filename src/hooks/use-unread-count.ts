@@ -2,7 +2,9 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { apiClient } from "@/lib/api-client";
+import { useSocket, useSocketEvent } from "@/hooks/use-socket";
 import type { UnreadCountResponse } from "@/types/notification.types";
+import type { Notification } from "@/lib/types/socket-events";
 
 interface UseUnreadCountOptions {
   /** Whether to automatically fetch the count on mount. Defaults to true. */
@@ -44,6 +46,11 @@ export function useUnreadCount({
 }: UseUnreadCountOptions = {}): UseUnreadCountReturn {
   const [count, setCount] = useState(0);
   const [isLoading, setIsLoading] = useState(autoFetch);
+  const { socket } = useSocket();
+
+  useSocketEvent(socket, "notification:new", (_notification: Notification) => {
+    setCount((prev) => prev + 1);
+  });
 
   const refresh = useCallback(async () => {
     try {

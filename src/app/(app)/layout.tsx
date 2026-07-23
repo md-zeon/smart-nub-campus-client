@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import { serverApi } from "@/lib/server-api";
 import { AppLayout } from "@/components/layout/app-layout";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Smart NUB Campus",
+    template: "%s | Smart NUB Campus",
+  },
+  description:
+    "Smart NUB Campus — the all-in-one platform for North South University students to collaborate, share resources, and build community.",
+};
 
 interface IdentityMeResponse {
   user: {
