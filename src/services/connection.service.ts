@@ -1,5 +1,6 @@
 import serverApi from "@/lib/server-api";
 import { CONNECTION_MUTATION_TAGS, TAGS } from "@/lib/cache-tags";
+import { buildQueryString } from "@/lib/utils";
 import type {
   ConnectionWithUser,
   ConnectionOtherUser,
@@ -8,21 +9,6 @@ import type {
   ConnectionOverview,
   PaginationMeta,
 } from "@/types";
-
-function buildQueryString(params: object): string {
-  const searchParams = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null) {
-      if (Array.isArray(value)) {
-        searchParams.set(key, value.join(","));
-      } else {
-        searchParams.set(key, String(value));
-      }
-    }
-  }
-  const qs = searchParams.toString();
-  return qs ? `?${qs}` : "";
-}
 
 /**
  * Connection module service — wraps all `/connections` endpoints.

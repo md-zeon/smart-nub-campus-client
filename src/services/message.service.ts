@@ -1,4 +1,5 @@
 import serverApi from "@/lib/server-api";
+import { buildQueryString } from "@/lib/utils";
 import type {
   Conversation,
   Message,
@@ -7,17 +8,6 @@ import type {
   ConversationListResponse,
   MessageListResponse,
 } from "@/types/message.types";
-
-function buildQueryString(params: object): string {
-  const searchParams = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null) {
-      searchParams.set(key, String(value));
-    }
-  }
-  const qs = searchParams.toString();
-  return qs ? `?${qs}` : "";
-}
 
 export const messageService = {
   async getUnreadCount(): Promise<{ unreadCount: number }> {

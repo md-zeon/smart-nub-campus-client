@@ -1,5 +1,6 @@
 import serverApi from "@/lib/server-api";
 import { TAGS, TEAM_MUTATION_TAGS } from "@/lib/cache-tags";
+import { buildQueryString } from "@/lib/utils";
 import type {
   TeamRequest,
   TeamApplication,
@@ -9,17 +10,6 @@ import type {
   TeamRequestListResponse,
 } from "@/types/team.types";
 import type { Tag } from "@/types/resource.types";
-
-function buildQueryString(params: object): string {
-  const searchParams = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null) {
-      searchParams.set(key, String(value));
-    }
-  }
-  const qs = searchParams.toString();
-  return qs ? `?${qs}` : "";
-}
 
 export const teamService = {
   async createTeamRequest(data: {

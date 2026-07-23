@@ -1,6 +1,7 @@
 /* TODO(AI-PAGE): Known issues to revisit — Phase 18 AI Assistant page. See commit/notes: 1) New-chat URL uses /ai?chat=<id> via createNewSession; confirm this matches desired route (some wanted /ai/<uuid> path segment). 2) Chat history title updates from server on first message — verify it shows promptly. 3) Verify send retry-on-not-found and clean URL across refresh/back-forward. 4) Re-check right sidebar (AI Tools removed per request). */
 import { apiClient } from "@/lib/api-client";
 import { env } from "@/env";
+import { buildQueryString } from "@/lib/utils";
 import type {
   AIChatSession,
   SendAIMessagePayload,
@@ -10,17 +11,6 @@ import type {
 } from "@/types/ai.types";
 
 const API_URL = env.NEXT_PUBLIC_API_URL;
-
-function buildQueryString(params: object): string {
-  const searchParams = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null) {
-      searchParams.set(key, String(value));
-    }
-  }
-  const qs = searchParams.toString();
-  return qs ? `?${qs}` : "";
-}
 
 /** Thin client-side wrapper around the AI endpoints (browser context). */
 export const aiClientService = {

@@ -1,5 +1,6 @@
 import serverApi from "@/lib/server-api";
 import { TAGS, QA_MUTATION_TAGS } from "@/lib/cache-tags";
+import { buildQueryString } from "@/lib/utils";
 import type {
   Question,
   QuestionCategory,
@@ -7,17 +8,6 @@ import type {
   ListQuestionsParams,
   QuestionListResponse,
 } from "@/types/qa.types";
-
-function buildQueryString(params: Record<string, unknown>): string {
-  const searchParams = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null && value !== "") {
-      searchParams.set(key, String(value));
-    }
-  }
-  const qs = searchParams.toString();
-  return qs ? `?${qs}` : "";
-}
 
 /**
  * Maps the client-facing sort aliases to the server's accepted `sort`

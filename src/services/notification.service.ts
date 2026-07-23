@@ -1,20 +1,10 @@
 import serverApi from "@/lib/server-api";
+import { buildQueryString } from "@/lib/utils";
 import type {
   ListNotificationsParams,
   NotificationListResponse,
   UnreadCountResponse,
 } from "@/types/notification.types";
-
-function buildQueryString(params: object): string {
-  const searchParams = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null) {
-      searchParams.set(key, String(value));
-    }
-  }
-  const qs = searchParams.toString();
-  return qs ? `?${qs}` : "";
-}
 
 export const notificationService = {
   async listNotifications(
