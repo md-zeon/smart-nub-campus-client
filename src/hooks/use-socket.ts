@@ -78,13 +78,11 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
     socketInstance.on("connect", () => {
       setIsConnected(true);
       setStatus("connected");
-      console.log("[Socket] Connected:", socketInstance.id);
     });
 
     socketInstance.on("disconnect", (reason) => {
       setIsConnected(false);
       setStatus("disconnected");
-      console.log("[Socket] Disconnected:", reason);
     });
 
     socketInstance.on("connect_error", (err) => {
@@ -94,13 +92,11 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
 
     socketInstance.on("reconnect_attempt", (attempt) => {
       setStatus("connecting");
-      console.log(`[Socket] Reconnection attempt #${attempt}`);
     });
 
     socketInstance.on("reconnect", () => {
       setIsConnected(true);
       setStatus("connected");
-      console.log("[Socket] Reconnected");
     });
 
     setSocket(socketInstance);

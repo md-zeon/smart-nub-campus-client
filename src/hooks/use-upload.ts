@@ -12,7 +12,6 @@ export function useUpload(options: UseUploadOptions): {
 
   const upload = useCallback(
     async (file: File): Promise<UploadResult> => {
-      console.log(`[useUpload] Starting upload for:`, file.name, options.context);
       setIsUploading(true);
       setError(null);
 
@@ -22,7 +21,6 @@ export function useUpload(options: UseUploadOptions): {
           options.context,
           options.type,
         );
-        console.log(`[useUpload] Upload result:`, result);
         return result;
       } catch (err) {
         const errorMessage =

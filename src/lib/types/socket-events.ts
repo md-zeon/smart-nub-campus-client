@@ -124,6 +124,12 @@ export interface SocketEvents {
   /** User stopped typing in a conversation. */
   "typing:stop": { conversationId: string };
 
+  /** Join a conversation room for realtime updates. */
+  "conversation:join": { conversationId: string };
+
+  /** Leave a conversation room. */
+  "conversation:leave": { conversationId: string };
+
   /** Heartbeat to keep presence alive. */
   "presence:heartbeat": Record<string, never>;
 
@@ -193,6 +199,23 @@ export interface SocketEvents {
   /** Connection removed. */
   "connection:removed": { connectionId: string; removedBy: string };
 
+  /** New event created. */
+  "event:new": {
+    id: string;
+    title: string;
+    description: string;
+    startDate: string;
+    location: string;
+    createdById: string;
+  };
+
+  /** RSVP status changed for an event. */
+  "event:rsvpUpdate": {
+    eventId: string;
+    userId: string;
+    status: string;
+  };
+
   /** Admin review status updated. */
   "admin:review-update": {
     type: string;
@@ -223,6 +246,8 @@ export type ClientEvents = keyof Pick<
   | "messaging:read"
   | "typing:start"
   | "typing:stop"
+  | "conversation:join"
+  | "conversation:leave"
   | "presence:heartbeat"
 >;
 
@@ -243,6 +268,8 @@ export type ServerEvents = keyof Pick<
   | "connection:request"
   | "connection:accepted"
   | "connection:removed"
+  | "event:new"
+  | "event:rsvpUpdate"
   | "admin:review-update"
   | "system:announcement"
   | "error:message"
