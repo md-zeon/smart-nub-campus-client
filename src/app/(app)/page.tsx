@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { HeroBanner } from "@/components/home/hero-banner";
 import { QuickAccess } from "@/components/home/quick-access";
 import { TrendingResources } from "@/components/home/trending-resources";
@@ -20,48 +22,38 @@ export const metadata: Metadata = {
   },
 };
 
-/**
- * Home page — the first thing users see after login.
- * Full-width layout with no PageLayout sidebar wrapper.
- * Fetches all section data server-side using cached services and passes it
- * down to presentational components (no client-side fetching).
- */
-export default async function HomePage() {
-  const [trendingResult, leaderboardResult, eventsResult] = await Promise.allSettled([
-    resourceService.listResources({ sort: "popular", limit: 3 }),
-    gamificationService.getLeaderboard(1, 3),
-    eventService.listEvents({ status: "UPCOMING", limit: 3 }),
-  ]);
+async function TrendingSection() {
+  const result = await resourceService.listResources({ sort: "popular", limit: 3 });
+  return <TrendingResources resources={result.data ?? []} />;
+}
 
-  const trendingResources =
-    trendingResult.status === "fulfilled" ? (trendingResult.value.data ?? []) : [];
-  const topContributors =
-    leaderboardResult.status === "fulfilled" ? (leaderboardResult.value.data ?? []) : [];
-  const upcomingEvents =
-    eventsResult.status === "fulfilled" ? (eventsResult.value.data ?? []) : [];
+async function EventsSection() {
+  const result = await eventService.listEvents({ status: "UPCOMING", limit: 3 });
+  return <UpcomingEvents events={result.data ?? []} />;
+}
 
-  const trendingError = trendingResult.status === "rejected";
-  const contributorsError = leaderboardResult.status === "rejected";
-  const eventsError = eventsResult.status === "rejected";
+async function ContributorsSection() {
+  const result = await gamificationService.getLeaderboard(1, 3);
+  return <TopContributors contributors={result.data ?? []} />;
+}
 
+export default function HomePage() {
   return (
     <div className="min-h-screen">
-      {/* ── Hero Banner ─────────────────────────────────────────── */}
       <HeroBanner />
-
-      {/* ── Quick Access Icons ───────────────────────────────────── */}
       <QuickAccess />
-
-      {/* ── Two-Column Content Area ──────────────────────────────── */}
       <section className="mx-auto max-w-360 px-4 pb-16 sm:px-6">
         <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-          {/* ── Left column: Trending Resources ───────────────────── */}
-          <TrendingResources resources={trendingResources} error={trendingError} />
-
-          {/* ── Right column: Events + Contributors ───────────────── */}
+          <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
+            <TrendingSection />
+          </Suspense>
           <div className="space-y-8">
-            <UpcomingEvents events={upcomingEvents} error={eventsError} />
-            <TopContributors contributors={topContributors} error={contributorsError} />
+            <Suspense fallback={<Skeleton className="h-48 w-full rounded-xl" />}>
+              <EventsSection />
+            </Suspense>
+            <Suspense fallback={<Skeleton className="h-40 w-full rounded-xl" />}>
+              <ContributorsSection />
+            </Suspense>
           </div>
         </div>
       </section>
