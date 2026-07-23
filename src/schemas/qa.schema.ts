@@ -12,7 +12,7 @@ export const createQuestionSchema = z
     content: z.string().trim().min(1, "Content is required"),
     categoryId: z.string().uuid("Invalid category ID"),
     courseId: z.string().uuid("Invalid course ID").optional(),
-    tags: z.array(z.string().trim().min(1)).min(1).optional(),
+    tagIds: z.array(z.string().uuid("Invalid tag ID")).optional(),
   })
   .strict();
 
@@ -32,7 +32,7 @@ export const updateQuestionSchema = z
     categoryId: z.string().uuid("Invalid category ID").optional(),
     courseId: z.string().uuid("Invalid course ID").optional(),
     isClosed: z.boolean().optional(),
-    tags: z.array(z.string().trim().min(1)).min(1).optional(),
+    tagIds: z.array(z.string().uuid("Invalid tag ID")).optional(),
   })
   .strict();
 
