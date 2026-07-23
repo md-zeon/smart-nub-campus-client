@@ -14,11 +14,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, ChevronLeft, ChevronRight, ExternalLink, Trash2, Check, X } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, ExternalLink, Trash2, Check, X, Loader2 } from "lucide-react";
 import type {
   ListAdminResourcesResponse,
 } from "@/types/admin.types";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 
 // ── Page Component ───────────────────────────────────────────────────────────
 
@@ -32,6 +33,8 @@ export default function ResourcesPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [verifiedFilter, setVerifiedFilter] = useState<string>("all");
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const limit = 10;
 
@@ -62,6 +65,7 @@ export default function ResourcesPage() {
 
   /** Handle verify/unverify toggle. */
   const handleVerifyToggle = async (id: string, currentVerified: boolean) => {
+    setVerifyingId(id);
     try {
       await adminService.verifyResource(id, !currentVerified);
       toast.success(
@@ -72,18 +76,21 @@ export default function ResourcesPage() {
       fetchResources();
     } catch {
       toast.error("Failed to update resource");
+    } finally {
+      setVerifyingId(null);
     }
   };
 
   /** Handle resource deletion. */
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this resource?")) return;
     try {
       await adminService.deleteResource(id);
       toast.success("Resource deleted");
       fetchResources();
     } catch {
       toast.error("Failed to delete resource");
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -218,6 +225,7 @@ export default function ResourcesPage() {
                           variant="ghost"
                           size="sm"
                           className="h-8"
+                          disabled={verifyingId === resource.id}
                           onClick={() =>
                             handleVerifyToggle(
                               resource.id,
@@ -225,7 +233,9 @@ export default function ResourcesPage() {
                             )
                           }
                         >
-                          {resource.isVerified ? (
+                          {verifyingId === resource.id ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : resource.isVerified ? (
                             <X className="size-4 text-amber-600" />
                           ) : (
                             <Check className="size-4 text-green-600" />
@@ -235,7 +245,7 @@ export default function ResourcesPage() {
                           variant="ghost"
                           size="sm"
                           className="h-8"
-                          onClick={() => handleDelete(resource.id)}
+                          onClick={() => setDeleteTarget(resource.id)}
                         >
                           <Trash2 className="size-4 text-destructive" />
                         </Button>
@@ -279,6 +289,15 @@ export default function ResourcesPage() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Delete Resource"
+        description="Are you sure you want to delete this resource? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={() => { if (deleteTarget) handleDelete(deleteTarget); }}
+      />
     </div>
   );
 }

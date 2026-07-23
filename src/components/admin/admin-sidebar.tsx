@@ -12,6 +12,7 @@ import {
   Calendar,
   Settings,
   ArrowLeft,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -43,6 +44,8 @@ interface AdminSidebarProps {
   userImage?: string;
   /** Number of pending verification requests. */
   pendingCount?: number;
+  /** Callback when the sidebar close button is clicked (mobile). */
+  onClose?: () => void;
 }
 
 /**
@@ -54,6 +57,7 @@ export function AdminSidebar({
   userName = "Admin",
   userImage,
   pendingCount = 0,
+  onClose,
 }: AdminSidebarProps) {
   const pathname = usePathname();
 
@@ -64,9 +68,9 @@ export function AdminSidebar({
   };
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-gray-900 text-white">
+    <aside className="flex h-full w-64 flex-col bg-gray-900 text-white">
       {/* ── Logo / Brand ─────────────────────────────────────────────── */}
-      <div className="flex h-16 items-center gap-2 border-b border-gray-700 px-6">
+      <div className="flex h-16 items-center justify-between border-b border-gray-700 px-6">
         <div className="flex items-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold">
             A
@@ -76,10 +80,19 @@ export function AdminSidebar({
             <p className="text-xs text-gray-400">Smart NUB Campus</p>
           </div>
         </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1 text-gray-400 hover:bg-gray-800 hover:text-white lg:hidden"
+            aria-label="Close navigation menu"
+          >
+            <X className="size-5" />
+          </button>
+        )}
       </div>
 
       {/* ── Navigation ───────────────────────────────────────────────── */}
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Admin navigation">
         {sidebarNavItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
@@ -90,6 +103,7 @@ export function AdminSidebar({
             <Link
               key={item.href}
               href={item.href}
+              onClick={onClose}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 active

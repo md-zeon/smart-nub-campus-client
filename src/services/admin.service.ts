@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/api-client";
 import type {
   AdminDashboardStats,
+  AdminDashboardCharts,
   ListAdminUsersParams,
   ListAdminUsersResponse,
   AdminUserDetail,
@@ -37,6 +38,15 @@ export const adminService = {
       message: string;
       data: AdminDashboardStats;
     }>("/admin/stats");
+    return response.data!.data;
+  },
+
+  async getDashboardCharts(days = 7): Promise<AdminDashboardCharts> {
+    const response = await apiClient.get<{
+      success: boolean;
+      message: string;
+      data: AdminDashboardCharts;
+    }>(`/admin/stats/charts?days=${days}`);
     return response.data!.data;
   },
 

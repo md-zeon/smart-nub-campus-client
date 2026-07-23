@@ -13,6 +13,25 @@ export interface AdminDashboardStats {
   pendingVerifications: number;
 }
 
+// ── Dashboard Charts ─────────────────────────────────────────────────────────
+
+export interface ChartBucket {
+  date: string;
+  count: number;
+}
+
+export interface DepartmentBucket {
+  department: string;
+  count: number;
+}
+
+export interface AdminDashboardCharts {
+  userRegistrations: ChartBucket[];
+  resourceUploads: ChartBucket[];
+  departmentDistribution: DepartmentBucket[];
+  verificationTrends: ChartBucket[];
+}
+
 // ── User Management ──────────────────────────────────────────────────────────
 
 export interface AdminUserStudent {

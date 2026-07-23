@@ -25,6 +25,7 @@ import type {
 } from "@/types/admin.types";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 
 // ── Page Component ───────────────────────────────────────────────────────────
 
@@ -44,6 +45,7 @@ export default function UsersPage() {
   // Modal state
   const [viewingUser, setViewingUser] = useState<AdminUserDetail | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [bulkAction, setBulkAction] = useState<"suspend" | "ban" | "activate" | null>(null);
 
   const limit = 10;
 
@@ -226,52 +228,19 @@ export default function UsersPage() {
             label: "Suspend",
             icon: Ban,
             variant: "outline",
-            onClick: async () => {
-              for (const id of selectedIds) {
-                try {
-                  await adminService.updateUserStatus(id, "SUSPENDED");
-                } catch {
-                  // Continue
-                }
-              }
-              toast.success(`${selectedIds.length} users suspended`);
-              setSelectedIds([]);
-              fetchUsers();
-            },
+            onClick: () => setBulkAction("suspend"),
           },
           {
             label: "Ban",
             icon: Ban,
             variant: "destructive",
-            onClick: async () => {
-              for (const id of selectedIds) {
-                try {
-                  await adminService.updateUserStatus(id, "BANNED");
-                } catch {
-                  // Continue
-                }
-              }
-              toast.success(`${selectedIds.length} users banned`);
-              setSelectedIds([]);
-              fetchUsers();
-            },
+            onClick: () => setBulkAction("ban"),
           },
           {
             label: "Activate",
             icon: Play,
             variant: "default",
-            onClick: async () => {
-              for (const id of selectedIds) {
-                try {
-                  await adminService.updateUserStatus(id, "ACTIVE");
-                } catch {
-                  // Continue
-                }
-              }
-              toast.success(`${selectedIds.length} users activated`);
-              setSelectedIds([]);
-              fetchUsers();
-            },
+            onClick: () => setBulkAction("activate"),
           },
         ]}
       />
@@ -408,6 +377,30 @@ export default function UsersPage() {
           setViewingUser(null);
         }}
         onStatusChange={handleStatusChange}
+      />
+
+      <ConfirmDialog
+        open={bulkAction !== null}
+        onOpenChange={(open) => { if (!open) setBulkAction(null); }}
+        title={bulkAction === "suspend" ? "Suspend Users" : bulkAction === "ban" ? "Ban Users" : "Activate Users"}
+        description={`Are you sure you want to ${bulkAction} ${selectedIds.length} selected user${selectedIds.length === 1 ? "" : "s"}?`}
+        confirmLabel={bulkAction === "activate" ? "Activate" : bulkAction === "ban" ? "Ban" : "Suspend"}
+        confirmVariant={bulkAction === "ban" ? "destructive" : "default"}
+        onConfirm={async () => {
+          if (!bulkAction) return;
+          const statusMap = { suspend: "SUSPENDED" as const, ban: "BANNED" as const, activate: "ACTIVE" as const };
+          for (const id of selectedIds) {
+            try {
+              await adminService.updateUserStatus(id, statusMap[bulkAction]);
+            } catch {
+              // Continue with other users
+            }
+          }
+          toast.success(`${selectedIds.length} users ${bulkAction === "activate" ? "activated" : bulkAction + "d"}`);
+          setSelectedIds([]);
+          setBulkAction(null);
+          fetchUsers();
+        }}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { format, parseISO } from "date-fns";
 import { StatsCard } from "@/components/admin/stats-card";
 import { AdminChart } from "@/components/admin/admin-chart";
 import { RecentActivity } from "@/components/admin/recent-activity";
@@ -16,66 +17,57 @@ import {
   HelpCircle,
   ShieldCheck,
 } from "lucide-react";
-import type { AdminDashboardStats } from "@/types/admin.types";
+import type { AdminDashboardStats, AdminDashboardCharts, AuditLogEntry } from "@/types/admin.types";
 import { toast } from "sonner";
 
-// ── Mock chart data (will be replaced with real API data when available) ─────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-const mockRegistrationData = [
-  { name: "Mon", users: 12 },
-  { name: "Tue", users: 19 },
-  { name: "Wed", users: 15 },
-  { name: "Thu", users: 22 },
-  { name: "Fri", users: 18 },
-  { name: "Sat", users: 8 },
-  { name: "Sun", users: 5 },
-];
+/** Format a YYYY-MM-DD string to a short label like "Jul 17". */
+function formatChartDate(dateStr: string): string {
+  try {
+    return format(parseISO(dateStr), "MMM d");
+  } catch {
+    return dateStr;
+  }
+}
 
-const mockResourceUploadData = [
-  { name: "Mon", uploads: 5 },
-  { name: "Tue", uploads: 8 },
-  { name: "Wed", uploads: 12 },
-  { name: "Thu", uploads: 7 },
-  { name: "Fri", uploads: 15 },
-  { name: "Sat", uploads: 3 },
-  { name: "Sun", uploads: 2 },
-];
+/** Map audit log action to RecentActivity action type. */
+function mapAuditAction(
+  action: string,
+): "USER_SIGNED_UP" | "RESOURCE_UPLOADED" | "VERIFICATION_SUBMITTED" | "DISCUSSION_CREATED" | "QUESTION_ASKED" | null {
+  if (action.includes("USER") || action === "CREATE_USER") return "USER_SIGNED_UP";
+  if (action.includes("RESOURCE") && (action.includes("CREATE") || action.includes("UPLOAD"))) return "RESOURCE_UPLOADED";
+  if (action.includes("VERIFICATION")) return "VERIFICATION_SUBMITTED";
+  if (action.includes("DISCUSSION")) return "DISCUSSION_CREATED";
+  if (action.includes("QUESTION")) return "QUESTION_ASKED";
+  if (action === "VIEW_DASHBOARD") return "USER_SIGNED_UP";
+  if (action.includes("VERIFY_RESOURCE")) return "RESOURCE_UPLOADED";
+  return null;
+}
 
-const mockDepartmentData = [
-  { name: "CSE", count: 450 },
-  { name: "BBA", count: 320 },
-  { name: "EEE", count: 180 },
-  { name: "ENGLISH", count: 150 },
-  { name: "LLB", count: 90 },
-];
-
-const mockVerificationTrendData = [
-  { name: "Week 1", pending: 8, approved: 12, rejected: 2 },
-  { name: "Week 2", pending: 5, approved: 15, rejected: 3 },
-  { name: "Week 3", pending: 12, approved: 10, rejected: 1 },
-  { name: "Week 4", pending: 3, approved: 18, rejected: 4 },
-];
-
-const mockRecentActivity = [
-  { id: "1", userName: "Rahim Uddin", action: "USER_SIGNED_UP" as const, details: "New student registration", timestamp: new Date(Date.now() - 3600000).toISOString() },
-  { id: "2", userName: "Nusrat Jahan", action: "RESOURCE_UPLOADED" as const, details: "CSE201 - Data Structures Notes", timestamp: new Date(Date.now() - 7200000).toISOString() },
-  { id: "3", userName: "Kamal Hossain", action: "VERIFICATION_SUBMITTED" as const, details: "Student ID: 2024-1-60-001", timestamp: new Date(Date.now() - 10800000).toISOString() },
-  { id: "4", userName: "Farhana Akter", action: "DISCUSSION_CREATED" as const, details: "Best resources for CSE301?", timestamp: new Date(Date.now() - 14400000).toISOString() },
-  { id: "5", userName: "Tanvir Ahmed", action: "QUESTION_ASKED" as const, details: "How to implement AVL tree?", timestamp: new Date(Date.now() - 18000000).toISOString() },
-  { id: "6", userName: "Sara Rahman", action: "USER_SIGNED_UP" as const, details: "New student registration", timestamp: new Date(Date.now() - 21600000).toISOString() },
-  { id: "7", userName: "Imran Khan", action: "RESOURCE_UPLOADED" as const, details: "BBA201 - Marketing Final Notes", timestamp: new Date(Date.now() - 25200000).toISOString() },
-  { id: "8", userName: "Fatima Begum", action: "VERIFICATION_SUBMITTED" as const, details: "Student ID: 2024-1-60-002", timestamp: new Date(Date.now() - 28800000).toISOString() },
-];
+/** Map audit log entry to a RecentActivity-compatible entry. */
+function auditToActivity(log: AuditLogEntry) {
+  const action = mapAuditAction(log.action);
+  return {
+    id: log.id,
+    userName: log.adminUser.name,
+    action: action ?? "USER_SIGNED_UP" as const,
+    details: log.details
+      ? Object.entries(log.details).map(([k, v]) => `${k}: ${v}`).join(", ")
+      : `${log.action.replace(/_/g, " ").toLowerCase()}`,
+    timestamp: log.createdAt,
+  };
+}
 
 // ── Page Component ───────────────────────────────────────────────────────────
 
-/**
- * Admin dashboard page — the main overview page.
- * Shows platform stats cards, charts, and recent activity.
- */
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [charts, setCharts] = useState<AdminDashboardCharts | null>(null);
+  const [recentActivity, setRecentActivity] = useState<ReturnType<typeof auditToActivity>[]>([]);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [isLoadingCharts, setIsLoadingCharts] = useState(true);
+  const [isLoadingActivity, setIsLoadingActivity] = useState(true);
 
   useEffect(() => {
     async function fetchStats() {
@@ -85,12 +77,41 @@ export default function AdminDashboardPage() {
       } catch {
         toast.error("Failed to load dashboard stats");
       } finally {
-        setIsLoading(false);
+        setIsLoadingStats(false);
       }
     }
-
     fetchStats();
   }, []);
+
+  useEffect(() => {
+    async function fetchCharts() {
+      try {
+        const data = await adminService.getDashboardCharts(7);
+        setCharts(data);
+      } catch {
+        toast.error("Failed to load chart data");
+      } finally {
+        setIsLoadingCharts(false);
+      }
+    }
+    fetchCharts();
+  }, []);
+
+  useEffect(() => {
+    async function fetchActivity() {
+      try {
+        const result = await adminService.listAuditLogs({ page: 1, limit: 10 });
+        setRecentActivity(result.data.map(auditToActivity));
+      } catch {
+        toast.error("Failed to load recent activity");
+      } finally {
+        setIsLoadingActivity(false);
+      }
+    }
+    fetchActivity();
+  }, []);
+
+  const isLoading = isLoadingStats || isLoadingCharts || isLoadingActivity;
 
   if (isLoading) {
     return (
@@ -109,6 +130,27 @@ export default function AdminDashboardPage() {
       </div>
     );
   }
+
+  // Transform chart buckets into recharts-compatible format
+  const registrationData = (charts?.userRegistrations ?? []).map((b) => ({
+    name: formatChartDate(b.date),
+    users: b.count,
+  }));
+
+  const resourceData = (charts?.resourceUploads ?? []).map((b) => ({
+    name: formatChartDate(b.date),
+    uploads: b.count,
+  }));
+
+  const departmentData = (charts?.departmentDistribution ?? []).map((b) => ({
+    name: b.department,
+    count: b.count,
+  }));
+
+  const verificationData = (charts?.verificationTrends ?? []).map((b) => ({
+    name: `Week of ${formatChartDate(b.date)}`,
+    count: b.count,
+  }));
 
   return (
     <div className="p-6 space-y-6">
@@ -174,7 +216,7 @@ export default function AdminDashboardPage() {
           title="User Registrations"
           description="New user sign-ups over the last 7 days"
           type="line"
-          data={mockRegistrationData}
+          data={registrationData}
           series={[{ dataKey: "users", name: "Users", color: "#6366f1" }]}
         />
 
@@ -182,7 +224,7 @@ export default function AdminDashboardPage() {
           title="Resource Uploads"
           description="Resources uploaded over the last 7 days"
           type="bar"
-          data={mockResourceUploadData}
+          data={resourceData}
           series={[{ dataKey: "uploads", name: "Uploads", color: "#22c55e" }]}
         />
 
@@ -190,25 +232,23 @@ export default function AdminDashboardPage() {
           title="Popular Departments"
           description="Users by department"
           type="bar"
-          data={mockDepartmentData}
+          data={departmentData}
           series={[{ dataKey: "count", name: "Students", color: "#f59e0b" }]}
         />
 
         <AdminChart
           title="Verification Trends"
-          description="Verification request status over the last 4 weeks"
+          description="Verification requests per week"
           type="area"
-          data={mockVerificationTrendData}
+          data={verificationData}
           series={[
-            { dataKey: "pending", name: "Pending", color: "#f59e0b" },
-            { dataKey: "approved", name: "Approved", color: "#22c55e" },
-            { dataKey: "rejected", name: "Rejected", color: "#ef4444" },
+            { dataKey: "count", name: "Requests", color: "#6366f1" },
           ]}
         />
       </div>
 
       {/* ── Recent Activity Table ──────────────────────────────────────── */}
-      <RecentActivity activities={mockRecentActivity} />
+      <RecentActivity activities={recentActivity} />
     </div>
   );
 }

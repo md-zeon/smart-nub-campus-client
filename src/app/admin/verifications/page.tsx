@@ -24,6 +24,7 @@ import type {
 } from "@/types/admin.types";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 
 // ── Page Component ───────────────────────────────────────────────────────────
 
@@ -43,6 +44,7 @@ export default function VerificationsPage() {
   const [reviewingVerification, setReviewingVerification] =
     useState<AdminVerificationDetail | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [bulkAction, setBulkAction] = useState<"approve" | "reject" | null>(null);
 
   const limit = 10;
 
@@ -202,35 +204,13 @@ export default function VerificationsPage() {
             label: "Approve",
             icon: ShieldCheck,
             variant: "default",
-            onClick: async () => {
-              for (const id of selectedIds) {
-                try {
-                  await adminService.approveVerification(id);
-                } catch {
-                  // Continue with other approvals
-                }
-              }
-              toast.success(`${selectedIds.length} verifications approved`);
-              setSelectedIds([]);
-              fetchVerifications();
-            },
+            onClick: () => setBulkAction("approve"),
           },
           {
             label: "Reject",
             icon: Ban,
             variant: "destructive",
-            onClick: async () => {
-              for (const id of selectedIds) {
-                try {
-                  await adminService.rejectVerification(id, "Bulk rejection");
-                } catch {
-                  // Continue with other rejections
-                }
-              }
-              toast.success(`${selectedIds.length} verifications rejected`);
-              setSelectedIds([]);
-              fetchVerifications();
-            },
+            onClick: () => setBulkAction("reject"),
           },
         ]}
       />
@@ -364,6 +344,33 @@ export default function VerificationsPage() {
         }}
         onApprove={handleApprove}
         onReject={handleReject}
+      />
+
+      <ConfirmDialog
+        open={bulkAction !== null}
+        onOpenChange={(open) => { if (!open) setBulkAction(null); }}
+        title={bulkAction === "approve" ? "Approve Verifications" : "Reject Verifications"}
+        description={`Are you sure you want to ${bulkAction} ${selectedIds.length} selected verification${selectedIds.length === 1 ? "" : "s"}?`}
+        confirmLabel={bulkAction === "approve" ? "Approve" : "Reject"}
+        confirmVariant={bulkAction === "reject" ? "destructive" : "default"}
+        onConfirm={async () => {
+          if (!bulkAction) return;
+          for (const id of selectedIds) {
+            try {
+              if (bulkAction === "approve") {
+                await adminService.approveVerification(id);
+              } else {
+                await adminService.rejectVerification(id, "Bulk rejection");
+              }
+            } catch {
+              // Continue with other verifications
+            }
+          }
+          toast.success(`${selectedIds.length} verifications ${bulkAction === "approve" ? "approved" : "rejected"}`);
+          setSelectedIds([]);
+          setBulkAction(null);
+          fetchVerifications();
+        }}
       />
     </div>
   );

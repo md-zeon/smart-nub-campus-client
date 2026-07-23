@@ -27,6 +27,7 @@ import { Plus, Trash2 } from "lucide-react";
 import type { AdminCourse } from "@/types/admin.types";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 
 // ── Tabs ─────────────────────────────────────────────────────────────────────
 
@@ -46,6 +47,7 @@ function CoursesTab() {
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({ code: "", name: "", department: "CSE", semester: "", description: "" });
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const fetchCourses = useCallback(async () => {
     setIsLoading(true);
@@ -86,13 +88,14 @@ function CoursesTab() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this course? This will fail if it has associated resources.")) return;
     try {
       await adminService.deleteCourse(id);
       toast.success("Course deleted");
       fetchCourses();
     } catch {
       toast.error("Failed to delete course");
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -114,7 +117,7 @@ function CoursesTab() {
         </Button>
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden dark:bg-gray-800">
+      <div className="rounded-xl border bg-white shadow-sm overflow-x-auto dark:bg-gray-800">
         <table className="w-full">
           <thead>
             <tr className="border-b bg-gray-50 dark:bg-gray-700/50 text-left text-sm text-muted-foreground">
@@ -146,7 +149,7 @@ function CoursesTab() {
                     variant="ghost"
                     size="sm"
                     className="h-8"
-                    onClick={() => handleDelete(course.id)}
+                    onClick={() => setDeleteTarget(course.id)}
                   >
                     <Trash2 className="size-4 text-destructive" />
                   </Button>
@@ -212,6 +215,15 @@ function CoursesTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Delete Course"
+        description="This will fail if the course has associated resources or discussions."
+        confirmLabel="Delete"
+        onConfirm={() => { if (deleteTarget) handleDelete(deleteTarget); }}
+      />
     </div>
   );
 }
@@ -237,6 +249,7 @@ function CategoryTab<T extends { id: string; name: string; slug: string; _count:
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -271,13 +284,14 @@ function CategoryTab<T extends { id: string; name: string; slug: string; _count:
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm(`Delete this ${createLabel.toLowerCase()}?`)) return;
     try {
       await deleter(id);
       toast.success(`${createLabel} deleted`);
       fetchData();
     } catch {
       toast.error(`Failed to delete ${createLabel.toLowerCase()}`);
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -299,7 +313,7 @@ function CategoryTab<T extends { id: string; name: string; slug: string; _count:
         </Button>
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden dark:bg-gray-800">
+      <div className="rounded-xl border bg-white shadow-sm overflow-x-auto dark:bg-gray-800">
         <table className="w-full">
           <thead>
             <tr className="border-b bg-gray-50 dark:bg-gray-700/50 text-left text-sm text-muted-foreground">
@@ -323,7 +337,7 @@ function CategoryTab<T extends { id: string; name: string; slug: string; _count:
                     variant="ghost"
                     size="sm"
                     className="h-8"
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() => setDeleteTarget(item.id)}
                   >
                     <Trash2 className="size-4 text-destructive" />
                   </Button>
@@ -359,6 +373,15 @@ function CategoryTab<T extends { id: string; name: string; slug: string; _count:
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title={`Delete ${createLabel}`}
+        description={`Are you sure you want to delete this ${createLabel.toLowerCase()}?`}
+        confirmLabel="Delete"
+        onConfirm={() => { if (deleteTarget) handleDelete(deleteTarget); }}
+      />
     </div>
   );
 }

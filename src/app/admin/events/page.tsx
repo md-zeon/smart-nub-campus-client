@@ -28,6 +28,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, ChevronLeft, ChevronRight, Trash2, Calendar, Users } from "lucide-react";
 import type { AdminEvent } from "@/types/admin.types";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 
 // ── Page Component ───────────────────────────────────────────────────────────
 
@@ -45,6 +46,7 @@ export default function EventsPage() {
     status: "UPCOMING" as string,
     isFeatured: false,
   });
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const fetchEvents = useCallback(async () => {
     setIsLoading(true);
@@ -87,13 +89,14 @@ export default function EventsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this event?")) return;
     try {
       await adminService.deleteEvent(id);
       toast.success("Event deleted");
       fetchEvents();
     } catch {
       toast.error("Failed to delete event");
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -194,7 +197,7 @@ export default function EventsPage() {
                         variant="ghost"
                         size="sm"
                         className="h-8"
-                        onClick={() => handleDelete(event.id)}
+                        onClick={() => setDeleteTarget(event.id)}
                       >
                         <Trash2 className="size-4 text-destructive" />
                       </Button>
@@ -316,6 +319,15 @@ export default function EventsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Delete Event"
+        description="Are you sure you want to delete this event?"
+        confirmLabel="Delete"
+        onConfirm={() => { if (deleteTarget) handleDelete(deleteTarget); }}
+      />
     </div>
   );
 }
