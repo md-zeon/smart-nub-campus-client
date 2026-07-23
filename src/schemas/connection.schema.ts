@@ -4,7 +4,9 @@ import { z } from "zod";
 
 export const sendConnectionRequestSchema = z
   .object({
-    receiverId: z.string().uuid("Invalid user ID"),
+    // Better Auth user IDs are not UUIDs, so accept any non-empty string.
+    receiverId: z.string().min(1, "Invalid receiver ID"),
+    note: z.string().trim().max(500).optional(),
   })
   .strict();
 
