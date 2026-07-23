@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 import type { SocketEvents, ServerEvents } from "@/lib/types/socket-events";
+import { env } from "@/env";
 
 interface UseSocketOptions {
   /** Socket.IO server URL. Defaults to NEXT_PUBLIC_API_URL. */
@@ -45,7 +46,7 @@ interface UseSocketReturn {
  */
 export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
   const {
-    url = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000",
+    url = env.NEXT_PUBLIC_API_URL,
     token,
     autoConnect = true,
   } = options;

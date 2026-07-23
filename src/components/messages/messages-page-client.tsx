@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { env } from "@/env";
 import { useSocket, useSocketEvent } from "@/hooks/use-socket";
 import { messageClientService as messageService } from "@/services/message.client.service";
 import type { Conversation, Message, ConversationType } from "@/types/message.types";
@@ -61,11 +62,7 @@ export function MessagesPageClient({
 
   // Connect to the backend origin (not /api/v1) so Socket.IO uses the default
   // "/" namespace; the server mounts the handler at path /socket.io.
-  const socketUrl =
-    (process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:5000").replace(
-      /\/+$/,
-      "",
-    );
+  const socketUrl = env.NEXT_PUBLIC_BACKEND_URL.replace(/\/+$/, "");
   const { socket, isConnected, status } = useSocket({ url: socketUrl });
 
   // ── Typing indicator debounce bookkeeping ──────────────────────────────────

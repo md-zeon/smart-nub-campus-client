@@ -5,7 +5,7 @@
 
 import { env } from "@/env";
 
-const API_URL = env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+const API_URL = env.NEXT_PUBLIC_API_URL;
 
 interface ApiResponsePromise<T> {
   data: T | undefined;

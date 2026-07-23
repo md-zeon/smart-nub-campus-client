@@ -26,7 +26,7 @@ import { cookies } from "next/headers";
 import { updateTag, revalidateTag } from "next/cache";
 
 const API_URL =
-  env.API_URL || env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  env.API_URL || env.NEXT_PUBLIC_API_URL;
 
 type ApiResponsePromise<T> = Promise<ApiResponse<T>>;
 
