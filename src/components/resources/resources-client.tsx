@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   Search,
@@ -8,8 +8,6 @@ import {
   X,
   LayoutGrid,
   List,
-  ChevronUp,
-  Bookmark,
 } from "lucide-react";
 import { PageLayout } from "@/components/layout/page-layout";
 import { ResourcesSidebar } from "@/components/resources/resources-sidebar";
@@ -73,7 +71,7 @@ export function ResourcesClient({
   allTags,
   trendingResources,
   contributors,
-  initialFilters,
+  initialFilters: _initialFilters,
 }: ResourcesClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -84,7 +82,7 @@ export function ResourcesClient({
   const categorySlug = searchParams.get("category");
   const courseIdParam = searchParams.get("courseId");
   const tagsParam = searchParams.get("tags") ?? "";
-  const tags = tagsParam ? tagsParam.split(",").filter(Boolean) : [];
+  const tags = useMemo(() => (tagsParam ? tagsParam.split(",").filter(Boolean) : []), [tagsParam]);
   const sort = searchParams.get("sort") ?? "newest";
   const view: ViewMode = searchParams.get("view") === "list" ? "list" : "grid";
 
@@ -170,6 +168,7 @@ export function ResourcesClient({
 
     fetchData();
     return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- tags is derived from tagsParam; including it would cause re-fetch on every render
   }, [page, search, categorySlug, categoryId, courseIdParam, tagsParam, sort, initialized]);
 
   // ── Optimistic vote toggle ─────────────────────────────────────
@@ -262,7 +261,7 @@ export function ResourcesClient({
           categories={categories}
           courses={courses}
           allTags={allTags}
-          onCourseChange={(id) => updateParams({ category: null, tags: null })}
+          onCourseChange={(_id) => updateParams({ category: null, tags: null })}
         />
       }
       rightSidebar={

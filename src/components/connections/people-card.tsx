@@ -17,7 +17,6 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   ConnectionStatusBadge,
-  resolveRelationship,
   type Relationship,
 } from "./connection-status-badge";
 import {
@@ -89,7 +88,7 @@ export function PeopleCard({
   user,
   relationship = "none",
   connectionId,
-  direction = "none",
+  direction: _direction = "none",
   showMutual = false,
   compact = false,
   onChanged,
@@ -204,7 +203,7 @@ export function PeopleCard({
       return res;
     });
 
-  const handleUnblock = () =>
+  const _handleUnblock = () =>
     run("unblock", async () => {
       const res = await unblockUserAction(user.id);
       if (res.success) setStatus("none");

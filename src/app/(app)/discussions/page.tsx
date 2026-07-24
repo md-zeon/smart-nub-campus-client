@@ -13,7 +13,6 @@ export const metadata: Metadata = {
   },
 };
 import { DiscussionsClient } from "@/components/discussions/discussions-client";
-import { PageLayout } from "@/components/layout/page-layout";
 import { PageLayoutSkeleton } from "@/components/skeletons/page-layout-skeleton";
 import type {
   Discussion,

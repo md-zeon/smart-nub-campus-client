@@ -13,7 +13,6 @@ export const metadata: Metadata = {
   },
 };
 import { QAClient } from "@/components/qa/qa-client";
-import { PageLayout } from "@/components/layout/page-layout";
 import { PageLayoutSkeleton } from "@/components/skeletons/page-layout-skeleton";
 import type { Question, QuestionCategory } from "@/types/qa.types";
 import type { PaginationMeta } from "@/types/resource.types";

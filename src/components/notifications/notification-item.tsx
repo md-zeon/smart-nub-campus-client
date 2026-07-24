@@ -8,7 +8,6 @@ import {
   CheckCircle,
   MessageCircle,
   MessageSquare,
-  Star,
   ThumbsUp,
   ThumbsDown,
   FileText,

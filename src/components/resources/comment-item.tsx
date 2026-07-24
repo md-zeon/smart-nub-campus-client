@@ -5,6 +5,8 @@ import { ChevronUp, MessageCircle, Trash2 } from "lucide-react";
 import type { Comment } from "@/types/resource.types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
+
 import { formatRelativeTime } from "@/components/resources/file-type-utils";
 
 interface CommentItemProps {
@@ -41,10 +43,12 @@ export function CommentItem({
         {/* ── Author + timestamp ──────────────────────────────────── */}
         <div className="flex items-center gap-2">
           {comment.user?.image ? (
-            <img
+            <Image
               src={comment.user.image}
               alt={comment.user.name}
-              className="size-6 rounded-full object-cover"
+              width={24}
+              height={24}
+              className="rounded-full object-cover"
             />
           ) : (
             <div className="flex size-6 items-center justify-center rounded-full bg-muted text-[10px] font-medium text-muted-foreground">

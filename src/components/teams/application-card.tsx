@@ -1,6 +1,8 @@
 "use client";
 
 import { Check, X } from "lucide-react";
+import Image from "next/image";
+
 import { cn } from "@/lib/utils";
 import { APPLICATION_STATUS_BADGE } from "@/constants/team";
 import { formatRelativeTime } from "@/components/resources/file-type-utils";
@@ -34,10 +36,12 @@ export function ApplicationCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2.5">
           {application.applicant?.image ? (
-            <img
+            <Image
               src={application.applicant.image}
               alt={application.applicant.name}
-              className="size-8 rounded-full object-cover"
+              width={32}
+              height={32}
+              className="rounded-full object-cover"
             />
           ) : (
             <div className="flex size-8 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">

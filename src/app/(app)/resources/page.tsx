@@ -14,7 +14,6 @@ export const metadata: Metadata = {
 };
 import { gamificationService } from "@/services/gamification.service";
 import { ResourcesClient } from "@/components/resources/resources-client";
-import { PageLayout } from "@/components/layout/page-layout";
 import { PageLayoutSkeleton } from "@/components/skeletons/page-layout-skeleton";
 import type {
   Resource,

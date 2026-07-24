@@ -10,7 +10,6 @@ import {
   Share2,
   Eye,
   MessageCircle,
-  AlertCircle,
   CheckCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";

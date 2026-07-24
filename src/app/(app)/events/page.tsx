@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { eventService } from "@/services/event.service";
-import { PageLayout } from "@/components/layout/page-layout";
 import { PageLayoutSkeleton } from "@/components/skeletons/page-layout-skeleton";
 import { EventsListClient } from "@/components/events/events-list-client";
 import type { Event } from "@/types/event.types";

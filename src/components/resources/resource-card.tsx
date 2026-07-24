@@ -4,6 +4,8 @@ import Link from "next/link";
 import { ChevronUp, Bookmark } from "lucide-react";
 import type { Resource } from "@/types/resource.types";
 import { FileIcon, getFileColor, getFileLabel, formatFileSize } from "@/components/resources/file-type-utils";
+import Image from "next/image";
+
 import { cn } from "@/lib/utils";
 
 interface ResourceCardProps {
@@ -72,10 +74,12 @@ export function ResourceCard({ resource, variant = "grid", onVote, onBookmark }:
       <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3">
         <div className="flex min-w-0 items-center gap-2">
           {resource.uploader?.image ? (
-            <img
+            <Image
               src={resource.uploader.image}
               alt={resource.uploader.name}
-              className="size-6 rounded-full object-cover"
+              width={24}
+              height={24}
+              className="rounded-full object-cover"
             />
           ) : (
             <div className="flex size-6 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">

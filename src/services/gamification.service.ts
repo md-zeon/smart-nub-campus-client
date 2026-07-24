@@ -1,6 +1,5 @@
 import serverApi from "@/lib/server-api";
 import type {
-  Badge,
   UserBadge,
   ReputationPoint,
   LeaderboardResponse,

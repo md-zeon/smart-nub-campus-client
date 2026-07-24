@@ -10,28 +10,6 @@ export const metadata: Metadata = {
   description: "View team details and apply to join at Smart NUB Campus.",
 };
 
-/** Loading skeleton for the team detail page. */
-function TeamDetailSkeleton() {
-  return (
-    <div className="mx-auto max-w-4xl space-y-6 px-4 py-6 sm:px-6">
-      <div className="h-4 w-32 animate-pulse rounded bg-muted" />
-      <div className="flex items-start gap-4">
-        <div className="size-14 animate-pulse rounded-xl bg-muted" />
-        <div className="flex-1 space-y-2">
-          <div className="h-6 w-3/4 animate-pulse rounded bg-muted" />
-          <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
-        </div>
-      </div>
-      <div className="space-y-3">
-        <div className="h-9 w-20 animate-pulse rounded-lg bg-muted" />
-        <div className="h-9 w-32 animate-pulse rounded-lg bg-muted" />
-        <div className="h-9 w-24 animate-pulse rounded-lg bg-muted" />
-      </div>
-      <div className="h-48 animate-pulse rounded-xl bg-muted" />
-    </div>
-  );
-}
-
 /**
  * Team detail page — Server Component.
  * Fetches team data server-side and passes to client wrapper for interactivity.

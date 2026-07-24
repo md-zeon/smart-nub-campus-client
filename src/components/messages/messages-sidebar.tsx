@@ -7,7 +7,6 @@ import { Avatar } from "@/components/ui/avatar";
 import { UnreadBadge } from "./unread-badge";
 import { OnlineStatus } from "./online-status";
 import { getConversationDisplay } from "./conversation-utils";
-import { formatRelativeShort } from "./time";
 import { cn } from "@/lib/utils";
 
 export type SidebarTab = "inbox" | "starred" | "groups" | "archive";
@@ -43,7 +42,7 @@ export function MessagesSidebar({
   onTabChange,
   groups,
   currentUserId,
-  onlineUsers,
+  onlineUsers: _onlineUsers,
   onNewMessage,
   onNewGroup,
   onSelectGroup,

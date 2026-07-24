@@ -26,6 +26,17 @@ const eslintConfig = defineConfig([
       // setState calls happen after an await, so they are not truly
       // synchronous; disabling keeps lint consistent with existing modules.
       "react-hooks/set-state-in-effect": "off",
+      // Allow underscore-prefixed unused variables/params (conventional for
+      // intentionally unused values like destructured ignores).
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+        },
+      ],
     },
   },
 ]);

@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   Search,
   Users,
-  Clock,
   Send,
   UserX,
   Sparkles,
@@ -38,7 +37,6 @@ import {
   unblockUserAction,
 } from "@/actions/connection.actions";
 import { listTagsAction } from "@/actions/resource.actions";
-import type { Tag } from "@/types";
 import type { ConnectionFilterState } from "./connection-filters";
 
 type SubTab = "all" | "seniors" | "juniors" | "same" | "favorites";
@@ -133,7 +131,7 @@ export function ConnectionsClient({
   const [popularSkills, setPopularSkills] =
     useState<{ id: string; name: string; slug: string }[]>(initialPopularSkills);
   const [activeSkills, setActiveSkills] = useState<string[]>(initialSkills);
-  const [allTags, setAllTags] = useState<{ id: string; name: string; slug: string }[]>([]);
+  const [_allTags, setAllTags] = useState<{ id: string; name: string; slug: string }[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -176,7 +174,7 @@ export function ConnectionsClient({
     }
   }, [mapSuggested]);
 
-  const [reloadKey, setReloadKey] = useState(0);
+  const [_reloadKey, setReloadKey] = useState(0);
 
   const onChanged = useCallback(() => {
     void refreshMeta();
@@ -254,7 +252,7 @@ export function ConnectionsClient({
     } finally {
       setLoading(false);
     }
-  }, [tab, subTab, search, filters, page, reloadKey]);
+  }, [tab, subTab, search, filters, page]);
 
   // Initial + dependency-driven load
   useEffect(() => {

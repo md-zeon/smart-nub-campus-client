@@ -48,7 +48,7 @@ export function MessagesPageClient({
   const [profileOpen, setProfileOpen] = useState(true);
   const [newOpen, setNewOpen] = useState(false);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
-  const [loadingConvos, setLoadingConvos] = useState(false);
+  const [_loadingConvos, setLoadingConvos] = useState(false);
 
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(
     () => new Set(initialOnlineUserIds),
@@ -63,11 +63,30 @@ export function MessagesPageClient({
   // Connect to the backend origin (not /api/v1) so Socket.IO uses the default
   // "/" namespace; the server mounts the handler at path /socket.io.
   const socketUrl = env.NEXT_PUBLIC_BACKEND_URL.replace(/\/+$/, "");
-  const { socket, isConnected, status } = useSocket({ url: socketUrl });
+  const { socket, isConnected: _isConnected, status } = useSocket({ url: socketUrl });
 
   // ── Typing indicator debounce bookkeeping ──────────────────────────────────
   const typingStopTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const typingActiveRef = useRef(false);
+
+  // ── Read receipts ──────────────────────────────────────────────────────────
+  // When the recipient opens / views a conversation we tell the server which
+  // messages we've seen. The server persists isRead/readAt on the message rows
+  // and broadcasts a receipt per message so the sender's ✓✓ tick appears (and
+  // survives a reload because the state lives in the DB).
+  const messagesRef = useRef<Message[]>(messages);
+  useEffect(() => { messagesRef.current = messages; });
+
+  const emitRead = useCallback(
+    (conversationId: string) => {
+      if (!socket) return;
+      const lastId =
+        messagesRef.current.filter((m) => m.conversationId === conversationId).at(-1)?.id ??
+        "";
+      socket.emit("messaging:read", { conversationId, messageId: lastId });
+    },
+    [socket],
+  );
 
   // ── Presence ────────────────────────────────────────────────────────────────
   useSocketEvent(socket, "presence:update", (data) => {
@@ -253,22 +272,6 @@ export function MessagesPageClient({
       }
     },
     [],
-  );
-
-  // ── Read receipts ──────────────────────────────────────────────────────────
-  // When the recipient opens / views a conversation we tell the server which
-  // messages we've seen. The server persists isRead/readAt on the message rows
-  // and broadcasts a receipt per message so the sender's ✓✓ tick appears (and
-  // survives a reload because the state lives in the DB).
-  const emitRead = useCallback(
-    (conversationId: string) => {
-      if (!socket) return;
-      const lastId =
-        messages.filter((m) => m.conversationId === conversationId).at(-1)?.id ??
-        "";
-      socket.emit("messaging:read", { conversationId, messageId: lastId });
-    },
-    [socket, messages],
   );
 
   const selectConversation = useCallback(

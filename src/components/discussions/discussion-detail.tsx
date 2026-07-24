@@ -78,7 +78,7 @@ export function DiscussionDetail({
   const [loadingReplies, setLoadingReplies] = useState(true);
   const [replySort, setReplySort] = useState<ReplySort>("upvotes");
   const [showReplyForm, setShowReplyForm] = useState(false);
-  const [actionBusy, setActionBusy] = useState(false);
+  const [_actionBusy, setActionBusy] = useState(false);
 
   const isAuthor = currentUserId != null && discussion.authorId === currentUserId;
   const bookmarked = discussion.isBookmarked ?? false;

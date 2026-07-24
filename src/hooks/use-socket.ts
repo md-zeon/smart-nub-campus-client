@@ -80,7 +80,7 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
       setStatus("connected");
     });
 
-    socketInstance.on("disconnect", (reason) => {
+    socketInstance.on("disconnect", (_reason) => {
       setIsConnected(false);
       setStatus("disconnected");
     });
@@ -90,7 +90,7 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
       console.error("[Socket] Connection error:", err.message);
     });
 
-    socketInstance.on("reconnect_attempt", (attempt) => {
+    socketInstance.on("reconnect_attempt", (_attempt) => {
       setStatus("connecting");
     });
 

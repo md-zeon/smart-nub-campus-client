@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { TrendingUp, Tag, Users, FileText, ChevronRight, Check } from "lucide-react";
 import type { Resource } from "@/types/resource.types";
+import Image from "next/image";
+
 import { cn } from "@/lib/utils";
 
 interface LeaderboardEntry {
@@ -123,10 +125,12 @@ export function ResourcesTrending({
                   {entry.rank}
                 </span>
                 {entry.image ? (
-                  <img
+                  <Image
                     src={entry.image}
                     alt={entry.name}
-                    className="size-6 rounded-full object-cover"
+                    width={24}
+                    height={24}
+                    className="rounded-full object-cover"
                   />
                 ) : (
                   <div className="flex size-6 items-center justify-center rounded-full bg-muted text-[10px] font-medium text-muted-foreground">

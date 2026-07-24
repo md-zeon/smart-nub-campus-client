@@ -50,7 +50,7 @@ export function AIClient({
   const router = useRouter();
   const pathname = usePathname();
 
-  const [sessions, setSessions] = useState<AIChatSession[]>(initialSessions);
+  const [_sessions, setSessions] = useState<AIChatSession[]>(initialSessions);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(
     initialActiveSessionId,
   );

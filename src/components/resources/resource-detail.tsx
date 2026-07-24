@@ -15,6 +15,8 @@ import { CommentSection } from "@/components/resources/comment-section";
 import { FileIcon, getFileColor, formatFileSize, formatRelativeTime } from "@/components/resources/file-type-utils";
 import { voteResource, bookmarkResource, reportResource, recordResourceDownload, listResources } from "@/actions/resource.actions";
 import type { Resource } from "@/types/resource.types";
+import Image from "next/image";
+
 import { toast } from "sonner";
 
 /** Report reason labels for the dropdown. */
@@ -252,10 +254,12 @@ export function ResourceDetail({ resource: initialResource }: ResourceDetailProp
             <span className="text-muted-foreground">Uploader</span>
             <div className="mt-1 flex items-center gap-2">
               {resource.uploader?.image ? (
-                <img
+                <Image
                   src={resource.uploader.image}
                   alt={resource.uploader.name}
-                  className="size-6 rounded-full object-cover"
+                  width={24}
+                  height={24}
+                  className="rounded-full object-cover"
                 />
               ) : (
                 <div className="flex size-6 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
@@ -311,9 +315,12 @@ export function ResourceDetail({ resource: initialResource }: ResourceDetailProp
       <div className="rounded-xl border bg-card p-5 ring-1 ring-foreground/10">
         <h3 className="mb-3 text-sm font-semibold text-foreground">File</h3>
         {resource.fileType.includes("image") ? (
-          <img
+          <Image
             src={resource.fileUrl}
             alt={resource.title}
+            width={768}
+            height={384}
+            unoptimized
             className="max-h-96 w-full rounded-lg object-contain"
           />
         ) : (

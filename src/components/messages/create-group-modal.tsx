@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { searchPeopleAction } from "@/actions/connection.actions";
 import type { SearchPerson } from "@/types/connection.types";
 

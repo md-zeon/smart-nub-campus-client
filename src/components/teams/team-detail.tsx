@@ -14,6 +14,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
+
 import { cn } from "@/lib/utils";
 import { TEAM_STATUS_BADGE } from "@/constants/team";
 import { formatRelativeTime } from "@/components/resources/file-type-utils";
@@ -261,10 +263,12 @@ export function TeamDetail({ team: initialTeam, currentUserId }: TeamDetailProps
               className="flex items-center gap-3 rounded-lg border bg-card p-3 ring-1 ring-foreground/10"
             >
               {member.user?.image ? (
-                <img
+                <Image
                   src={member.user.image}
                   alt={member.user.name}
-                  className="size-9 rounded-full object-cover"
+                  width={36}
+                  height={36}
+                  className="rounded-full object-cover"
                 />
               ) : (
                 <div className="flex size-9 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground">
