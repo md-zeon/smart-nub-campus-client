@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { env } from "@/env";
@@ -57,7 +57,6 @@ export function MessagesPageClient({
     Record<string, { active: boolean; names?: string[]; ts?: number }>
   >({});
 
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   // Connect to the backend origin (not /api/v1) so Socket.IO uses the default
@@ -280,13 +279,15 @@ export function MessagesPageClient({
       setMessages([]);
       setHasMore(false);
       setMessagesPage(1);
-      // Reflect the active conversation in the URL (?c=...).
+      // Reflect the active conversation in the URL (?c=...) using the History
+      // API instead of router.replace to avoid triggering a full RSC re-fetch
+      // that can cause "resolveModelChunk" Flight protocol errors in Next.js 16.
       const params = new URLSearchParams(Array.from(searchParams.entries()));
       params.set("c", id);
-      router.replace(`?${params.toString()}`, { scroll: false });
+      window.history.replaceState(null, "", `?${params.toString()}`);
       void loadMessages(id).then(() => emitRead(id));
     },
-    [loadMessages, router, searchParams, emitRead],
+    [loadMessages, searchParams, emitRead],
   );
 
   // Open the conversation referenced by ?c= on first mount (deep link / reload).
