@@ -225,6 +225,11 @@ export function OnboardingFlow({
                   account setup.
                 </p>
               </div>
+              {error && (
+                <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
               <VerifyEmailForm
                 email={verificationRequest?.email}
                 skipInitialSend
