@@ -46,7 +46,7 @@ interface UseSocketReturn {
  */
 export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
   const {
-    url = env.NEXT_PUBLIC_API_URL,
+    url = env.NEXT_PUBLIC_BACKEND_URL,
     token,
     autoConnect = true,
   } = options;
