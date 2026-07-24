@@ -4,14 +4,11 @@
  */
 
 import type { PaginationMeta } from "./resource.types";
+import type { UserReference } from "./common.types";
 
 // ── Shared references ────────────────────────────────────────────────────────
 
-export interface EventOrganizer {
-  id: string;
-  name: string;
-  image?: string | null;
-}
+export type EventOrganizer = UserReference;
 
 // ── Core models ──────────────────────────────────────────────────────────────
 

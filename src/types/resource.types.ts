@@ -3,6 +3,8 @@
  * Keep in sync with server schema: prisma/schema/resource.prisma
  */
 
+import type { UserReferenceWithEmail, CategoryBase } from "./common.types";
+
 // ── Shared references ────────────────────────────────────────────────────────
 
 /** Minimal course reference embedded in resource responses. */
@@ -14,23 +16,12 @@ export interface ResourceCourse {
 }
 
 /** Minimal uploader (User) reference. */
-export interface ResourceUploader {
-  id: string;
-  name: string;
-  email: string;
-  image?: string | null;
-}
+export type ResourceUploader = UserReferenceWithEmail;
 
 // ── Core models ──────────────────────────────────────────────────────────────
 
-export interface ResourceCategory {
-  id: string;
-  name: string;
-  slug: string;
-  icon?: string | null;
+export interface ResourceCategory extends CategoryBase {
   description?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 export interface Resource {

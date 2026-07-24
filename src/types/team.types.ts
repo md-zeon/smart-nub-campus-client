@@ -4,22 +4,12 @@
  */
 
 import type { Tag } from "./resource.types";
+import type { UserReferenceWithEmail } from "./common.types";
 
 // ── Shared references ────────────────────────────────────────────────────────
 
-export interface TeamCreator {
-  id: string;
-  name: string;
-  email: string;
-  image?: string | null;
-}
-
-export interface TeamApplicant {
-  id: string;
-  name: string;
-  email: string;
-  image?: string | null;
-}
+export type TeamCreator = UserReferenceWithEmail;
+export type TeamApplicant = UserReferenceWithEmail;
 
 // ── Core models ──────────────────────────────────────────────────────────────
 

@@ -3,18 +3,13 @@
  * Keep in sync with server schema: prisma/schema/message.prisma
  */
 
+import type { UserReference } from "./common.types";
+
 // ── Shared references ────────────────────────────────────────────────────────
 
-export interface MessageSender {
-  id: string;
-  name: string;
-  image?: string | null;
-}
+export type MessageSender = UserReference;
 
-export interface ConversationUser {
-  id: string;
-  name: string;
-  image?: string | null;
+export interface ConversationUser extends UserReference {
   status?: string;
 }
 

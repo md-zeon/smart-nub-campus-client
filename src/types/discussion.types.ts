@@ -4,26 +4,15 @@
  */
 
 import type { Tag } from "./resource.types";
+import type { UserReferenceWithEmail, CategoryBase } from "./common.types";
 
 // ── Shared references ────────────────────────────────────────────────────────
 
-export interface DiscussionAuthor {
-  id: string;
-  name: string;
-  email: string;
-  image?: string | null;
-}
+export type DiscussionAuthor = UserReferenceWithEmail;
 
 // ── Core models ──────────────────────────────────────────────────────────────
 
-export interface DiscussionCategory {
-  id: string;
-  name: string;
-  slug: string;
-  icon?: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+export type DiscussionCategory = CategoryBase;
 
 export interface Discussion {
   id: string;

@@ -3,13 +3,11 @@
  * Keep in sync with server schema: prisma/schema/connection.prisma
  */
 
+import type { UserReferenceWithEmail } from "./common.types";
+
 // ── Shared references ────────────────────────────────────────────────────────
 
-export interface ConnectionUser {
-  id: string;
-  name: string;
-  email: string;
-  image?: string | null;
+export interface ConnectionUser extends UserReferenceWithEmail {
   student?: {
     department: string;
     admissionYear: number;
