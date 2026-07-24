@@ -11,6 +11,17 @@ function isExcluded(pathname: string): boolean {
 }
 
 /**
+ * Validate redirect param is a safe relative path (no protocol, no host).
+ * Prevents open-redirect attacks.
+ */
+function isSafeRedirect(redirect: string | null): boolean {
+  if (!redirect) return false;
+  if (!redirect.startsWith("/") || redirect.startsWith("//")) return false;
+  if (/^[a-zA-Z]+:/.test(redirect)) return false;
+  return true;
+}
+
+/**
  * Backend API envelope wrapping the actual identity payload.
  */
 interface ApiEnvelope<T> {
@@ -61,7 +72,7 @@ async function getUserRole(
  * Centralised proxy (Next.js 16).
  *
  * Responsibilities:
- *  - Protect authenticated-only routes; redirect unauthenticated users to login.
+ *  - Protect all non-excluded routes — unauthenticated users are redirected to login.
  *  - Redirect authenticated users away from auth pages (login, register, etc.).
  *  - Role-based routing:
  *      * ADMIN users visiting "/" are redirected to "/admin".
@@ -80,13 +91,6 @@ export async function proxy(request: NextRequest) {
   const isAuthPage = pathname.startsWith("/auth");
   const isAdminRoute = pathname.startsWith("/admin");
 
-  // Fast-path: not a route we handle — pass through.
-  if (!isHome && !isAuthPage && !isAdminRoute) {
-    return NextResponse.next();
-  }
-
-  // --- From here on we handle auth pages, admin routes, and home ---
-
   const role = await getUserRole(request);
   const isAuthenticated = role !== null;
 
@@ -94,13 +98,16 @@ export async function proxy(request: NextRequest) {
   if (isAuthPage) {
     if (isAuthenticated) {
       // Already logged in — redirect away from auth pages.
-      // Respect any "redirect" query param that was set before login.
+      // Respect any "redirect" query param that was set before login (only safe relative paths).
       const redirectParam = request.nextUrl.searchParams.get("redirect");
+      const safeRedirect = isSafeRedirect(redirectParam)
+        ? redirectParam
+        : null;
       if (role === UserRole.ADMIN) {
         return NextResponse.redirect(new URL("/admin", request.url));
       }
       return NextResponse.redirect(
-        new URL(redirectParam || ROUTES.HOME, request.url),
+        new URL(safeRedirect || ROUTES.HOME, request.url),
       );
     }
     return NextResponse.next();
@@ -120,8 +127,19 @@ export async function proxy(request: NextRequest) {
   }
 
   // ── Home (/) — redirect ADMIN users to /admin ──────────────────────
-  if (isHome && isAuthenticated && role === UserRole.ADMIN) {
-    return NextResponse.redirect(new URL("/admin", request.url));
+  if (isHome) {
+    if (isAuthenticated && role === UserRole.ADMIN) {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
+    // Home is publicly accessible
+    return NextResponse.next();
+  }
+
+  // ── All other routes — require authentication ─────────────────────
+  if (!isAuthenticated) {
+    const loginUrl = new URL(ROUTES.LOGIN, request.url);
+    loginUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
@@ -129,7 +147,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Match all request paths
+    // Match all request paths except API routes, static assets, and files
     "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +37,7 @@ import { useUnreadCount } from "@/hooks/use-unread-count";
 import ROUTES from "@/constants/routes";
 import { AcademicCapIcon } from "../ui/icons/academic-cap";
 import Image from "next/image";
+import { authClient } from "@/lib/auth-client";
 
 // ── Navigation items ─────────────────────────────────────────────────────────
 
@@ -70,6 +71,7 @@ interface TopNavProps {
 
 export function TopNav({ userName, userImage, userId }: TopNavProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { count: unreadCount } = useUnreadCount();
   const [searchQuery, setSearchQuery] = useState("");
@@ -78,6 +80,11 @@ export function TopNav({ userName, userImage, userId }: TopNavProps) {
   // resolved theme on the client, so defer theme-dependent UI until mount.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  const handleSignOut = useCallback(async () => {
+    await authClient.signOut();
+    router.push(ROUTES.LOGIN);
+  }, [router]);
 
   const isDark = theme === "dark";
 
@@ -218,7 +225,10 @@ export function TopNav({ userName, userImage, userId }: TopNavProps) {
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
+                <DropdownMenuItem
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                  onClick={handleSignOut}
+                >
                   <LogOut className="size-4" />
                   Log out
                 </DropdownMenuItem>
@@ -321,6 +331,7 @@ export function TopNav({ userName, userImage, userId }: TopNavProps) {
                 variant="ghost"
                 size="icon"
                 className="size-8 text-destructive"
+                onClick={handleSignOut}
               >
                 <LogOut className="size-4" />
               </Button>
