@@ -24,7 +24,7 @@ function LoginFormContent() {
     success: boolean;
     error: string | null;
   }>({
-    success: true,
+    success: false,
     error: null,
   });
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
