@@ -43,7 +43,7 @@ export function NotificationsClient() {
   );
 
   const handleMarkAllAsRead = useCallback(() => {
-    const unreadCount = notifications.filter((n) => !n.isRead).length;
+    const unreadCount = (notifications ?? []).filter((n) => !n.isRead).length;
     markAllAsRead();
     decrement(unreadCount);
   }, [markAllAsRead, decrement, notifications]);
@@ -54,8 +54,8 @@ export function NotificationsClient() {
     refreshCount();
   }, [refresh, refreshCount]);
 
-  const unreadNotifications = notifications.filter((n) => !n.isRead);
-  const readNotifications = notifications.filter((n) => n.isRead);
+  const unreadNotifications = (notifications ?? []).filter((n) => !n.isRead);
+  const readNotifications = (notifications ?? []).filter((n) => n.isRead);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
@@ -76,7 +76,7 @@ export function NotificationsClient() {
       </div>
 
       <div className="mt-6">
-        {notifications.length === 0 && !isLoading ? (
+        {(notifications ?? []).length === 0 && !isLoading ? (
           <EmptyState
             icon={Bell}
             title="No notifications yet"

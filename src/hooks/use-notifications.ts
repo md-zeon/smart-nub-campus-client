@@ -49,7 +49,7 @@ export function useNotifications({
         if (result.data) {
           const { notifications: items, meta } = result.data;
           setNotifications((prev) =>
-            append ? [...prev, ...items] : items,
+            append ? [...prev, ...(items ?? [])] : (items ?? []),
           );
           setHasMore(meta.page < meta.totalPages);
         }
@@ -71,7 +71,7 @@ export function useNotifications({
           `/notifications?page=1&limit=${limit}`,
         );
         if (!cancelled && result.data) {
-          setNotifications(result.data.notifications);
+          setNotifications(result.data.notifications ?? []);
           setHasMore(result.data.meta.page < result.data.meta.totalPages);
         }
       } catch {
