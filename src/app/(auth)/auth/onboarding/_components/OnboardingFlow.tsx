@@ -17,6 +17,7 @@ import {
   completeOnboarding,
 } from "@/actions/onboarding.action";
 import Link from "next/link";
+import ROUTES from "@/constants/routes";
 
 interface OnboardingFlowProps {
   initialStep: OnboardingStepValue;
@@ -71,9 +72,12 @@ export function OnboardingFlow({
   useEffect(() => {
     if (currentStep !== OnboardingStepValue.ADMIN_REVIEW) return;
 
+    let consecutiveErrors = 0;
+
     const pollStatus = async () => {
       try {
         const data = await getCurrentStep();
+        consecutiveErrors = 0;
 
         // Update verification request data if available (backend now always includes it)
         if (data.verificationRequest) {
@@ -85,7 +89,12 @@ export function OnboardingFlow({
           setCurrentStep(OnboardingStepValue.ACCOUNT_CREATION);
         }
       } catch {
-        // Continue polling on network errors
+        consecutiveErrors += 1;
+        if (consecutiveErrors >= 5) {
+          setError(
+            "Unable to check review status. Please check your connection and refresh the page.",
+          );
+        }
       }
     };
 
@@ -216,6 +225,11 @@ export function OnboardingFlow({
                   account setup.
                 </p>
               </div>
+              {error && (
+                <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
               <VerifyEmailForm
                 email={verificationRequest?.email}
                 skipInitialSend
@@ -238,12 +252,24 @@ export function OnboardingFlow({
                 </p>
               </div>
               <Button>
-                <Link href="/">Go to Home</Link>
+                <Link href={ROUTES.LOGIN}>Go to Login</Link>
               </Button>
             </div>
           )}
         </div>
       </div>
+
+      {currentStep !== OnboardingStepValue.COMPLETED && (
+        <div className="text-center text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <Link
+            href={ROUTES.LOGIN}
+            className="text-brand font-medium hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
+          >
+            Login
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

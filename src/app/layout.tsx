@@ -53,7 +53,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <main className="max-w-360 mx-auto p-3 sm:p-4">{children}</main>
+          <main>{children}</main>
           <Toaster richColors={true} />
         </ThemeProvider>
       </body>

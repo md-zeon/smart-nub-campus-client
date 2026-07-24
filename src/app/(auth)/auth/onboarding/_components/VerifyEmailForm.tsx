@@ -9,6 +9,7 @@ import {
   maskEmail,
 } from "@/hooks/use-email-verification";
 import { useRouter } from "next/navigation";
+import ROUTES from "@/constants/routes";
 
 interface VerifyEmailFormProps {
   /** Pre-filled email (e.g., from signup flow) */
@@ -67,7 +68,7 @@ export function VerifyEmailForm({
         {!isEmbedded && (
           <Button
             className="w-full"
-            onClick={() => router.push("/auth/login?verified=true")}
+            onClick={() => router.push(`${ROUTES.LOGIN}?verified=true`)}
           >
             Go to Login
           </Button>

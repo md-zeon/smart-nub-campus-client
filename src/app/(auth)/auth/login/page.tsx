@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -16,6 +16,7 @@ import isStudentId from "@/lib/isStudentId";
 import { authClient } from "@/lib/auth-client";
 import { getEmailByStudentId } from "@/actions/auth.action";
 import { loginSchema, type LoginFormValues } from "@/schemas/auth/login.schema";
+import ROUTES from "@/constants/routes";
 
 function LoginFormContent() {
   const [isPending, setIsPending] = useState(false);
@@ -23,7 +24,7 @@ function LoginFormContent() {
     success: boolean;
     error: string | null;
   }>({
-    success: true,
+    success: false,
     error: null,
   });
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
@@ -34,7 +35,7 @@ function LoginFormContent() {
 
   useEffect(() => {
     if (isVerified) {
-      router.replace("/auth/login");
+      router.replace(ROUTES.LOGIN);
     }
   }, [isVerified, router]);
 
@@ -69,6 +70,11 @@ function LoginFormContent() {
           response.error.status === 403
         ) {
           setUnverifiedEmail(email);
+        } else if (response.error.status === 429) {
+          setState({
+            success: false,
+            error: "Too many login attempts. Please try again later.",
+          });
         } else {
           setState({
             success: false,
@@ -87,7 +93,11 @@ function LoginFormContent() {
       }
 
       setState({ success: true, error: null });
-      router.push("/");
+
+      // Respect the ?redirect= param set by proxy, or go to home.
+      // If no redirect param, the proxy will redirect ADMIN users to /admin.
+      const redirectParam = params.get("redirect");
+      router.push(redirectParam || ROUTES.HOME);
     } catch (error) {
       setState({
         success: false,
@@ -161,7 +171,7 @@ function LoginFormContent() {
                         "pending_verification_source",
                         "login",
                       );
-                      router.push("/auth/verify-email");
+                      router.push(ROUTES.VERIFY_EMAIL);
                     }}
                   >
                     Verify Email Now
@@ -192,15 +202,32 @@ function LoginFormContent() {
               </div>
 
               <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? "Logging in..." : "Login"}
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Logging in...
+                  </>
+                ) : (
+                  "Login"
+                )}
               </Button>
 
               <div className="text-center text-sm">
                 <Link
-                  href="/auth/forgot-password"
-                  className="text-brand hover:underline"
+                  href={ROUTES.FORGOT_PASSWORD}
+                  className="text-brand hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
                 >
                   Forgot your password?
+                </Link>
+              </div>
+
+              <div className="text-center text-sm text-muted-foreground">
+                Don&apos;t have an account?{" "}
+                <Link
+                  href={ROUTES.ONBOARDING}
+                  className="text-brand font-medium hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
+                >
+                  Verify your identity
                 </Link>
               </div>
             </form>

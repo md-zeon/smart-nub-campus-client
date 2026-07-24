@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { InformationCircleIcon } from "@/components/ui/icons/information-circle";
 import { AcademicCapIcon } from "@/components/ui/icons/academic-cap";
 import { CircleQuestionMark } from "lucide-react";
 import { ModeToggle } from "@/components/theme/mode-toggle";
 import { Hyperlink } from "@/components/ui/hyperlink";
+import ROUTES from "@/constants/routes";
 
 export default function AuthLayout({
   children,
@@ -14,7 +14,7 @@ export default function AuthLayout({
   return (
     <div className="flex flex-col space-y-4 sm:space-y-8">
       <header className="w-full flex justify-between items-center px-1 sm:px-0">
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <Link href={ROUTES.AUTH} className="flex items-center gap-1.5 sm:gap-2">
           <AcademicCapIcon className="text-brand" size={32} />
           <div className="-space-y-0.5 sm:-space-y-1">
             <h1 className="font-bold text-base sm:text-xl text-foreground">
@@ -22,23 +22,29 @@ export default function AuthLayout({
             </h1>
             <p className="text-brand text-xs sm:text-sm font-bold">Campus</p>
           </div>
-        </div>
+        </Link>
         <div className="flex items-center gap-2 sm:gap-4">
           <ModeToggle />
           <Link
-            href="/about"
+            href={ROUTES.ABOUT}
             className="text-sm font-medium text-muted-foreground hover:text-foreground items-center gap-2 hidden sm:flex"
           >
             <InformationCircleIcon />
             About Smart NUB Campus
           </Link>
-          <Button variant="ghost" size="icon" className="sm:hidden">
+          <a
+            href="mailto:support@nub.ac.bd"
+            className="inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium h-9 px-4 py-2 hover:bg-accent hover:text-accent-foreground sm:hidden"
+          >
             <CircleQuestionMark />
-          </Button>
-          <Button variant="outline" className="hidden sm:inline-flex">
+          </a>
+          <a
+            href="mailto:support@nub.ac.bd"
+            className="hidden sm:inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background text-sm font-medium h-9 px-4 py-2 hover:bg-accent hover:text-accent-foreground"
+          >
             <CircleQuestionMark />
             Need Help?
-          </Button>
+          </a>
         </div>
       </header>
 
@@ -51,11 +57,11 @@ export default function AuthLayout({
           rights reserved.
         </p>
         <div className="flex gap-4">
-          <Hyperlink href="/privacy" className="text-brand">
+          <Hyperlink href={ROUTES.PRIVACY} className="text-brand">
             Privacy Policy
           </Hyperlink>
           <span>•</span>
-          <Hyperlink href="/terms" className="text-brand">
+          <Hyperlink href={ROUTES.TERMS} className="text-brand">
             Terms of Use
           </Hyperlink>
         </div>

@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, Loader2 } from "lucide-react";
 import AuthInfo from "../_components/AuthInfo";
 import { VerifyEmailForm } from "../onboarding/_components/VerifyEmailForm";
+import ROUTES from "@/constants/routes";
 
 export default function VerifyEmailPage() {
   const router = useRouter();
@@ -20,7 +22,6 @@ export default function VerifyEmailPage() {
     const source = sessionStorage.getItem("pending_verification_source");
 
     if (pendingEmail) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reading client-side sessionStorage after hydration requires setState in effect
       setInitialEmail(pendingEmail);
       if (source === "login") {
         sessionStorage.removeItem("pending_verification_source");
@@ -33,7 +34,7 @@ export default function VerifyEmailPage() {
   }, []);
 
   const handleSuccess = useCallback(() => {
-    router.push("/auth/login?verified=true");
+    router.push(`${ROUTES.LOGIN}?verified=true`);
   }, [router]);
 
   if (!ready) {
@@ -75,6 +76,15 @@ export default function VerifyEmailPage() {
                 isEmbedded={false}
                 onSuccess={handleSuccess}
               />
+            </div>
+
+            <div className="mt-6 text-center text-sm">
+              <Link
+                href={ROUTES.LOGIN}
+                className="text-brand hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
+              >
+                Back to Login
+              </Link>
             </div>
           </div>
         </section>

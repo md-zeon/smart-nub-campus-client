@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Mail } from "lucide-react";
+import { Mail, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -15,6 +15,7 @@ import {
   forgotPasswordSchema,
   type ForgotPasswordFormValues,
 } from "@/schemas/auth/forgot-password.schema";
+import ROUTES from "@/constants/routes";
 
 export default function ForgotPasswordPage() {
   const [isPending, setIsPending] = useState(false);
@@ -22,13 +23,32 @@ export default function ForgotPasswordPage() {
     success: boolean;
     error: string | null;
     message: string | null;
+    identifier: string | null;
   }>({
     success: false,
     error: null,
     message: null,
+    identifier: null,
   });
+  const [countdown, setCountdown] = useState(0);
   const router = useRouter();
   const isSubmitting = isPending || state.success;
+
+  useEffect(() => {
+    if (!state.success || countdown <= 0) return;
+
+    const timer = setTimeout(() => {
+      if (countdown <= 1) {
+        router.push(
+          `${ROUTES.RESET_PASSWORD}?identifier=${encodeURIComponent(state.identifier ?? "")}`,
+        );
+      } else {
+        setCountdown((c) => c - 1);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [state.success, countdown, state.identifier, router]);
 
   const { control, handleSubmit } = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -39,7 +59,7 @@ export default function ForgotPasswordPage() {
 
   const onSubmit = async (data: ForgotPasswordFormValues) => {
     setIsPending(true);
-    setState({ success: false, error: null, message: null });
+    setState({ success: false, error: null, message: null, identifier: null });
 
     try {
       const message = await requestPasswordResetByIdentifier(data.identifier);
@@ -48,13 +68,10 @@ export default function ForgotPasswordPage() {
         success: true,
         error: null,
         message,
+        identifier: data.identifier,
       });
 
-      setTimeout(() => {
-        router.push(
-          `/auth/reset-password?identifier=${encodeURIComponent(data.identifier)}`,
-        );
-      }, 1500);
+      setCountdown(3);
     } catch (error) {
       setState({
         success: false,
@@ -63,6 +80,7 @@ export default function ForgotPasswordPage() {
             ? error.message
             : "Something went wrong. Please try again.",
         message: null,
+        identifier: null,
       });
     } finally {
       setIsPending(false);
@@ -93,6 +111,11 @@ export default function ForgotPasswordPage() {
               {state.success && state.message && (
                 <div className="rounded-lg border border-green-500/50 bg-green-500/10 p-3 text-sm text-green-600 dark:text-green-400 font-medium">
                   {state.message}
+                  {countdown > 0 && (
+                    <span className="block mt-1 text-xs opacity-75">
+                      Redirecting to reset password in {countdown}s...
+                    </span>
+                  )}
                 </div>
               )}
 
@@ -118,13 +141,20 @@ export default function ForgotPasswordPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isPending ? "Sending..." : "Send Reset Code"}
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  "Send Reset Code"
+                )}
               </Button>
 
               <div className="text-center text-sm">
                 <Link
-                  href="/auth/login"
-                  className="text-brand hover:underline"
+                  href={ROUTES.LOGIN}
+                  className="text-brand hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
                 >
                   Back to Login
                 </Link>

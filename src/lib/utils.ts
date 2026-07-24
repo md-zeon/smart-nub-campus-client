@@ -4,3 +4,18 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+export function buildQueryString(params: object): string {
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== "") {
+      if (Array.isArray(value)) {
+        searchParams.set(key, value.join(","));
+      } else {
+        searchParams.set(key, String(value));
+      }
+    }
+  }
+  const qs = searchParams.toString();
+  return qs ? `?${qs}` : "";
+}
