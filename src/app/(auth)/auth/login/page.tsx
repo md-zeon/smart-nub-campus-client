@@ -220,6 +220,16 @@ function LoginFormContent() {
                   Forgot your password?
                 </Link>
               </div>
+
+              <div className="text-center text-sm text-muted-foreground">
+                Don&apos;t have an account?{" "}
+                <Link
+                  href={ROUTES.ONBOARDING}
+                  className="text-brand font-medium hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
+                >
+                  Verify your identity
+                </Link>
+              </div>
             </form>
           </div>
         </section>

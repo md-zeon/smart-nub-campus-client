@@ -44,6 +44,7 @@ interface FileUploadFieldOwnProps {
   existingImageUrl?: string;
   existingPublicId?: string | null;
   onPublicIdChange?: (publicId: string | null) => void;
+  isOnboarding?: boolean;
 }
 
 type FileUploadFieldProps<TFieldValues extends FieldValues> =
@@ -68,6 +69,7 @@ export function FileUploadField<TFieldValues extends FieldValues>({
   existingImageUrl,
   existingPublicId,
   onPublicIdChange,
+  isOnboarding,
 }: FileUploadFieldProps<TFieldValues>) {
   const {
     field,
@@ -80,7 +82,7 @@ export function FileUploadField<TFieldValues extends FieldValues>({
 
   const [files, setFiles] = React.useState<File[]>([]);
 
-  const { upload } = useUpload({ context, type });
+  const { upload } = useUpload({ context, type, isOnboarding });
 
   // Track uploaded publicIds keyed by stable file identifier.
   // Using a Record instead of a Map<File, string> avoids issues with

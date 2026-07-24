@@ -16,11 +16,13 @@ export function useUpload(options: UseUploadOptions): {
       setError(null);
 
       try {
-        const result = await uploadService.upload(
-          file,
-          options.context,
-          options.type,
-        );
+        const result = options.isOnboarding
+          ? await uploadService.uploadForOnboarding(
+              file,
+              options.context,
+              options.type,
+            )
+          : await uploadService.upload(file, options.context, options.type);
         return result;
       } catch (err) {
         const errorMessage =
@@ -32,7 +34,7 @@ export function useUpload(options: UseUploadOptions): {
         setIsUploading(false);
       }
     },
-    [options.context, options.type],
+    [options.context, options.type, options.isOnboarding],
   );
 
   return { upload, isUploading, error };

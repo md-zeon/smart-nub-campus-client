@@ -128,10 +128,12 @@ export async function proxy(request: NextRequest) {
 
   // ── Home (/) — redirect ADMIN users to /admin ──────────────────────
   if (isHome) {
-    if (isAuthenticated && role === UserRole.ADMIN) {
+    if (!isAuthenticated) {
+      return NextResponse.redirect(new URL(ROUTES.LOGIN, request.url));
+    }
+    if (role === UserRole.ADMIN) {
       return NextResponse.redirect(new URL("/admin", request.url));
     }
-    // Home is publicly accessible
     return NextResponse.next();
   }
 

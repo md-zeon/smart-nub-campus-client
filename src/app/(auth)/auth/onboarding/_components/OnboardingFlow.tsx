@@ -253,6 +253,18 @@ export function OnboardingFlow({
           )}
         </div>
       </div>
+
+      {currentStep !== OnboardingStepValue.COMPLETED && (
+        <div className="text-center text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <Link
+            href={ROUTES.LOGIN}
+            className="text-brand font-medium hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
+          >
+            Login
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

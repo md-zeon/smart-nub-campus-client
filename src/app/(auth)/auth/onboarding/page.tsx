@@ -1,5 +1,6 @@
 import { OnboardingFlow } from "./_components/OnboardingFlow";
 import { onboardingService } from "@/services/onboarding.service";
+import ROUTES from "@/constants/routes";
 import type { VerificationRequestData } from "@/types";
 
 export default async function OnboardingPage() {
@@ -23,7 +24,7 @@ export default async function OnboardingPage() {
             Failed to load onboarding data. Please try again.
           </p>
           <a
-            href="/onboarding"
+            href={ROUTES.ONBOARDING}
             className="text-sm text-brand underline hover:no-underline"
           >
             Retry

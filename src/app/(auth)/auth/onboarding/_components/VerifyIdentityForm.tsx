@@ -89,6 +89,7 @@ export function VerifyIdentityForm({
             control={control}
             name="idCardImage"
             context="verification"
+            isOnboarding
             existingImageUrl={defaultValue?.idCardImage}
             existingPublicId={defaultValue?.idCardImagePublicId}
             onPublicIdChange={(publicId) =>
