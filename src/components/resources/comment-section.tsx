@@ -69,8 +69,11 @@ export function CommentSection({ resourceId, currentUserId = null }: CommentSect
     return () => { cancelled = true; };
   }, [resourceId]);
 
+  // Strip HTML tags so an editor cleared to "<p></p>" counts as empty.
+  const commentText = newComment.replace(/<[^>]*>?/gm, "").trim();
+
   async function handleSubmitComment() {
-    if (!newComment.trim() || submitting) return;
+    if (!commentText || submitting) return;
     setSubmitting(true);
     try {
       const result = await addResourceComment(resourceId, {
@@ -310,7 +313,7 @@ export function CommentSection({ resourceId, currentUserId = null }: CommentSect
           <Button
             size="sm"
             onClick={handleSubmitComment}
-            disabled={!newComment.trim() || submitting}
+            disabled={!commentText || submitting}
           >
             {submitting ? "Posting..." : "Comment"}
           </Button>

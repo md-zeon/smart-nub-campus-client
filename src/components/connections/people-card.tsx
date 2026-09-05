@@ -37,6 +37,16 @@ import {
   ConnectionStatusBadge,
   type Relationship,
 } from "./connection-status-badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ConnectionNoteDialog } from "./connection-note-dialog";
 import { cn } from "@/lib/utils";
 import ROUTES from "@/constants/routes";
@@ -133,6 +143,7 @@ export function PeopleCard({
   const [isFavorited, setIsFavorited] = useState(initialFavorite);
   const [busy, setBusy] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [messagePending, startMessageTransition] = useTransition();
@@ -512,7 +523,7 @@ export function PeopleCard({
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={handleRemove}
+                      onClick={() => setConfirmRemoveOpen(true)}
                       disabled={busy === "remove"}
                       aria-label="Remove connection"
                       className="text-muted-foreground hover:text-destructive"
@@ -556,6 +567,36 @@ export function PeopleCard({
         onSend={handleConnect}
         busy={busy === "connect"}
       />
+
+      <AlertDialog
+        open={confirmRemoveOpen}
+        onOpenChange={setConfirmRemoveOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove connection?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will lose your connection with{" "}
+              <span className="font-medium text-foreground">
+                {user.name}
+              </span>
+              . You can send a new request later, but this cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                handleRemove();
+                setConfirmRemoveOpen(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

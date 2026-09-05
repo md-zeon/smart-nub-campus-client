@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Plus, Loader2 } from "lucide-react";
+import { Check, Plus, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTags } from "@/hooks/use-tags";
 import { TagPill } from "@/components/ui/tag-pill";
@@ -69,9 +69,13 @@ export function TagInput({
     (tag) => !value.some((v) => v.id === tag.id),
   );
 
-  // Check if typed text could create a new tag
+  // Check if typed text could create a new tag. An exact match anywhere
+  // (already selected OR still suggested) prevents creating a duplicate.
   const trimmedSearch = search.trim();
-  const exactMatch = suggestions.some(
+  const exactMatch = [...suggestions, ...value].some(
+    (t) => t.name.toLowerCase() === trimmedSearch.toLowerCase(),
+  );
+  const selectedExactMatch = value.some(
     (t) => t.name.toLowerCase() === trimmedSearch.toLowerCase(),
   );
   const canCreate =
@@ -80,15 +84,25 @@ export function TagInput({
     value.length < maxTags &&
     !isLoading;
 
-  // Total items in dropdown (suggestions + optional "create" row)
-  const itemCount = suggestions.length + (canCreate ? 1 : 0);
+  const createIndex = suggestions.length + (selectedExactMatch ? 1 : 0);
+
+  // Total items in dropdown (suggestions + optional "already added" + optional "create" row)
+  const itemCount =
+    suggestions.length + (selectedExactMatch ? 1 : 0) + (canCreate ? 1 : 0);
 
   // ── Handlers ────────────────────────────────────────────────────────────
 
   const addTag = useCallback(
     (tag: TagInputTag) => {
       if (value.length >= maxTags) return;
-      if (value.some((v) => v.id === tag.id)) return;
+      if (
+        value.some(
+          (v) =>
+            v.id === tag.id ||
+            v.name.toLowerCase() === tag.name.toLowerCase(),
+        )
+      )
+        return;
       onChange([...value, tag]);
       setSearch("");
       setHighlightedIndex(-1);
@@ -113,6 +127,12 @@ export function TagInput({
   const handleCreateNew = useCallback(async () => {
     if (!trimmedSearch) return;
     if (value.length >= maxTags) return;
+    if (
+      value.some(
+        (v) => v.name.toLowerCase() === trimmedSearch.toLowerCase(),
+      )
+    )
+      return;
 
     try {
       const created = await createTag(trimmedSearch);
@@ -126,11 +146,11 @@ export function TagInput({
     (index: number) => {
       if (index >= 0 && index < suggestions.length) {
         addTag(suggestions[index]);
-      } else if (index === suggestions.length && canCreate) {
+      } else if (index === createIndex && canCreate) {
         handleCreateNew();
       }
     },
-    [suggestions, canCreate, addTag, handleCreateNew],
+    [suggestions, createIndex, canCreate, addTag, handleCreateNew],
   );
 
   // ── Keyboard navigation ─────────────────────────────────────────────────
@@ -266,7 +286,7 @@ export function TagInput({
         </div>
 
         {/* Dropdown */}
-        {isOpen && (suggestions.length > 0 || canCreate) && (
+        {isOpen && (suggestions.length > 0 || canCreate || selectedExactMatch) && (
           <ul
             ref={listRef}
             className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-card p-1 shadow-lg"
@@ -311,6 +331,20 @@ export function TagInput({
               );
             })}
 
+            {selectedExactMatch && (
+              <li>
+                <div
+                  aria-disabled="true"
+                  className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-muted-foreground"
+                >
+                  <Check className="size-3.5 shrink-0" />
+                  <span className="flex-1 truncate">
+                    &ldquo;{trimmedSearch}&rdquo; already added
+                  </span>
+                </div>
+              </li>
+            )}
+
             {canCreate && (
               <li>
                 <button
@@ -319,10 +353,10 @@ export function TagInput({
                     e.preventDefault();
                     handleCreateNew();
                   }}
-                  onMouseEnter={() => setHighlightedIndex(suggestions.length)}
+                  onMouseEnter={() => setHighlightedIndex(createIndex)}
                   className={cn(
                     "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm transition-colors",
-                    highlightedIndex === suggestions.length
+                    highlightedIndex === createIndex
                       ? "bg-primary/10 text-primary"
                       : "text-foreground hover:bg-muted",
                   )}

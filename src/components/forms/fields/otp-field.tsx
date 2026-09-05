@@ -47,19 +47,19 @@ export function OTPField<TFieldValues extends FieldValues>({
   return (
     <Field className={containerClassName}>
       {label && <FieldLabel htmlFor={name}>{label}</FieldLabel>}
-      <div className={disabled ? "opacity-50 pointer-events-none" : ""}>
-        <InputOTP
-          maxLength={6}
-          value={String(field.value ?? "")}
-          onChange={(value) => field.onChange(value)}
-        >
-          <InputOTPGroup>
-            {Array.from({ length: 6 }).map((_, index) => (
-              <InputOTPSlot key={index} index={index} />
-            ))}
-          </InputOTPGroup>
-        </InputOTP>
-      </div>
+      <InputOTP
+        maxLength={6}
+        value={String(field.value ?? "")}
+        onChange={(value) => field.onChange(value)}
+        disabled={disabled}
+        id={name}
+      >
+        <InputOTPGroup>
+          {Array.from({ length: 6 }).map((_, index) => (
+            <InputOTPSlot key={index} index={index} />
+          ))}
+        </InputOTPGroup>
+      </InputOTP>
       {description && <FieldDescription>{description}</FieldDescription>}
       <FieldError errors={[error].filter(Boolean)} />
     </Field>

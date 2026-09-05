@@ -6,6 +6,7 @@ import { Extension } from "@tiptap/core";
 import Highlight from "@tiptap/extension-highlight";
 import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
+import Underline from "@tiptap/extension-underline";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import {
@@ -205,6 +206,7 @@ function RichTextEditor({
         },
       }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Underline,
       Highlight.configure({ multicolor: false }),
       // eslint-disable-next-line react-hooks/refs
       Placeholder.configure({

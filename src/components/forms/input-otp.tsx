@@ -22,6 +22,8 @@ interface InputOtpContextType {
   inputsRef: React.MutableRefObject<(HTMLInputElement | null)[]>;
   mask: boolean;
   maskSymbol: string;
+  disabled: boolean;
+  inputId?: string;
   inputClassName?: string;
 }
 
@@ -39,6 +41,8 @@ interface InputOTPProps {
   mask?: boolean;
   maskSymbol?: string;
   maskDelay?: number;
+  disabled?: boolean;
+  id?: string;
   children: React.ReactNode;
 }
 
@@ -54,6 +58,8 @@ function InputOTP({
   mask = false,
   maskSymbol = "*",
   maskDelay = 800,
+  disabled = false,
+  id,
   children,
 }: InputOTPProps) {
   // Convert string value to array
@@ -106,7 +112,7 @@ function InputOTP({
   };
 
   const handleChange = (val: string, idx: number) => {
-    if (val.length > 1) return;
+    if (val.length > 1 || /[^0-9]/.test(val)) return;
 
     clearTimeoutForIndex(idx);
 
@@ -134,7 +140,9 @@ function InputOTP({
 
   const handlePaste = (e: React.ClipboardEvent, startIdx: number) => {
     e.preventDefault();
-    const pastedText = e.clipboardData.getData("text");
+    const pastedText = e.clipboardData
+      .getData("text")
+      .replace(/[^0-9]/g, "");
 
     if (!pastedText) return;
 
@@ -156,6 +164,10 @@ function InputOTP({
 
     setValues(newValues);
     setVisibleValues(newVisibleValues);
+
+    // Notify parent (for controlled mode via Controller) so pasted
+    // codes actually reach the form's field value.
+    onChange?.(newValues.join(""));
 
     if (mask) {
       for (let i = 0; i < pastedText.length && startIdx + i < maxLength; i++) {
@@ -201,6 +213,8 @@ function InputOTP({
         newVisibleValues[idx] = "";
         setValues(newValues);
         setVisibleValues(newVisibleValues);
+        // Notify parent so deleting a digit updates the form field.
+        onChange?.(newValues.join(""));
       }
     }
   };
@@ -238,6 +252,18 @@ function InputOTP({
     };
   }, []);
 
+  // Sync internal boxes when the controlled value changes externally
+  // (e.g. the form field is cleared or reset after submission).
+  useEffect(() => {
+    if (valueProp === undefined) return;
+    const synced = Array(maxLength).fill("");
+    for (let i = 0; i < valueProp.length && i < maxLength; i++) {
+      synced[i] = valueProp[i];
+    }
+    setValues(synced);
+    setVisibleValues(synced);
+  }, [valueProp, maxLength]);
+
   const contextValue: InputOtpContextType = {
     values,
     visibleValues,
@@ -249,6 +275,8 @@ function InputOTP({
     inputsRef,
     mask,
     maskSymbol,
+    disabled,
+    inputId: id,
     inputClassName,
   };
 
@@ -310,6 +338,8 @@ function InputOTPSlot({
     handlePaste,
     inputsRef,
     maskSymbol,
+    disabled,
+    inputId,
     inputClassName,
   } = context;
 
@@ -324,11 +354,13 @@ function InputOTPSlot({
         ref={(el) => {
           inputsRef.current[index] = el;
         }}
+        id={index === 0 ? inputId : undefined}
         type="text"
         inputMode="numeric"
         pattern="[0-9]*"
         maxLength={1}
         value={visibleValues[index]}
+        disabled={disabled}
         onChange={(e) => handleChange(e.target.value, index)}
         onKeyDown={(e) => handleKeyDown(e, index)}
         onFocus={() => handleFocus(index)}

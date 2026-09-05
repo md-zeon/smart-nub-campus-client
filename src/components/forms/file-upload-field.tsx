@@ -117,26 +117,36 @@ export function FileUploadField<TFieldValues extends FieldValues>({
   ) => {
     if (uploadedFiles.length === 0) return;
 
+    // Never upload more than the field allows. Every caller uses a single
+    // URL as the form value, so anything beyond `maxFiles` is ignored
+    // instead of being reported as a (phantom) success.
+    const allowedFiles = uploadedFiles.slice(0, maxFiles);
+
     try {
-      const result = await upload(uploadedFiles[0]);
-      // Store the publicId keyed by a stable file identifier
-      for (const file of uploadedFiles) {
+      let lastUrl = "";
+      let lastPublicId: string | null = null;
+
+      for (const file of allowedFiles) {
+        const result = await upload(file);
+        // Store the publicId keyed by a stable file identifier
         publicIdsRef.current[getFileKey(file)] = result.publicId;
+        lastPublicId = result.publicId;
+        lastUrl = result.url;
+        // Only mark files that were actually uploaded as success
+        options.onSuccess(file);
       }
+
       // Remove the existing image key since we're replacing it
       delete publicIdsRef.current[EXISTING_IMAGE_KEY];
       // Set the uploaded URL as the form field value
-      field.onChange(result.url);
+      field.onChange(lastUrl);
       // Notify parent of the new publicId
-      onPublicIdChange?.(result.publicId);
-      for (const file of uploadedFiles) {
-        options.onSuccess(file);
-      }
+      onPublicIdChange?.(lastPublicId);
     } catch (err) {
       const uploadError =
         err instanceof Error ? err : new Error("Upload failed");
       console.error(`[FileUploadField] Upload error:`, err);
-      options.onError(uploadedFiles[0], uploadError);
+      options.onError(allowedFiles[0], uploadError);
       // Clear the field on error so the user must re-upload
       field.onChange("");
       throw err;
@@ -162,6 +172,13 @@ export function FileUploadField<TFieldValues extends FieldValues>({
           const publicId = publicIdsRef.current[fileKey];
 
           if (publicId) {
+            if (isOnboarding) {
+              // Pre-auth onboarding: the delete endpoint requires a session,
+              // so these assets are left for server-side orphan cleanup.
+              delete publicIdsRef.current[fileKey];
+              continue;
+            }
+
             uploadService
               .delete(publicId)
               .then(() => {
@@ -191,28 +208,15 @@ export function FileUploadField<TFieldValues extends FieldValues>({
         onPublicIdChange?.(null);
       }
     },
-    [field, onPublicIdChange],
+    [field, onPublicIdChange, isOnboarding],
   );
 
-  // Handle removal of the existing image preview
+  // Handle removal of the existing image preview.
+  // The Cloudinary asset is NOT deleted here: the caller only deletes it
+  // after a successful save (see VerifyIdentityForm) so cancelling the
+  // edit or a failed submit does not destroy the previously stored image.
   const handleRemoveExistingImage = () => {
-    const publicId = publicIdsRef.current[EXISTING_IMAGE_KEY];
-    if (publicId) {
-      uploadService
-        .delete(publicId)
-        .then(() => {
-          delete publicIdsRef.current[EXISTING_IMAGE_KEY];
-        })
-        .catch((err) => {
-          console.error(
-            `[FileUploadField] Failed to delete existing image ${publicId} from Cloudinary:`,
-            err,
-          );
-          toast.error(
-            "Failed to delete uploaded image. It may remain on the server.",
-          );
-        });
-    }
+    delete publicIdsRef.current[EXISTING_IMAGE_KEY];
     setExistingImageRemoved(true);
     field.onChange("");
     onPublicIdChange?.(null);

@@ -16,6 +16,7 @@ import {
   VerificationRequestType,
   type VerificationRequestType as VerificationRequestTypeValue,
 } from "@/constants/enums";
+import { uploadService } from "@/services/upload.service";
 import type { VerificationRequestData } from "@/types";
 
 interface VerifyIdentityFormProps {
@@ -67,8 +68,26 @@ export function VerifyIdentityForm({
     }
   };
 
+  // Delete the previously stored ID card asset only AFTER a successful
+  // save, so cancelling the edit or a failed submit keeps the old image.
+  const handleSubmitForm = handleSubmit(async (values) => {
+    await onSubmit(values);
+
+    const oldPublicId = defaultValue?.idCardImagePublicId;
+    if (oldPublicId && oldPublicId !== values.idCardImagePublicId) {
+      try {
+        await uploadService.delete(oldPublicId);
+      } catch (err) {
+        console.error(
+          `[VerifyIdentityForm] Failed to delete old ID card ${oldPublicId} from Cloudinary:`,
+          err,
+        );
+      }
+    }
+  });
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmitForm} className="space-y-6">
       {/* Role selection */}
       <fieldset>
         <legend className="mb-2 text-sm font-medium text-foreground">
