@@ -74,10 +74,20 @@ function LoginFormContent() {
 
     try {
       const isStudentIdGiven = isStudentId(data.identifier);
-      let email = data.identifier;
+      let email: string | null = data.identifier;
 
       if (isStudentIdGiven) {
         email = await getEmailByStudentId(data.identifier);
+      }
+
+      // Server action failed to resolve a matching email — return a generic
+      // message instead of letting the raw error surface as an SSR error.
+      if (!email) {
+        setState({
+          success: false,
+          error: "Invalid student ID or Password. Please try again.",
+        });
+        return;
       }
 
       const response = await authClient.signIn.email({

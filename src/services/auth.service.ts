@@ -1,15 +1,19 @@
 import serverApi from "@/lib/server-api";
 
 export const authService = {
-  async getEmailByStudentId(studentId: string): Promise<string> {
-    const response = await serverApi.get<{ email: string }>(
-      `/account/email-by-student-id/${studentId}`,
-    );
+  async getEmailByStudentId(studentId: string): Promise<string | null> {
+    try {
+      const response = await serverApi.get<{ email: string }>(
+        `/account/email-by-student-id/${studentId}`,
+      );
 
-    if (!response.data || !response.data.email) {
-      throw new Error("Invalid student ID or Password. Please try again.");
+      if (!response.data?.email) {
+        return null;
+      }
+      return response.data.email;
+    } catch {
+      return null;
     }
-    return response.data.email;
   },
 
   /**

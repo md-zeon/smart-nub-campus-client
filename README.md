@@ -14,6 +14,26 @@ Frontend for Smart NUB Campus — an academic collaboration network for Northern
 - **Charts:** Recharts
 - **Testing:** Vitest + Testing Library + Playwright (E2E)
 
+## Screenshots
+
+<!-- SCREENSHOT-TODO: Capture the landing page showing New Student vs Verified Student options -->
+![Landing page with two options for new and verified students](../Smart%20NUB%20Campus%20Docs/images/features/resource-library/resource-list.png)
+
+<!-- SCREENSHOT-TODO: Capture the home dashboard showing hero banner, quick access, and trending resources -->
+![Home dashboard with hero banner and quick access cards](../Smart%20NUB%20Campus%20Docs/images/features/admin-dashboard/dashboard-stats.png)
+
+<!-- SCREENSHOT-TODO: Capture the resource library showing search, filters, and resource cards -->
+![Resource library with search bar, department filters, and resource cards](../Smart%20NUB%20Campus%20Docs/images/features/resource-library/resource-list.png)
+
+<!-- SCREENSHOT-TODO: Capture the AI chat assistant showing a conversation with study tools -->
+![AI study assistant chat interface with conversation and tool sidebar](../Smart%20NUB%20Campus%20Docs/images/features/ai-study-assistant/ai-chat-session.png)
+
+<!-- SCREENSHOT-TODO: Capture the real-time messaging interface with conversation list and chat view -->
+![Messaging interface with conversation list and active chat](../Smart%20NUB%20Campus%20Docs/images/features/messaging/conversation-list.png)
+
+<!-- SCREENSHOT-TODO: Capture the admin dashboard showing KPI cards and charts -->
+![Admin dashboard with statistics cards and activity charts](../Smart%20NUB%20Campus%20Docs/images/features/admin-dashboard/dashboard-stats.png)
+
 ## Project Structure
 
 ```
@@ -245,6 +265,17 @@ npm start
 ```
 
 > **Note:** the final pre-deployment security review (2026-08-10) found Critical/High issues that must be resolved before going live. See [`Review/00-EXECUTIVE-SUMMARY.md`](../Review/00-EXECUTIVE-SUMMARY.md).
+
+## Full Documentation
+
+Comprehensive documentation is available in the [`Smart NUB Campus Docs/`](../Smart%20NUB%20Campus%20Docs/) directory:
+
+- [Project Overview](../Smart%20NUB%20Campus%20Docs/project/overview.md) — What the project is and who it's for
+- [Architecture](../Smart%20NUB%20Campus%20Docs/architecture/system-architecture.md) — System design and technical architecture
+- [Features Guide](../Smart%20NUB%20Campus%20Docs/features/) — Detailed guide for each feature module
+- [API Reference](../Smart%20NUB%20Campus%20Docs/api/overview.md) — Complete API documentation
+- [Deployment Guide](../Smart%20NUB%20Campus%20Docs/deployment/deployment-architecture.md) — Production deployment instructions
+- [Contributing](../Smart%20NUB%20Campus%20Docs/guides/development/contributing.md) — How to contribute
 
 ## Contributing
 

@@ -26,14 +26,14 @@ export const accountService = {
     return response.data!;
   },
 
-  getEmailByStudentId: async (studentId: string): Promise<string> => {
-    const response = await serverApi.get<{ email: string }>(
-      `/account/email-by-student-id/${studentId}`,
-    );
-
-    if (!response.data || !response.data.email) {
-      throw new Error("Invalid student ID or Password. Please try again.");
+  getEmailByStudentId: async (studentId: string): Promise<string | null> => {
+    try {
+      const response = await serverApi.get<{ email: string }>(
+        `/account/email-by-student-id/${studentId}`,
+      );
+      return response.data?.email ?? null;
+    } catch {
+      return null;
     }
-    return response.data.email;
   },
 };

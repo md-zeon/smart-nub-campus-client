@@ -2,7 +2,9 @@
 
 import { authService } from "@/services/auth.service";
 
-export async function getEmailByStudentId(studentId: string): Promise<string> {
+export async function getEmailByStudentId(
+  studentId: string,
+): Promise<string | null> {
   return await authService.getEmailByStudentId(studentId);
 }
 
