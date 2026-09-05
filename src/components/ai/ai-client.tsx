@@ -868,7 +868,7 @@ export function AIClient({
             ))}
           </div>
         )}
-        <div className="mx-auto flex max-w-3xl items-end gap-2">
+        <div className="mx-auto flex max-w-3xl items-center gap-2">
           <input
             ref={fileInputRef}
             type="file"

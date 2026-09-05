@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ShieldCheck, User, ArrowRight } from "lucide-react";
 import {
@@ -9,6 +10,18 @@ import {
 import { Button } from "@/components/ui/button";
 import AuthInfo from "./_components/AuthInfo";
 import ROUTES from "@/constants/routes";
+
+export const metadata: Metadata = {
+  title: "Get Started | Smart NUB Campus",
+  description:
+    "Join Smart NUB Campus — verify your student identity or log in to start collaborating on the trusted academic platform for Northern University Bangladesh students.",
+  openGraph: {
+    title: "Get Started | Smart NUB Campus",
+    description:
+      "Join Smart NUB Campus — verify your student identity or log in.",
+    type: "website",
+  },
+};
 
 export default function AuthPage() {
   return (

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { serverApi } from "@/lib/server-api";
 import { jobsService } from "@/services/jobs.service";
+import { toMetaDescription } from "@/lib/utils";
 import { JobDetailClient } from "@/components/jobs/job-detail-client";
 import {
   Empty,
@@ -21,10 +22,30 @@ const EMPLOYMENT_TYPE_MAP: Record<string, string> = {
   REMOTE: "FULL_TIME",
 };
 
-export const metadata: Metadata = {
-  title: "Job Details",
-  description: "Job posting details on the Smart NUB Campus job board.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const job = await jobsService.getJobById(id);
+    const description = toMetaDescription(
+      job.description ? `${job.company} — ${job.description}` : job.company,
+    );
+    return {
+      title: job.title,
+      description,
+      openGraph: {
+        title: job.title,
+        description,
+        type: "article",
+      },
+    };
+  } catch {
+    return { title: "Job Details" };
+  }
+}
 
 interface IdentityMeResponse {
   user: { id: string; name: string; email: string; role: string };

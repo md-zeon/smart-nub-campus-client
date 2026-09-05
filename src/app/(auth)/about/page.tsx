@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   BookOpen,
@@ -14,6 +15,18 @@ import { Button } from "@/components/ui/button";
 import { Hyperlink } from "@/components/ui/hyperlink";
 import { CrowdCanvas } from "@/components/home/crowd-canvas";
 import ROUTES from "@/constants/routes";
+
+export const metadata: Metadata = {
+  title: "About | Smart NUB Campus",
+  description:
+    "Learn about Smart NUB Campus — the all-in-one academic platform for Northern University Bangladesh students to collaborate, share resources, and grow.",
+  openGraph: {
+    title: "About | Smart NUB Campus",
+    description:
+      "The all-in-one academic platform for Northern University Bangladesh students.",
+    type: "website",
+  },
+};
 
 const stats = [
   { value: "50+", label: "Departments Covered" },

@@ -15,6 +15,19 @@ export function toHref(value: string): string | null {
   }
 }
 
+/** Normalize long-form text into a short meta description (~max chars). */
+export function toMetaDescription(
+  value: string | null | undefined,
+  max = 160,
+): string | undefined {
+  if (!value) return undefined;
+  const cleaned = value.replace(/\s+/g, " ").trim();
+  if (!cleaned) return undefined;
+  return cleaned.length > max
+    ? `${cleaned.slice(0, max - 1).trimEnd()}…`
+    : cleaned;
+}
+
 export function buildQueryString(params: object): string {
   const searchParams = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {

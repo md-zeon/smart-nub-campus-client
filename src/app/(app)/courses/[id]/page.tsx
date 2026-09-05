@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { GraduationCap } from "lucide-react";
 import { courseService } from "@/services/course.service";
+import { toMetaDescription } from "@/lib/utils";
 import { resourceService } from "@/services/resource.service";
 import { discussionService } from "@/services/discussion.service";
 import { qaService } from "@/services/qa.service";
@@ -17,11 +18,27 @@ import type { Resource } from "@/types/resource.types";
 import type { Discussion } from "@/types/discussion.types";
 import type { Question } from "@/types/qa.types";
 
-export const metadata: Metadata = {
-  title: "Course Details",
-  description:
-    "Course hub for resources, discussions and questions on Smart NUB Campus.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const course = await courseService.getCourseById(id);
+    return {
+      title: `${course.code} — ${course.name}`,
+      description: toMetaDescription(course.description),
+      openGraph: {
+        title: `${course.code} — ${course.name}`,
+        description: toMetaDescription(course.description),
+        type: "article",
+      },
+    };
+  } catch {
+    return { title: "Course Details" };
+  }
+}
 
 const PREVIEW_LIMIT = 5;
 

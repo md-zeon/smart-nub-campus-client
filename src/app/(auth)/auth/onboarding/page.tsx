@@ -3,8 +3,16 @@ import { onboardingService } from "@/services/onboarding.service";
 import ROUTES from "@/constants/routes";
 import type { VerificationRequestData } from "@/types";
 import { Hyperlink } from "@/components/ui/hyperlink";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Verify Your Identity | Smart NUB Campus",
+  description:
+    "Verify your student identity with Northern University Bangladesh to join Smart NUB Campus.",
+  robots: { index: false, follow: false },
+};
 
 export default async function OnboardingPage() {
   let step;

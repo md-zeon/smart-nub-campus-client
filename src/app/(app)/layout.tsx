@@ -9,6 +9,23 @@ export const metadata: Metadata = {
   },
   description:
     "Smart NUB Campus — the all-in-one platform for Northern University Bangladesh students to collaborate, share resources, and build community.",
+  openGraph: {
+    siteName: "Smart NUB Campus",
+    type: "website",
+    locale: "en_US",
+    images: [
+      {
+        url: "/images/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Smart NUB Campus — the academic platform for Northern University Bangladesh students.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/images/og.png"],
+  },
 };
 
 interface IdentityMeResponse {
