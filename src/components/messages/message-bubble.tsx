@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   FileText,
   Download,
@@ -24,44 +24,9 @@ import { cn } from "@/lib/utils";
 import { formatClockTime, formatFileSize } from "./time";
 import { MessageContextMenu } from "./message-context-menu";
 import { MessageReactionBar, QuickReactionPicker } from "./emoji-picker";
-
-function escapeRegex(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function highlightText(
-  text: string,
-  query: string,
-  activeMatchGlobalIndex: number,
-  firstMatchIndexInMessage: number,
-): React.ReactNode[] {
-  if (!query) return [text];
-  const regex = new RegExp(`(${escapeRegex(query)})`, "gi");
-  const parts = text.split(regex);
-  let matchCount = 0;
-  return parts.map((part, i) => {
-    if (part.toLowerCase() === query.toLowerCase()) {
-      const localIndex = matchCount;
-      const globalIndex = firstMatchIndexInMessage + localIndex;
-      const isActive = globalIndex === activeMatchGlobalIndex;
-      matchCount++;
-      return (
-        <mark
-          key={i}
-          className={cn(
-            "rounded-sm px-0.5 font-semibold",
-            isActive
-              ? "bg-amber-300 text-amber-900 dark:bg-amber-600 dark:text-amber-100"
-              : "bg-yellow-200 text-yellow-900 dark:bg-yellow-700/50 dark:text-yellow-200",
-          )}
-        >
-          {part}
-        </mark>
-      );
-    }
-    return part;
-  });
-}
+import { extractLinks, renderMessageWithLinks } from "./link-utils";
+import { LinkPreviewCard } from "./link-preview-card";
+import { useMultipleLinkPreviews } from "@/hooks/use-link-preview";
 
 interface MessageBubbleProps {
   message: Message;
@@ -116,6 +81,20 @@ export function MessageBubble({
   const isSending = message.status === "sending";
   const canEdit = isOwn && !isDeleted && !isFailed && message.type === "TEXT";
   const canDelete = isOwn || isAdmin;
+
+  // Extract links from message content for TEXT messages
+  const detectedLinks = useMemo(() => {
+    if (message.type !== "TEXT" || isDeleted || !message.content) return [];
+    return extractLinks(message.content);
+  }, [message.type, isDeleted, message.content]);
+
+  const linkUrls = useMemo(
+    () => detectedLinks.map((link) => link.url),
+    [detectedLinks],
+  );
+
+  const { previews, loadingUrls } = useMultipleLinkPreviews(linkUrls);
+  const hasLinkPreviews = detectedLinks.length > 0;
 
   const beginEdit = () => {
     setDraft(message.content);
@@ -264,13 +243,13 @@ export function MessageBubble({
         ) : (
           <p className="whitespace-pre-wrap wrap-break-word leading-relaxed">
             {searchHighlight && message.content
-              ? highlightText(
+              ? renderMessageWithLinks(
                   message.content,
-                  searchHighlight.query,
-                  searchHighlight.activeMatchGlobalIndex,
-                  searchHighlight.firstMatchIndexInMessage,
+                  searchHighlight,
                 )
-              : message.content}
+              : message.content
+                ? renderMessageWithLinks(message.content)
+                : message.content}
           </p>
         )}
 
@@ -333,6 +312,27 @@ export function MessageBubble({
             <span className="text-[10px] text-muted-foreground">
               Sending...
             </span>
+          </div>
+        )}
+
+        {/* Link preview cards */}
+        {hasLinkPreviews && !isImage && !isFile && !isDeleted && (
+          <div className="mt-2 flex flex-col gap-2">
+            {detectedLinks.map((link) => {
+              const preview = previews.get(link.url);
+              const isLoading = loadingUrls.has(link.url);
+
+              // Only show card if we have preview data or are loading
+              if (!preview && !isLoading) return null;
+
+              return (
+                <LinkPreviewCard
+                  key={link.url}
+                  preview={preview!}
+                  isLoading={isLoading}
+                />
+              );
+            })}
           </div>
         )}
       </BubbleContent>
