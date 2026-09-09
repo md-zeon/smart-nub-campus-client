@@ -226,7 +226,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
 
         <div
           className={cn(
-            "min-h-screen transition-[padding] duration-200 ease-in-out",
+            "h-screen overflow-hidden transition-[padding] duration-200 ease-in-out",
             collapsed ? "lg:pl-16" : "lg:pl-64",
           )}
         >
