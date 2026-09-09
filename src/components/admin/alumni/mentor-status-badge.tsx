@@ -8,9 +8,9 @@ interface MentorStatusBadgeProps {
 }
 
 /**
- * Role badge for an alumni row. Mentors get a blue accent so the
+ * Mentorship badge for an alumni row. Mentors get a blue accent so the
  * mentorship program is scannable at a glance; non-mentors get a
- * neutral gray "Student" badge.
+ * neutral gray "Alumni" badge.
  */
 export function MentorStatusBadge({
   isMentor,
@@ -36,7 +36,7 @@ export function MentorStatusBadge({
       variant="secondary"
       className={cn("text-muted-foreground", className)}
     >
-      Student
+      Alumni
     </Badge>
   );
 }

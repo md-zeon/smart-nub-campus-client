@@ -59,7 +59,7 @@ function tableHead() {
         <TableHead>Department</TableHead>
         <TableHead className="min-w-40">Career</TableHead>
         <TableHead>Graduated</TableHead>
-        <TableHead>Role</TableHead>
+        <TableHead>Mentorship</TableHead>
         <TableHead className="text-right">Actions</TableHead>
       </TableRow>
     </TableHeader>
