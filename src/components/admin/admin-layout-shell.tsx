@@ -176,7 +176,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Main content skeleton */}
-          <main className="h-screen p-6 pt-16">
+          <main className="h-screen overflow-y-auto p-6 pt-16">
             <div className="space-y-4">
               <Skeleton className="h-8 w-48" />
               <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -240,7 +240,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
           />
 
           {/* Main content */}
-          <main className="h-screen pt-16">{children}</main>
+          <main className="h-screen overflow-y-auto pt-16">{children}</main>
         </div>
       </div>
       <GlobalSearchDialog />
