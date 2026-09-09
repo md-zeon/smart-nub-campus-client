@@ -74,6 +74,10 @@ export const resourceService = {
     description: string;
     categoryId: string;
     tags: string[];
+    fileUrl: string;
+    filePublicId: string;
+    fileType: string;
+    fileSize: number;
   }>): Promise<Resource> {
     const response = await serverApi.patch<Resource>(`/resources/${id}`, data, {
       invalidatesTags: [...RESOURCE_MUTATION_TAGS, TAGS.RESOURCE_DETAIL],

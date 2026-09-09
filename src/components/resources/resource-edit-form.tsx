@@ -8,6 +8,8 @@ import {
   Loader2,
   AlertCircle,
   FileText,
+  UploadCloud,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { TagInput, type TagInputTag } from "@/components/ui/tag-input";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { updateResource } from "@/actions/resource.actions";
+import { uploadService } from "@/services/upload.service";
 import type { Resource, ResourceCourse, ResourceCategory } from "@/types/resource.types";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -48,6 +51,8 @@ export function ResourceEditForm({
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [newFile, setNewFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const [title, setTitle] = useState(resource.title);
   const [description, setDescription] = useState(resource.description ?? "");
@@ -100,11 +105,39 @@ export function ResourceEditForm({
     setError(null);
 
     try {
+      let fileData: Partial<{
+        fileUrl: string;
+        filePublicId: string;
+        fileType: string;
+        fileSize: number;
+      }> = {};
+
+      if (newFile) {
+        setUploading(true);
+        try {
+          const uploadResult = await uploadService.upload(newFile, "resources", "raw");
+          fileData = {
+            fileUrl: uploadResult.url,
+            filePublicId: uploadResult.publicId,
+            fileType: newFile.type || "application/octet-stream",
+            fileSize: newFile.size,
+          };
+        } catch {
+          setError("Failed to upload new file. Please try again.");
+          setSaving(false);
+          setUploading(false);
+          return;
+        } finally {
+          setUploading(false);
+        }
+      }
+
       const result = await updateResource(resource.id, {
         title: title.trim(),
         description: description.trim() || undefined,
         categoryId,
         tags: tags.map((t) => t.name),
+        ...fileData,
       });
 
       if (result.success) {
@@ -123,22 +156,57 @@ export function ResourceEditForm({
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      {/* Current file (read-only) */}
+      {/* File replacement */}
       <div className="rounded-xl border bg-muted/30 p-4 ring-1 ring-foreground/5">
-        <Label className="text-muted-foreground">Current File</Label>
+        <Label className="text-muted-foreground">
+          {newFile ? "New File" : "Current File"}
+        </Label>
         <div className="mt-2 flex items-center gap-3">
           <FileText className="size-8 text-primary" />
-          <div>
-            <p className="text-sm font-medium text-foreground">{resource.title}</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground truncate">
+              {newFile ? newFile.name : resource.title}
+            </p>
             <p className="text-xs text-muted-foreground">
-              {resource.fileType.split("/").pop()?.toUpperCase()} •{" "}
-              {formatFileSize(resource.fileSize)}
+              {newFile
+                ? `${(newFile.size / 1024).toFixed(1)} KB`
+                : `${resource.fileType.split("/").pop()?.toUpperCase()} • ${formatFileSize(resource.fileSize)}`}
             </p>
           </div>
+          {newFile && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setNewFile(null)}
+              disabled={saving}
+            >
+              <X className="size-4" />
+            </Button>
+          )}
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">
-          To replace the file, delete this resource and upload a new one.
-        </p>
+        {!newFile && (
+          <label className="mt-3 flex cursor-pointer items-center gap-2 rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground hover:bg-muted/50 transition-colors">
+            <UploadCloud className="size-4" />
+            <span>Click to replace with a new file</span>
+            <input
+              type="file"
+              className="hidden"
+              accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.png,.jpg,.jpeg"
+              disabled={saving}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  if (file.size > 50 * 1024 * 1024) {
+                    setError("File too large. Maximum size is 50MB.");
+                    return;
+                  }
+                  setNewFile(file);
+                  setError(null);
+                }
+              }}
+            />
+          </label>
+        )}
       </div>
 
       {/* Title */}
@@ -283,11 +351,11 @@ export function ResourceEditForm({
         <Button variant="ghost" onClick={() => router.back()} disabled={saving}>
           Cancel
         </Button>
-        <Button onClick={handleSubmit} disabled={saving || !title.trim() || !categoryId || tags.length === 0}>
-          {saving ? (
+        <Button onClick={handleSubmit} disabled={saving || uploading || !title.trim() || !categoryId || tags.length === 0}>
+          {saving || uploading ? (
             <>
               <Loader2 className="size-4 animate-spin" />
-              Saving...
+              {uploading ? "Uploading..." : "Saving..."}
             </>
           ) : (
             "Save Changes"

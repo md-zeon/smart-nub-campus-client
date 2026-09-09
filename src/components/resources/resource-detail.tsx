@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Download, Bookmark, Flag, Eye, Share2, Pencil } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Download, Bookmark, Flag, Eye, Share2, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Breadcrumb,
@@ -29,6 +30,7 @@ import {
   reportResource,
   recordResourceDownload,
   listResources,
+  deleteResource,
 } from "@/actions/resource.actions";
 import type { Resource } from "@/types/resource.types";
 import Image from "next/image";
@@ -83,6 +85,9 @@ export function ResourceDetail({
   const [submittingReport, setSubmittingReport] = useState(false);
   const [relatedResources, setRelatedResources] = useState<Resource[]>([]);
   const [downloading, setDownloading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const router = useRouter();
 
   const fileColor = getFileColor(resource.fileType);
 
@@ -236,6 +241,20 @@ export function ResourceDetail({
     }
   }
 
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      await deleteResource(resource.id);
+      toast.success("Resource deleted.");
+      router.push("/resources");
+    } catch {
+      toast.error("Failed to delete resource.");
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8">
       {/* Breadcrumb */}
@@ -334,14 +353,25 @@ export function ResourceDetail({
         </Button>
 
         {currentUserId && currentUserId === resource.uploaderId && (
-          <Button
-            variant="ghost"
-            size="sm"
-            render={<Link href={`/resources/${resource.id}/edit`} />}
-          >
-            <Pencil className="size-4" />
-            <span className="hidden sm:inline">Edit</span>
-          </Button>
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              render={<Link href={`/resources/${resource.id}/edit`} />}
+            >
+              <Pencil className="size-4" />
+              <span className="hidden sm:inline">Edit</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="size-4" />
+              <span className="hidden sm:inline">Delete</span>
+            </Button>
+          </>
         )}
       </div>
 
@@ -543,6 +573,34 @@ export function ResourceDetail({
               disabled={!reportReason || submittingReport}
             >
               {submittingReport ? "Submitting..." : "Submit Report"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Resource</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Are you sure you want to delete <strong>{resource.title}</strong>? This action cannot be undone.
+          </p>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setShowDeleteConfirm(false)}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>

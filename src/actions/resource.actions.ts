@@ -51,7 +51,16 @@ export async function createResource(data: {
 
 export async function updateResource(
   id: string,
-  data: Partial<{ title: string; description: string; categoryId: string; tags: string[] }>,
+  data: Partial<{
+    title: string;
+    description: string;
+    categoryId: string;
+    tags: string[];
+    fileUrl: string;
+    filePublicId: string;
+    fileType: string;
+    fileSize: number;
+  }>,
 ): Promise<ApiResponse> {
   try {
     const resource = await resourceService.updateResource(id, data);
