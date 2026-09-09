@@ -54,6 +54,7 @@ import {
   Ban,
   Eye,
   MoreHorizontal,
+  Pause,
   Play,
   Search,
   Trash2,
@@ -257,6 +258,7 @@ export default function UsersPage() {
             <SelectContent>
               <SelectItem value="all">All Roles</SelectItem>
               <SelectItem value="STUDENT">Student</SelectItem>
+              <SelectItem value="ALUMNI">Alumni</SelectItem>
               <SelectItem value="ADMIN">Admin</SelectItem>
             </SelectContent>
           </Select>
@@ -509,14 +511,24 @@ export default function UsersPage() {
                                 </DropdownMenuItem>
                                 {!user.isDeleted &&
                                   (user.status === UserStatus.ACTIVE ? (
-                                    <DropdownMenuItem
-                                      onClick={() =>
-                                        handleStatusChange(user.id, "BANNED")
-                                      }
-                                    >
-                                      <Ban className="size-3.5 mr-2" />
-                                      Ban User
-                                    </DropdownMenuItem>
+                                    <>
+                                      <DropdownMenuItem
+                                        onClick={() =>
+                                          handleStatusChange(user.id, "SUSPENDED")
+                                        }
+                                      >
+                                        <Pause className="size-3.5 mr-2" />
+                                        Suspend User
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() =>
+                                          handleStatusChange(user.id, "BANNED")
+                                        }
+                                      >
+                                        <Ban className="size-3.5 mr-2" />
+                                        Ban User
+                                      </DropdownMenuItem>
+                                    </>
                                   ) : (
                                     <DropdownMenuItem
                                       onClick={() =>
