@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ShieldCheck, Loader2 } from "lucide-react";
+import { ShieldCheck, Loader2, TestTube2 } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -59,7 +59,7 @@ function LoginFormContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { control, handleSubmit } = useForm<LoginFormValues>({
+  const { control, handleSubmit, setValue } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       identifier: "",
@@ -67,6 +67,29 @@ function LoginFormContent() {
       remember: false,
     },
   });
+
+  const DEMO_ACCOUNTS = [
+    {
+      role: "Admin",
+      identifier: "admin@nub.ac.bd",
+      password: "admin12345678",
+    },
+    {
+      role: "Student",
+      identifier: "demo-student@nub.ac.bd",
+      password: "student12345678",
+    },
+    {
+      role: "Alumni",
+      identifier: "demo-alumni@nub.ac.bd",
+      password: "alumni12345678",
+    },
+  ];
+
+  const fillDemo = (account: (typeof DEMO_ACCOUNTS)[number]) => {
+    setValue("identifier", account.identifier, { shouldValidate: true });
+    setValue("password", account.password, { shouldValidate: true });
+  };
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsPending(true);
@@ -286,6 +309,33 @@ function LoginFormContent() {
                     Forgot your password?
                   </Hyperlink>
                 </div>
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">
+                    Quick Demo Access
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                {DEMO_ACCOUNTS.map((account) => (
+                  <Button
+                    key={account.role}
+                    type="button"
+                    variant="outline"
+                    className="gap-1.5 text-xs"
+                    disabled={isPending}
+                    onClick={() => fillDemo(account)}
+                  >
+                    <TestTube2 className="h-3.5 w-3.5" />
+                    {account.role}
+                  </Button>
+                ))}
               </div>
 
               <Button type="submit" className="w-full" disabled={isPending}>
