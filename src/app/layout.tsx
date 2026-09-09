@@ -95,7 +95,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <main className="h-full">{children}</main>
+          {children}
           <Toaster richColors={true} />
         </ThemeProvider>
       </body>
