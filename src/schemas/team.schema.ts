@@ -60,7 +60,7 @@ export const createTeamRequestSchema = z
     lookingForCount: z
       .number()
       .int()
-      .min(1, "Must look for at least 1 member")
+      .min(2, "Must look for at least 2 members")
       .max(20, "Cannot look for more than 20 members"),
     projectName: z.string().trim().max(200, "Project name must be at most 200 characters").optional(),
     deadline: z.string().datetime().optional(),

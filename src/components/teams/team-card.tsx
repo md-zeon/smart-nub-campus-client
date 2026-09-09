@@ -14,7 +14,7 @@ import {
   Zap,
 } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn, stripHtml } from "@/lib/utils";
 import {
   TEAM_STATUS_BADGE,
   DIFFICULTY_BADGE,
@@ -180,7 +180,7 @@ export function TeamCard({
 
             {/* ── Description ──────────────────────────────────── */}
             <p className="mt-1.5 line-clamp-1 text-xs text-muted-foreground">
-              {team.description}
+              {stripHtml(team.description)}
             </p>
 
             {/* ── Meta Row ─────────────────────────────────────── */}
@@ -364,7 +364,7 @@ export function TeamCard({
       {/* ── Description ─────────────────────────────────────── */}
       <CardContent>
         <p className="line-clamp-2 text-xs text-muted-foreground">
-          {team.description}
+          {stripHtml(team.description)}
         </p>
       </CardContent>
 

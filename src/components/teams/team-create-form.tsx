@@ -35,7 +35,7 @@ export function TeamCreateForm({ tags: _tags }: TeamCreateFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [projectName, setProjectName] = useState("");
-  const [membersNeeded, setMembersNeeded] = useState(1);
+  const [membersNeeded, setMembersNeeded] = useState(2);
   const [deadline, setDeadline] = useState("");
   const [category, setCategory] = useState("");
   const [difficulty, setDifficulty] = useState<string>("");
@@ -217,15 +217,15 @@ export function TeamCreateForm({ tags: _tags }: TeamCreateFormProps) {
           <Label htmlFor="membersNeeded">
             Max Team Size <span className="text-destructive">*</span>
           </Label>
-          <p className="text-[11px] text-muted-foreground">How many team members do you need? (max 20)</p>
+          <p className="text-[11px] text-muted-foreground">How many team members do you need? (2–20)</p>
           <Input
             id="membersNeeded"
             type="number"
-            min={1}
+            min={2}
             max={20}
             value={membersNeeded}
             onChange={(e) =>
-              setMembersNeeded(Math.max(1, Math.min(20, Number(e.target.value) || 1)))
+              setMembersNeeded(Math.max(2, Math.min(20, Number(e.target.value) || 2)))
             }
             onBlur={() => handleBlur("lookingForCount")}
             disabled={submitting}
