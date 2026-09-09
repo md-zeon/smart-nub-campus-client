@@ -1,11 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { format } from "date-fns";
 import {
   CalendarDays,
   Clock,
-  ExternalLink,
   MapPin,
   Trash2,
   UserRound,
@@ -20,7 +18,6 @@ import {
   EventAudienceBadge,
   EventReunionBadge,
 } from "@/components/events/event-audience-badge";
-import ROUTES from "@/constants/routes";
 import type { AdminEvent } from "@/types/admin.types";
 
 interface AdminEventCardProps {
@@ -104,22 +101,6 @@ export function AdminEventCard({
       </div>
 
       <div className="flex shrink-0 items-center justify-end gap-1 sm:flex-col sm:items-end sm:gap-1.5">
-        <Button
-          variant="ghost"
-          size="sm"
-          nativeButton={false}
-          render={
-            <Link
-              href={ROUTES.EVENT(event.id)}
-              target="_blank"
-              rel="noopener noreferrer"
-            />
-          }
-          className="gap-1.5 text-muted-foreground"
-        >
-          <ExternalLink className="size-3.5" aria-hidden="true" />
-          View
-        </Button>
         <Button
           variant="ghost"
           size="icon-sm"

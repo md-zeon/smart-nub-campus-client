@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ExternalLink,
   Loader2,
   Lock,
   MoreHorizontal,
@@ -59,11 +58,6 @@ export function DiscussionRowActions({
         <MoreHorizontal className="size-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={() => onView(discussion.id)}>
-          <ExternalLink className="size-3.5 mr-2" />
-          View Discussion
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => onTogglePin(discussion.id, discussion.isPinned)}
           disabled={isPinning}

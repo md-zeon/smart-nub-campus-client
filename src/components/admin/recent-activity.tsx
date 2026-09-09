@@ -5,7 +5,6 @@ import {
   ShieldCheck,
   MessageSquare,
   HelpCircle,
-  ArrowRight,
   Activity,
 } from "lucide-react";
 import {
@@ -13,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-  CardAction,
   CardContent,
 } from "@/components/ui/card";
 import {
@@ -23,10 +21,7 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
-import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
-import ROUTES from "@/constants/routes";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -107,25 +102,13 @@ function getActivityMeta(action: ActivityAction): ActivityMeta {
 }
 
 /** Render the card header shared by the populated and empty states. */
-function ActivityCardHeader({ viewAllHref }: { viewAllHref: string }) {
+function ActivityCardHeader() {
   return (
     <CardHeader className="flex-row items-start justify-between gap-3">
       <div className="space-y-1">
         <CardTitle className="text-base">Recent Activity</CardTitle>
         <CardDescription>Last 10 platform actions</CardDescription>
       </div>
-      <CardAction>
-        <Link
-          href={viewAllHref}
-          className={cn(
-            buttonVariants({ variant: "ghost", size: "sm" }),
-            "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          View all
-          <ArrowRight aria-hidden="true" className="size-3.5" />
-        </Link>
-      </CardAction>
     </CardHeader>
   );
 }
@@ -138,12 +121,11 @@ function ActivityCardHeader({ viewAllHref }: { viewAllHref: string }) {
  */
 export function RecentActivity({
   activities,
-  viewAllHref = ROUTES.ACTIVITIES,
   className,
 }: RecentActivityProps) {
   return (
     <Card className={cn("w-full", className)}>
-      <ActivityCardHeader viewAllHref={viewAllHref} />
+      <ActivityCardHeader />
 
       <CardContent className="pt-1">
         {activities.length === 0 ? (

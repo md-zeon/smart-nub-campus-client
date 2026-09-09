@@ -124,8 +124,8 @@ export default function AdminDiscussionsPage() {
     setSelectedIds(allSelected ? [] : allIds);
   };
 
-  const openDiscussion = (id: string) => {
-    window.open(`/discussions/${id}`, "_blank");
+  const openDiscussion = (_id: string) => {
+    // Admin cannot access user-facing pages; detail is shown in the admin table
   };
 
   const totalPages = data?.meta.totalPages ?? 1;

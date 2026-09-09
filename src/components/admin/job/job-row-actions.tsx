@@ -6,8 +6,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import ROUTES from "@/constants/routes";
-import { Ellipsis, ExternalLink, Loader, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
+import { Ellipsis, Loader, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
 import type { AdminJob } from "@/types/admin.types";
 
 interface JobRowActionsProps {
@@ -39,18 +38,6 @@ export function JobRowActions({
         <Ellipsis className="size-4" aria-hidden="true" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem
-          render={
-            <a
-              href={ROUTES.JOB(job.id)}
-              target="_blank"
-              rel="noopener noreferrer"
-            />
-          }
-        >
-          <ExternalLink aria-hidden="true" />
-          View on site
-        </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => onVerifyToggle(job.id, job.isVerified)}
           disabled={isVerifying}
