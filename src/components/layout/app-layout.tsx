@@ -41,7 +41,7 @@ export function AppLayout({
         <main
           id="main-content"
           tabIndex={-1}
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
         >
           {children}
         </main>

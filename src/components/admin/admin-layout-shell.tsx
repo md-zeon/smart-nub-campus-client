@@ -240,7 +240,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
           />
 
           {/* Main content */}
-          <main className="h-screen overflow-y-auto pt-16">{children}</main>
+          <main className="h-screen overflow-y-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 pt-16">{children}</main>
         </div>
       </div>
       <GlobalSearchDialog />
