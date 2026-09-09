@@ -152,6 +152,26 @@ A feed of campus events, activities, and community updates.
   <img src="public/images/Root/Campus Activity.png" alt="Campus activity feed" width="800" />
 </p>
 
+### Admin Dashboard
+
+A full admin panel with stats, user management, resource moderation, and verification review.
+
+<p align="center">
+  <img src="public/images/Admin/Admin Dashboard.png" alt="Admin dashboard with stats and charts" width="800" />
+</p>
+
+<p align="center">
+  <img src="public/images/Admin/Users.png" alt="User management with search, filter, and actions" width="800" />
+</p>
+
+<p align="center">
+  <img src="public/images/Admin/Resources.png" alt="Resource management and moderation" width="800" />
+</p>
+
+<p align="center">
+  <img src="public/images/Admin/Verification Requests.png" alt="Verification request review" width="800" />
+</p>
+
 ## Tech Stack
 
 | Layer | Technology |
