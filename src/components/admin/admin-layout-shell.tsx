@@ -123,7 +123,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
   /** Show loading state while fetching user info for the sidebar. */
   if (isLoading) {
     return (
-      <div className="flex min-h-screen bg-background">
+      <div className="flex h-screen overflow-hidden bg-background">
         {/* Sidebar skeleton */}
         <div
           className={cn(
@@ -176,7 +176,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Main content skeleton */}
-          <main className="h-screen overflow-y-auto p-6 pt-16">
+          <main className="h-full pt-16 overflow-y-auto p-6">
             <div className="space-y-4">
               <Skeleton className="h-8 w-48" />
               <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -239,8 +239,8 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
             onMenuClick={() => setSidebarOpen(true)}
           />
 
-          {/* Main content */}
-          <main className="h-screen overflow-y-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 pt-16">{children}</main>
+          {/* Main content — pt-16 clears fixed top bar */}
+          <main className="h-full pt-16 overflow-y-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300">{children}</main>
         </div>
       </div>
       <GlobalSearchDialog />
