@@ -140,16 +140,17 @@ export function ResourceFilters({
             onValueChange={(val) => onCourseFilterChange(val ?? "all")}
           >
             <SelectTrigger className="w-44 shrink-0">
-              <SelectValue placeholder="All courses" />
+              <SelectValue>
+                {courseFilter === "all"
+                  ? "All courses"
+                  : courses.find((c) => c.id === courseFilter)
+                      ?.code ?? "All courses"}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Courses</SelectItem>
               {courses.map((c) => (
-                <SelectItem
-                  key={c.id}
-                  value={c.id}
-                  label={`${c.code} — ${c.name}`}
-                >
+                <SelectItem key={c.id} value={c.id}>
                   {c.code} — {c.name}
                 </SelectItem>
               ))}
@@ -160,12 +161,17 @@ export function ResourceFilters({
             onValueChange={(val) => onCategoryFilterChange(val ?? "all")}
           >
             <SelectTrigger className="w-44 shrink-0">
-              <SelectValue placeholder="All categories" />
+              <SelectValue>
+                {categoryFilter === "all"
+                  ? "All categories"
+                  : categories.find((c) => c.id === categoryFilter)
+                      ?.name ?? "All categories"}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
               {categories.map((c) => (
-                <SelectItem key={c.id} value={c.id} label={c.name}>
+                <SelectItem key={c.id} value={c.id}>
                   {c.name}
                 </SelectItem>
               ))}
