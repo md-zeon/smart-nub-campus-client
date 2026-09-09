@@ -31,6 +31,11 @@ interface ActiveUser {
   connectionStatus: "NONE" | "CONNECTED" | "PENDING_OUTGOING" | "PENDING_INCOMING";
 }
 
+function isRecentlyActive(lastActiveAt?: string | null): boolean {
+  if (!lastActiveAt) return false;
+  return Date.now() - new Date(lastActiveAt).getTime() < 24 * 60 * 60 * 1000;
+}
+
 export function ActiveUsers({ onChanged }: ActiveUsersProps) {
   const [users, setUsers] = useState<ActiveUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -144,7 +149,9 @@ export function ActiveUsers({ onChanged }: ActiveUsersProps) {
               src={user.image}
               className="size-9"
             />
-            <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-background bg-emerald-500" />
+            {isRecentlyActive(user.lastActiveAt) && (
+              <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-background bg-emerald-500" />
+            )}
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-foreground">
