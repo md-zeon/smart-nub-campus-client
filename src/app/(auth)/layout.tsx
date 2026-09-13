@@ -12,7 +12,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex px-4 py-6 flex-col space-y-4 sm:space-y-8">
+    <div className="flex h-full scrollbar-thin px-4 py-6 flex-col space-y-4 overflow-y-auto sm:space-y-8">
       <header className="w-full flex justify-between items-center px-1 sm:px-0">
         <Link href={ROUTES.AUTH} className="flex items-center gap-1.5 sm:gap-2">
           <AcademicCapIcon className="text-brand" size={32} />
